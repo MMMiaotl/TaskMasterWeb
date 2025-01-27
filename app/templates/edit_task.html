@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Task - {{ form.title.data }}{% endblock %}
+
+{% block content %}
+    <h1>Edit Task</h1>
+    <form method="POST" action="{{ url_for('edit_task', task_id=task.id) }}">
+        {{ form.hidden_tag() }}  <!-- 添加 CSRF 令牌 -->
+        
+        <!-- 任务标题 -->
+        <div class="form-group">
+            {{ form.title.label(class="form-label") }}
+            {{ form.title(class="form-control", placeholder="Enter task title") }}
+            {% if form.title.errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.title.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 任务描述 -->
+        <div class="form-group">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control", rows=5, placeholder="Enter task description") }}
+            {% if form.description.errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.description.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 提交按钮 -->
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Update Task</button>
+            <a href="{{ url_for('task_detail', task_id=task.id) }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+{% endblock %}

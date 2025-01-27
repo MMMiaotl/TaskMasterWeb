@@ -1,32 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}My Werkspot{% endblock %}</title>
-</head>
-<body>
-    <nav>
-        <a href="{{ url_for('index') }}">Home</a>
-        {% if current_user.is_authenticated %}
-            <a href="{{ url_for('create_task') }}">Create Task</a>
-            <a href="{{ url_for('tasks') }}">Tasks</a>
-            <a href="{{ url_for('logout') }}">Logout</a>
-        {% else %}
-            <a href="{{ url_for('login') }}">Login</a>
-            <a href="{{ url_for('register') }}">Register</a>
-        {% endif %}
-    </nav>
-    <hr>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-    {% block content %}{% endblock %}
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Task Master{% endblock %}
+
+{% block content %}
+    <!-- 欢迎标语 -->
+    <div class="welcome-section">
+        <h1>Welcome to TaskMaster</h1>
+        <p>Your ultimate platform for managing tasks and collaborating with others.</p>
+    </div>
+
+    <!-- 特色功能 -->
+    <div class="features-section">
+        <h2>Why Choose TaskMaster?</h2>
+        <div class="features-row">
+            <div class="feature-item">
+                <h3>Easy Task Management</h3>
+                <p>Create, assign, and track tasks effortlessly.</p>
+            </div>
+            <div class="feature-item">
+                <h3>Collaborate with Others</h3>
+                <p>Work together with your team to achieve goals.</p>
+            </div>
+            <div class="feature-item">
+                <h3>Stay Organized</h3>
+                <p>Keep all your tasks and projects in one place.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户评价 -->
+    <div class="testimonials-section">
+        <h2>What Our Users Say</h2>
+        <div class="testimonials-row">
+            <div class="testimonial-item">
+                <p>"TaskMaster has completely transformed how I manage my projects. Highly recommended!"</p>
+                <p><strong>- John Doe</strong></p>
+            </div>
+            <div class="testimonial-item">
+                <p>"The collaboration features are amazing. My team loves it!"</p>
+                <p><strong>- Jane Smith</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 最新任务 -->
+    <div class="recent-tasks-section">
+        <h2>Recent Tasks</h2>
+        <div class="tasks-row">
+            {% for task in recent_tasks %}
+            <div class="task-item">
+                <h3><a href="{{ url_for('task_detail', task_id=task.id) }}">{{ task.title }}</a></h3>
+                <p>{{ task.description }}</p>
+                <p>Posted by: <a href="{{ url_for('other_user_profile', username=task.user.username) }}">{{ task.user.username }}</a></p>
+            </div>
+            {% else %}
+            <div class="task-item">
+                <p>No recent tasks found.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 联系我们 -->
+    <div class="contact-section">
+        <h2>Contact Us</h2>
+        <p>Have questions or feedback? Reach out to us!</p>
+        <ul>
+            <li>Email: support@taskmaster.com</li>
+            <li>Phone: +1 (123) 456-7890</li>
+            <li>Follow us on:
+                <a href="#">Twitter</a>,
+                <a href="#">Facebook</a>,
+                <a href="#">LinkedIn</a>
+            </li>
+        </ul>
+    </div>
+{% endblock %}
