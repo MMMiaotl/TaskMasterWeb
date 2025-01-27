@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Task Master{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav>
+        <!-- 左侧导航链接 -->
+        <div class="nav-links">
+            <a href="{{ url_for('index') }}">Home</a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('create_task') }}">Create Task</a>
+                <a href="{{ url_for('tasks') }}">Tasks</a>
+                <a href="{{ url_for('logout') }}">Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login</a>
+                <a href="{{ url_for('register') }}">Register</a>
+            {% endif %}
+        </div>
+
+        <!-- 右侧用户栏和语言选择 -->
+        <div class="right-section">
+            {% if current_user.is_authenticated %}
+                <div class="user-profile">
+                    <a href="{{ url_for('user_profile') }}">{{ current_user.username }}</a>
+                </div>
+            {% endif %}
+            <div class="language-switcher">
+                <a href="{{ url_for('set_language', language='zh') }}">中文</a>
+                <a href="{{ url_for('set_language', language='en') }}">English</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 消息闪现部分 -->
+    <div class="messages">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- 页面内容 -->
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- 新增的三栏内容 -->
+    <div class="photo-section">
+        <h2>Photo Gallery</h2>
+        <div class="photo-row">
+            <div class="photo-item">
+                <img src="{{ url_for('static', filename='images/photo1.jpg') }}" alt="Photo 1">
+            </div>
+            <div class="photo-item">
+                <img src="{{ url_for('static', filename='images/photo2.jpg') }}" alt="Photo 2">
+            </div>
+            <div class="photo-item">
+                <img src="{{ url_for('static', filename='images/photo3.jpg') }}" alt="Photo 3">
+            </div>
+        </div>
+    </div>
+</body>
+</html>
