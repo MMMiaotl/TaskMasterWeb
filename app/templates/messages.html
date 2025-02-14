@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Messages{% endblock %}
+{% block content %}
+    <div class="messages-container">
+        <h1>Your Messages</h1>
+        {% if messages %}
+            <button type="button" id="new-message">New Message</button>
+            <div id="message-form" style="display: none;">
+                <form action="{{ url_for('message_create', task_id=current_task.id) }}" method="post">
+                    <input type="hidden" name="message[task]" value="{{ current_task.id }}">
+                    <textarea name="message.content" required></textarea>
+                    <button type="submit">Submit</button>
+                    <button type="button" onclick="cancel()">Cancel</button>
+                </form>
+            </div>
+            {% for message in messages %}
+                {% if message.sender.username == current_user.username %}
+                    <!-- 你的留言 -->
+                {% else %}
+                    <div class="message-reply">
+                        <strong>你回复:</strong>
+                        <p>{{ message.content }}</p>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <p>No messages yet.</p>
+        {% endif %}
+    </div>
+{% endblock %}

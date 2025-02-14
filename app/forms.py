@@ -31,3 +31,7 @@ class ReviewForm(FlaskForm):
     rating = IntegerField('Rating (1-5)', validators=[DataRequired(), NumberRange(min=1, max=5)])
     role = SelectField('Role', choices=[('poster', 'As Poster'), ('executor', 'As Executor')], validators=[DataRequired()])
     submit = SubmitField('Submit Review')
+
+class MessageForm(FlaskForm):
+    content = TextAreaField('Message', validators=[DataRequired()])
+    submit = SubmitField('Send Message')

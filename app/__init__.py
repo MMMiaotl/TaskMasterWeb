@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_babel import Babel
@@ -12,6 +12,14 @@ app.config.from_object('config.Config')
 
 # 初始化 Flask-Babel
 babel = Babel(app)
+
+babel.init_app(app)
+
+# 实现语言选择回调函数
+@babel.localeselector
+def get_locale():
+    # 从请求中获取语言设置
+    return request.accept_languages.best_match(app.config['BABEL_SUPPORTED_LOCALES'])
 
 # 初始化数据库
 db = SQLAlchemy(app)
