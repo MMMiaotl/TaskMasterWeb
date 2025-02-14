@@ -28,6 +28,14 @@
                 <div class="user-profile">
                     <a href="{{ url_for('user_profile') }}">{{ current_user.username }}</a>
                 </div>
+                <div class="messages-button">
+                    <a href="{{ url_for('messages') }}">
+                        Messages
+                        {% if current_user.received_messages|length > 0 %}
+                            <span class="message-count">{{ current_user.received_messages|length }}</span>
+                        {% endif %}
+                    </a>
+                </div>
             {% endif %}
             <div class="language-switcher">
                 <a href="{{ url_for('set_language', language='zh') }}">中文</a>

@@ -1,8 +1,8 @@
 from flask import render_template, flash, redirect, url_for, request, session
 from flask_login import login_user, logout_user, current_user, login_required
 from app import app, db
-from app.models import User, Task, Review
-from app.forms import LoginForm, RegistrationForm, TaskForm
+from app.models import User, Task, Review, Message
+from app.forms import LoginForm, RegistrationForm, TaskForm, MessageForm
 from flask_babel import gettext as _
 
 @app.route('/')
@@ -79,7 +79,8 @@ def tasks():
 @app.route('/task/<int:task_id>')
 def task_detail(task_id):
     task = Task.query.get_or_404(task_id)  # 获取任务，如果不存在则返回 404
-    return render_template('task_detail.html', task=task)
+    form = MessageForm()  # 创建 MessageForm 实例    
+    return render_template('task_detail.html', task=task, form = form)
 
 @app.route('/task/<int:task_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -115,7 +116,10 @@ def delete_task(task_id):
 @app.route('/set_language/<language>')
 def set_language(language):
     if language in app.config['BABEL_SUPPORTED_LOCALES']:
+        # 设置会话中的语言环境
         session['language'] = language
+    
+    # 重定向回之前的页面或首页
     return redirect(request.referrer or url_for('index'))
 
 @app.route('/user')
@@ -166,3 +170,31 @@ def user_reviews(username):
     poster_reviews = Review.query.filter_by(reviewee_id=user.id, role='poster').all()  # 作为发布人收到的评价
     executor_reviews = Review.query.filter_by(reviewee_id=user.id, role='executor').all()  # 作为执行人收到的评价
     return render_template('user_reviews.html', user=user, poster_reviews=poster_reviews, executor_reviews=executor_reviews)
+
+@app.route('/messages')
+@login_required
+def messages():
+    # 获取当前用户收到的所有消息
+    messages = Message.query.filter_by(recipient_id=current_user.id).order_by(Message.created_at.desc()).all()
+    return render_template('messages.html', messages=messages)
+
+@app.route('/task/<int:task_id>/send_message', methods=['POST'])
+@login_required
+def send_message(task_id):
+    task = Task.query.get_or_404(task_id)
+    form = MessageForm()
+
+    if form.validate_on_submit():
+        message = Message(
+            content=form.content.data,
+            sender_id=current_user.id,
+            recipient_id=task.user_id,
+            task_id=task.id
+        )
+        db.session.add(message)
+        db.session.commit()
+        flash('Your message has been sent!', 'success')
+    else:
+        flash('Failed to send message. Please check the form.', 'danger')
+
+    return redirect(url_for('task_detail', task_id=task.id))

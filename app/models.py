@@ -45,3 +45,16 @@ class Task(db.Model):
 
     def __repr__(self):
         return '<Task {}>'.format(self.title)
+    
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)  # 私信内容
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # 发送者
+    recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # 接收者
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)  # 关联的任务
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))  # 发送时间
+
+    # 关系
+    sender = db.relationship('User', foreign_keys=[sender_id], backref='sent_messages')
+    recipient = db.relationship('User', foreign_keys=[recipient_id], backref='received_messages')
+    task = db.relationship('Task', backref='messages')

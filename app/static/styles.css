@@ -427,3 +427,53 @@ nav a {
 .delete-form {
     display: inline;
 }
+
+/* 私信表单 */
+.message-form {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.message-form h2 {
+    margin-bottom: 20px;
+}
+
+/* 私信列表 */
+.message-list {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.message-list h2 {
+    margin-bottom: 20px;
+}
+
+.message-list ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.message-list li {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.message-list li:last-child {
+    border-bottom: none;
+}
+
+.message-list p {
+    margin: 0;
+}
+
+.message-list small {
+    color: #777;
+}
+
