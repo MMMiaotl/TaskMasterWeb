@@ -40,3 +40,10 @@ class ReviewForm(FlaskForm):
 class MessageForm(FlaskForm):
     content = TextAreaField('消息内容', validators=[DataRequired(), Length(min=1, max=1000)])
     submit = SubmitField('发送')
+
+class EditProfileForm(FlaskForm):
+    phone = StringField('电话号码')
+    bio = TextAreaField('个人简介', validators=[Length(max=500)])
+    location = StringField('所在地', validators=[Length(max=64)])
+    website = StringField('个人网站', validators=[Length(max=128)])
+    submit = SubmitField('保存修改')

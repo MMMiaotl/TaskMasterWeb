@@ -3,54 +3,150 @@
 {% block title %}Task Master{% endblock %}
 
 {% block content %}
+<div class="hero-section bg-primary text-white py-5 mb-4">
     <div class="container">
-        <h1>任务列表</h1>
-        
-        <!-- 错误消息显示 -->
-        {% if error_message %}
-            <div class="alert alert-danger">
-                {{ error_message }}
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1 class="display-4 fw-bold">找到合适的自由职业者</h1>
+                <p class="lead">数以千计的专业人士随时待命，助您完成任务</p>
+                <div class="search-box-large">
+                    <form action="{{ url_for('main.index') }}" method="get" class="d-flex">
+                        <input type="text" name="q" class="form-control form-control-lg" 
+                               placeholder="搜索任务..." value="{{ request.args.get('q', '') }}">
+                        <button type="submit" class="btn btn-success btn-lg ms-2">搜索</button>
+                    </form>
+                </div>
             </div>
-        {% endif %}
-        
-        <!-- 搜索框 -->
-        <div class="search-box">
-            <form action="{{ url_for('main.index') }}" method="get">
-                <input type="text" name="q" placeholder="搜索任务..." value="{{ search_query }}">
-                <button type="submit">搜索</button>
-            </form>
+            <div class="col-md-6 text-center">
+                <img src="{{ url_for('static', filename='img/hero-image.svg') }}" 
+                     alt="TaskMaster" class="img-fluid">
+            </div>
         </div>
+    </div>
+</div>
 
-        <!-- 任务列表 -->
-        <div class="task-list">
-            {% if tasks %}
-                {% for task in tasks %}
-                    <div class="task-item">
-                        <h2><a href="{{ url_for('task.task_detail', task_id=task.id) }}">{{ task.title }}</a></h2>
-                        <p>{{ task.description[:200] }}{% if task.description|length > 200 %}...{% endif %}</p>
-                        <div class="task-meta">
-                            <span>发布者: 
-                                {% if task.author %}
-                                    <a href="{{ url_for('user.other_user_profile', username=task.author.username) }}">
-                                        {{ task.author.username }}
-                                    </a>
-                                {% else %}
-                                    未知用户
-                                {% endif %}
-                            </span>
-                            <span>发布时间: {{ task.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+<div class="container">
+    <!-- 热门分类 -->
+    <section class="categories-section mb-5">
+        <h2 class="section-title mb-4">热门任务分类</h2>
+        <div class="row g-4">
+            <div class="col-md-3 col-sm-6">
+                <a href="#" class="category-card text-decoration-none">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-code fa-2x mb-3 text-primary"></i>
+                            <h5 class="card-title">编程开发</h5>
+                            <p class="card-text text-muted">网站开发、移动应用、API集成</p>
                         </div>
                     </div>
-                {% endfor %}
-            {% else %}
-                <p>暂无任务</p>
-            {% endif %}
-        </div>
-
-        {% if current_user.is_authenticated %}
-            <div class="actions">
-                <a href="{{ url_for('task.create_task') }}" class="btn btn-primary">创建新任务</a>
+                </a>
             </div>
-        {% endif %}
-    </div>
+            <!-- 添加更多分类 -->
+        </div>
+    </section>
+
+    <!-- 最新任务 -->
+    <section class="latest-tasks mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title">最新任务</h2>
+            <a href="{{ url_for('task.tasks') }}" class="btn btn-outline-primary">查看全部</a>
+        </div>
+        
+        <div class="row g-4">
+            {% for task in tasks %}
+            <div class="col-md-4">
+                <div class="card task-card h-100">
+                    {% if task.image_url %}
+                    <img src="{{ task.image_url }}" class="card-img-top" alt="{{ task.title }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{{ url_for('task.task_detail', task_id=task.id) }}" 
+                               class="text-decoration-none text-dark">
+                                {{ task.title }}
+                            </a>
+                        </h5>
+                        <p class="card-text text-muted">{{ task.description[:100] }}...</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="user-info">
+                                <img src="{{ task.author.avatar_url or url_for('static', filename='img/default-avatar.png') }}" 
+                                     alt="{{ task.author.username }}" 
+                                     class="rounded-circle me-2" 
+                                     style="width: 30px; height: 30px;">
+                                <span>{{ task.author.username }}</span>
+                            </div>
+                            <span class="badge bg-success">预算: ¥{{ task.budget }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- 为什么选择我们 -->
+    <section class="why-us mb-5">
+        <h2 class="section-title text-center mb-4">为什么选择 TaskMaster</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card text-center">
+                    <i class="fas fa-shield-alt fa-3x mb-3 text-primary"></i>
+                    <h4>安全支付</h4>
+                    <p class="text-muted">资金托管保障，完成后再付款</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center">
+                    <i class="fas fa-users fa-3x mb-3 text-primary"></i>
+                    <h4>优质人才</h4>
+                    <p class="text-muted">经过认证的专业人才</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center">
+                    <i class="fas fa-clock fa-3x mb-3 text-primary"></i>
+                    <h4>24/7 支持</h4>
+                    <p class="text-muted">全天候客户支持服务</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- 添加自定义样式 -->
+{% block styles %}
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    transition: transform 0.3s ease;
+}
+
+.task-card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.task-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.section-title {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.feature-card {
+    padding: 2rem;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}
 {% endblock %}
