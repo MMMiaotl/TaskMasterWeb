@@ -236,4 +236,82 @@ body {
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--primary-color);
+}
+
+/* 服务侧边栏样式 */
+.list-group-item-action {
+    color: #4a5568;
+    transition: all 0.2s ease;
+}
+
+.list-group-item-action:hover:not(.active) {
+    background-color: #f7fafc;
+    color: var(--primary-color);
+}
+
+.list-group-item-action.active {
+    background-color: var(--primary-color);
+}
+
+/* 筛选器样式 */
+.form-select {
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
+    padding: 0.5rem 1rem;
+}
+
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(44, 82, 130, 0.15);
+}
+
+/* 空状态样式 */
+.empty-state {
+    padding: 3rem 0;
+    text-align: center;
+}
+
+.empty-state img {
+    max-width: 200px;
+    margin-bottom: 1.5rem;
+}
+
+/* 服务页面特定样式 */
+.service-sidebar {
+    position: sticky;
+    top: 1rem;
+}
+
+.service-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.price-tag {
+    background-color: #e6f3ff;
+    color: var(--primary-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-weight: 600;
+}
+
+.location-tag {
+    color: #718096;
+    font-size: 0.875rem;
+}
+
+.task-meta {
+    font-size: 0.875rem;
+    color: #718096;
+}
+
+.filter-section {
+    background-color: #f8fafc;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
 } 
