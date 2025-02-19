@@ -4,27 +4,32 @@ from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationE
 from app.models import User
 
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    remember_me = BooleanField('Remember Me')
-    submit = SubmitField('Sign In')
+    username = StringField('用户名', validators=[DataRequired()])
+    password = PasswordField('密码', validators=[DataRequired()])
+    remember_me = BooleanField('记住我')
+    submit = SubmitField('登录')
 
 class RegistrationForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    password2 = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
-    submit = SubmitField('Register')
+    username = StringField('用户名', validators=[DataRequired(), Length(min=2, max=20)])
+    email = StringField('邮箱', validators=[DataRequired(), Email()])
+    password = PasswordField('密码', validators=[DataRequired(), Length(min=6)])
+    password2 = PasswordField('确认密码', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('注册')
+
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError('该用户名已被使用')
 
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
         if user:
-            raise ValidationError('Email address is already registered.')
+            raise ValidationError('该邮箱已被注册')
 
 class TaskForm(FlaskForm):
-    title = StringField('Title', validators=[DataRequired()])
-    description = TextAreaField('Description', validators=[DataRequired()])
-    submit = SubmitField('Submit')
+    title = StringField('标题', validators=[DataRequired(), Length(min=1, max=140)])
+    description = TextAreaField('描述', validators=[DataRequired(), Length(min=1, max=1000)])
+    submit = SubmitField('提交')
 
 class ReviewForm(FlaskForm):
     content = TextAreaField('Review Content', validators=[DataRequired()])
@@ -33,5 +38,5 @@ class ReviewForm(FlaskForm):
     submit = SubmitField('Submit Review')
 
 class MessageForm(FlaskForm):
-    content = TextAreaField('Message', validators=[DataRequired()])
-    submit = SubmitField('Send Message')
+    content = TextAreaField('消息内容', validators=[DataRequired(), Length(min=1, max=1000)])
+    submit = SubmitField('发送')

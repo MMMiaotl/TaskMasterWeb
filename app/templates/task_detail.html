@@ -3,71 +3,47 @@
 {% block title %}{{ _(task.title) }} - Task Detail{% endblock %}
 
 {% block content %}
-    <div class="task-detail-container">
-        <!-- 任务标题 -->
-        <h1 class="task-title">{{ _(task.title) }}</h1>
-
-        <!-- 任务描述 -->
-        <div class="task-description">
-            <p>{{ task.description }}</p>
-        </div>
-
-        <!-- 任务元信息 -->
-        <div class="task-meta">
-            <p><strong>Posted by:</strong> <a href="{{ url_for('other_user_profile', username=task.user.username) }}">{{ task.user.username }}</a></p>
-        </div>
-
-        <!-- 操作按钮 -->
-        <div class="task-actions">
-            <!-- 返回任务列表的链接 -->
-            <a href="{{ url_for('tasks') }}" class="btn btn-back">Back to Task List</a>
-
-            <!-- 如果当前用户是任务发布者，显示编辑和删除按钮 -->
-            {% if current_user.is_authenticated and current_user.id == task.user_id %}
-                <a href="{{ url_for('edit_task', task_id=task.id) }}" class="btn btn-edit">Edit Task</a>
-                <form method="POST" action="{{ url_for('delete_task', task_id=task.id) }}" class="delete-form">
-                    <button type="submit" class="btn btn-delete">Delete Task</button>
-                </form>
-            {% endif %}
-        </div>
-
-        <!-- 私信表单 -->
-        {% if current_user.is_authenticated and current_user.id != task.user_id %}
-            <div class="message-form">
-                <h2>Send a Message to {{ task.user.username }}</h2>
-                <form method="POST" action="{{ url_for('send_message', task_id=task.id) }}">
-                    {{ form.hidden_tag() }}
-                    <div class="form-group">
-                        {{ form.content(class="form-control", rows=5, placeholder="Enter your message") }}
-                        {% if form.content.errors %}
-                            <div class="alert alert-danger">
-                                {% for error in form.content.errors %}
-                                    <span>{{ error }}</span>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div class="form-group">
-                        {{ form.submit(class="btn btn-primary") }}
-                    </div>
-                </form>
+<div class="container">
+    <div class="task-detail card">
+        <div class="card-body">
+            <!-- 任务标题和描述 -->
+            <h1 class="card-title">{{ task.title }}</h1>
+            <div class="task-content">
+                <p class="card-text">{{ task.description }}</p>
             </div>
-        {% endif %}
 
-        <!-- 私信列表 -->
-        <div class="message-list">
-            <h2>Messages</h2>
-            {% if task.messages %}
-                <ul>
-                    {% for message in task.messages %}
-                        <li>
-                            <p><strong>{{ message.sender.username }}:</strong> {{ message.content }}</p>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>No messages yet.</p>
+            <!-- 任务元信息 -->
+            <div class="task-meta text-muted mt-3">
+                <p>
+                    <strong>发布者:</strong> 
+                    <a href="{{ url_for('user.other_user_profile', username=task.author.username) }}">
+                        {{ task.author.username }}
+                    </a>
+                </p>
+                <p><strong>发布时间:</strong> {{ task.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                {% if task.updated_at != task.created_at %}
+                    <p><strong>最后更新:</strong> {{ task.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                {% endif %}
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="task-actions mt-4">
+                <a href="{{ url_for('task.tasks') }}" class="btn btn-secondary">返回任务列表</a>
+                {% if current_user.is_authenticated and task.author == current_user %}
+                    <a href="{{ url_for('task.edit_task', task_id=task.id) }}" class="btn btn-primary">编辑任务</a>
+                {% endif %}
+            </div>
+
+            <!-- 如果有消息系统，可以添加发送消息按钮 -->
+            {% if current_user.is_authenticated and task.author != current_user %}
+                <div class="message-actions mt-3">
+                    <a href="{{ url_for('message.send_message', recipient_id=task.author.id, task_id=task.id) }}" 
+                       class="btn btn-outline-primary">
+                        联系发布者
+                    </a>
+                </div>
             {% endif %}
         </div>
     </div>
+</div>
 {% endblock %}

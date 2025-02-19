@@ -1,6 +1,6 @@
 from .user import User
 from .task import Task
-from .review import Review
 from .message import Message
+from .review import Review
 
-__all__ = ['User', 'Task', 'Review', 'Message']
+__all__ = ['User', 'Task', 'Message']
