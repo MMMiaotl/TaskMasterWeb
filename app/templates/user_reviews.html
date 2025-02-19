@@ -3,41 +3,57 @@
 {% block title %}Reviews - {{ user.username }}{% endblock %}
 
 {% block content %}
-    <h1>Reviews for {{ user.username }}</h1>
+    <div class="reviews-container">
+        <h1>Reviews for {{ user.username }}</h1>
 
-    <h2>As Poster</h2>
-    {% if poster_reviews %}
-        <ul>
-            {% for review in poster_reviews %}
-            <li>
-                <p><strong>Rating:</strong> {{ review.rating }}/5</p>
-                <p><strong>Review:</strong> {{ review.content }}</p>
-                <p><strong>Reviewed by:</strong> <a href="{{ url_for('other_user_profile', username=review.reviewer.username) }}">{{ review.reviewer.username }}</a></p>
-                <p><strong>Task:</strong> <a href="{{ url_for('task_detail', task_id=review.task.id) }}">{{ review.task.title }}</a></p>
-                <p><strong>Date:</strong> {{ review.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-            </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No reviews as poster.</p>
-    {% endif %}
+        <div class="reviews-section">
+            <h2>As Task Poster</h2>
+            {% if poster_reviews %}
+                <div class="review-list">
+                    {% for review in poster_reviews %}
+                    <div class="review-item">
+                        <div class="review-rating">Rating: {{ review.rating }}/5</div>
+                        <div class="review-content">{{ review.content }}</div>
+                        <div class="review-meta">
+                            <span>By: <a href="{{ url_for('user.other_user_profile', username=review.reviewer.username) }}">
+                                {{ review.reviewer.username }}</a></span>
+                            <span>Task: <a href="{{ url_for('task.task_detail', task_id=review.task.id) }}">
+                                {{ review.task.title }}</a></span>
+                            <span>Date: {{ review.created_at.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No reviews as task poster.</p>
+            {% endif %}
+        </div>
 
-    <h2>As Executor</h2>
-    {% if executor_reviews %}
-        <ul>
-            {% for review in executor_reviews %}
-            <li>
-                <p><strong>Rating:</strong> {{ review.rating }}/5</p>
-                <p><strong>Review:</strong> {{ review.content }}</p>
-                <p><strong>Reviewed by:</strong> <a href="{{ url_for('other_user_profile', username=review.reviewer.username) }}">{{ review.reviewer.username }}</a></p>
-                <p><strong>Task:</strong> <a href="{{ url_for('task_detail', task_id=review.task.id) }}">{{ review.task.title }}</a></p>
-                <p><strong>Date:</strong> {{ review.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-            </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No reviews as executor.</p>
-    {% endif %}
+        <div class="reviews-section">
+            <h2>As Task Executor</h2>
+            {% if executor_reviews %}
+                <div class="review-list">
+                    {% for review in executor_reviews %}
+                    <div class="review-item">
+                        <div class="review-rating">Rating: {{ review.rating }}/5</div>
+                        <div class="review-content">{{ review.content }}</div>
+                        <div class="review-meta">
+                            <span>By: <a href="{{ url_for('user.other_user_profile', username=review.reviewer.username) }}">
+                                {{ review.reviewer.username }}</a></span>
+                            <span>Task: <a href="{{ url_for('task.task_detail', task_id=review.task.id) }}">
+                                {{ review.task.title }}</a></span>
+                            <span>Date: {{ review.created_at.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No reviews as task executor.</p>
+            {% endif %}
+        </div>
 
-    <a href="{{ url_for('other_user_profile', username=user.username) }}">Back to Profile</a>
+        <div class="actions">
+            <a href="{{ url_for('user.other_user_profile', username=user.username) }}" class="btn">Back to Profile</a>
+        </div>
+    </div>
 {% endblock %}

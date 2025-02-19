@@ -1,81 +1,78 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Task Master{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- 自定义CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <!-- 导航栏 -->
-    <nav>
-        <!-- 左侧导航链接 -->
-        <div class="nav-links">
-            <a href="{{ url_for('index') }}">Home</a>
-            {% if current_user.is_authenticated %}
-                <a href="{{ url_for('create_task') }}">Create Task</a>
-                <a href="{{ url_for('tasks') }}">Tasks</a>
-                <a href="{{ url_for('logout') }}">Logout</a>
-            {% else %}
-                <a href="{{ url_for('login') }}">Login</a>
-                <a href="{{ url_for('register') }}">Register</a>
-            {% endif %}
-        </div>
-
-        <!-- 右侧用户栏和语言选择 -->
-        <div class="right-section">
-            {% if current_user.is_authenticated %}
-                <div class="user-profile">
-                    <a href="{{ url_for('user_profile') }}">{{ current_user.username }}</a>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">Task Master</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.index') }}">首页</a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('task.create_task') }}">发布任务</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('message.messages') }}">消息</a>
+                        </li>
+                    {% endif %}
+                </ul>
+                <div class="navbar-nav">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                {{ current_user.username }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('user.user_profile') }}">个人资料</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">退出</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.login') }}">登录</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.register') }}">注册</a>
+                        </li>
+                    {% endif %}
                 </div>
-                <div class="messages-button">
-                    <a href="{{ url_for('messages') }}">
-                        Messages
-                        {% if current_user.received_messages|length > 0 %}
-                            <span class="message-count">{{ current_user.received_messages|length }}</span>
-                        {% endif %}
-                    </a>
-                </div>
-            {% endif %}
-            <div class="language-switcher">
-                <a href="{{ url_for('set_language', language='zh') }}">中文</a>
-                <a href="{{ url_for('set_language', language='en') }}">English</a>
             </div>
         </div>
     </nav>
 
-    <!-- 消息闪现部分 -->
-    <div class="messages">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <ul>
-                    {% for message in messages %}
-                        <li>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
-    </div>
+    <!-- 闪现消息 -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for message in messages %}
+                    <div class="alert alert-info">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
 
-    <!-- 页面内容 -->
-    <div class="content">
+    <!-- 主要内容 -->
+    <main class="container mt-4">
         {% block content %}{% endblock %}
-    </div>
+    </main>
 
-    <!-- 新增的三栏内容 -->
-    <div class="photo-section">
-        <h2>Photo Gallery</h2>
-        <div class="photo-row">
-            <div class="photo-item">
-                <img src="{{ url_for('static', filename='images/photo1.jpg') }}" alt="Photo 1">
-            </div>
-            <div class="photo-item">
-                <img src="{{ url_for('static', filename='images/photo2.jpg') }}" alt="Photo 2">
-            </div>
-            <div class="photo-item">
-                <img src="{{ url_for('static', filename='images/photo3.jpg') }}" alt="Photo 3">
-            </div>
-        </div>
-    </div>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

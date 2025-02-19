@@ -1,30 +1,59 @@
 {% extends "base.html" %}
-{% block title %}Messages{% endblock %}
+
 {% block content %}
-    <div class="messages-container">
-        <h1>Your Messages</h1>
-        {% if messages %}
-            <button type="button" id="new-message">New Message</button>
-            <div id="message-form" style="display: none;">
-                <form action="{{ url_for('message_create', task_id=current_task.id) }}" method="post">
-                    <input type="hidden" name="message[task]" value="{{ current_task.id }}">
-                    <textarea name="message.content" required></textarea>
-                    <button type="submit">Submit</button>
-                    <button type="button" onclick="cancel()">Cancel</button>
-                </form>
-            </div>
-            {% for message in messages %}
-                {% if message.sender.username == current_user.username %}
-                    <!-- 你的留言 -->
-                {% else %}
-                    <div class="message-reply">
-                        <strong>你回复:</strong>
-                        <p>{{ message.content }}</p>
+<div class="container">
+    <h2>我的消息</h2>
+    
+    <!-- 收到的消息 -->
+    <div class="received-messages mt-4">
+        <h3>收到的消息</h3>
+        {% if received_messages %}
+            {% for message in received_messages %}
+            <div class="message-item card mb-3">
+                <div class="card-body">
+                    <div class="message-meta text-muted mb-2">
+                        <small>
+                            来自: {{ message.sender.username }} | 
+                            时间: {{ message.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% if message.task %}
+                                | 关于任务: <a href="{{ url_for('task.task_detail', task_id=message.task.id) }}">{{ message.task.title }}</a>
+                            {% endif %}
+                        </small>
                     </div>
-                {% endif %}
+                    <p class="card-text">{{ message.content }}</p>
+                    <a href="{{ url_for('message.send_message', recipient_id=message.sender.id) }}" 
+                       class="btn btn-sm btn-outline-primary">回复</a>
+                </div>
+            </div>
             {% endfor %}
         {% else %}
-            <p>No messages yet.</p>
+            <p>暂无收到的消息</p>
         {% endif %}
     </div>
+
+    <!-- 发送的消息 -->
+    <div class="sent-messages mt-4">
+        <h3>发送的消息</h3>
+        {% if sent_messages %}
+            {% for message in sent_messages %}
+            <div class="message-item card mb-3">
+                <div class="card-body">
+                    <div class="message-meta text-muted mb-2">
+                        <small>
+                            发给: {{ message.recipient.username }} | 
+                            时间: {{ message.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% if message.task %}
+                                | 关于任务: <a href="{{ url_for('task.task_detail', task_id=message.task.id) }}">{{ message.task.title }}</a>
+                            {% endif %}
+                        </small>
+                    </div>
+                    <p class="card-text">{{ message.content }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>暂无发送的消息</p>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}

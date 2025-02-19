@@ -2,7 +2,7 @@
 
 {% block content %}
     <h1>Create Task</h1>
-    <form action="" method="post">
+    <form action="{{ url_for('task.create_task') }}" method="post">
         {{ form.hidden_tag() }}
         <p>
             {{ form.title.label }}<br>
@@ -19,5 +19,6 @@
             {% endfor %}
         </p>
         <p>{{ form.submit() }}</p>
+        <a href="{{ url_for('task.tasks') }}" class="btn">Cancel</a>
     </form>
 {% endblock %}
