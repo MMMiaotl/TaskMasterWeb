@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_babel import Babel
@@ -13,13 +13,21 @@ app.config.from_object('config.Config')
 # 初始化 Flask-Babel
 babel = Babel(app)
 
-babel.init_app(app)
-
-# 实现语言选择回调函数
-@babel.localeselector
+# 实现语言选择函数
 def get_locale():
-    # 从请求中获取语言设置
+    # 按优先级获取语言设置：
+    # 1. URL 参数
+    # 2. 用户会话设置
+    # 3. 浏览器请求头
+    # 4. 默认语言
+    if request.args.get('lang'):
+        return request.args.get('lang')
+    elif 'lang' in session:
+        return session['lang']
     return request.accept_languages.best_match(app.config['BABEL_SUPPORTED_LOCALES'])
+
+# 设置语言选择器
+babel.locale_selector_func = get_locale
 
 # 初始化数据库
 db = SQLAlchemy(app)
@@ -38,5 +46,6 @@ from app.models import User
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# 导入路由（必须在 app 和 db 初始化之后）
-from app import routes
+# 导入并注册蓝图
+from app.routes import init_app as init_routes
+init_routes(app)
