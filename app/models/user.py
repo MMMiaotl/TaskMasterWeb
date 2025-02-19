@@ -14,6 +14,10 @@ class User(UserMixin, db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+    phone = db.Column(db.String(20))
+    bio = db.Column(db.Text)
+    location = db.Column(db.String(64))
+    website = db.Column(db.String(128))
     
     # 关系
     tasks = db.relationship('Task', backref='author', lazy='dynamic')
