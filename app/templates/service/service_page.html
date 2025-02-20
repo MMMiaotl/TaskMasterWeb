@@ -72,47 +72,20 @@
         </div>
         
         <!-- 任务列表 -->
-        {% if tasks %}
-            <div class="row g-4">
-                {% for task in tasks %}
-                    <div class="col-md-6">
-                        <div class="card service-card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title mb-3">
-                                    <a href="{{ url_for('task.task_detail', task_id=task.id) }}" class="text-decoration-none text-dark">
-                                        {{ task.title }}
-                                    </a>
-                                </h5>
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <span class="price-tag">¥{{ task.price }}</span>
-                                    <span class="location-tag">
-                                        <i class="fas fa-map-marker-alt me-1"></i>
-                                        {{ task.location }}
-                                    </span>
-                                </div>
-                                <p class="card-text text-muted">{{ task.description }}</p>
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <div class="d-flex align-items-center">
-                                        <img src="{{ task.user.avatar_url }}" class="rounded-circle me-2" width="24" height="24" alt="用户头像">
-                                        <span class="task-meta">{{ task.user.username }}</span>
-                                    </div>
-                                    <small class="task-meta">{{ task.created_at }}</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="text-center py-5">
-                <img src="{{ url_for('static', filename='img/empty-state.svg') }}" alt="暂无任务" class="mb-3" style="width: 200px;">
-                <h3 class="text-muted">暂无相关需求</h3>
-                <p class="text-muted">成为第一个发布需求的用户吧！</p>
-                <a href="{{ url_for('task.create_task', service_type=current_service.id) }}" class="btn btn-primary">
-                    <i class="fas fa-plus-circle me-2"></i>发布需求
-                </a>
-            </div>
-        {% endif %}
+        <div class="task-list">
+            {% for task in tasks %}
+                <div class="task-item">
+                    <h5>{{ task.title }}</h5>
+                    <p>{{ task.description }}</p>
+                    <p>预算: {{ task.budget }} 元</p>
+                    <p>地点: {{ task.location }}</p>
+                    <p>截止日期: {{ task.deadline }}</p>
+                    <a href="{{ url_for('task.task_detail', task_id=task.id) }}" class="btn btn-info">查看详情</a>
+                </div>
+            {% else %}
+                <p>没有找到相关任务。</p>
+            {% endfor %}
+        </div>
     </div>
 </div>
 {% endblock %} 
