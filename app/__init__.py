@@ -3,13 +3,16 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_babel import Babel
 from flask_migrate import Migrate
-import os, sys
+import os
 
 # 创建实例
 db = SQLAlchemy()
 login_manager = LoginManager()
 babel = Babel()
 migrate = Migrate()
+
+def get_locale():
+    return request.accept_languages.best_match(['zh', 'en'])
 
 def create_app():
     app = Flask(__name__)
@@ -24,20 +27,9 @@ def create_app():
     babel.init_app(app, locale_selector=get_locale)
     migrate.init_app(app, db)
     
-    with app.app_context():
-        # 确保所有模型都已导入
-        from app.models import User, Task, Message, Review
-        # 创建所有表
-        db.create_all()
-    
     # 设置登录视图
     login_manager.login_view = 'auth.login'
     login_manager.login_message = '请先登录。'
-    
-    # 注册中间件
-    from .middleware import before_request, after_request
-    app.before_request(before_request)
-    app.after_request(after_request)
     
     # 注册蓝图
     from app.routes import init_app as init_routes
@@ -50,12 +42,6 @@ def create_app():
 def load_user(id):
     from app.models import User
     return User.query.get(int(id))
-
-# 语言选择函数
-def get_locale():
-    if request.args.get('lang'):
-        session['lang'] = request.args.get('lang')
-    return session.get('lang', 'zh')
 
 # 创建应用实例
 app = create_app()

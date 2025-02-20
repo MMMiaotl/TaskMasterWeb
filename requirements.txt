@@ -9,7 +9,7 @@ Flask-Mail==0.9.1
 Flask-Moment==1.0.5
 
 # 数据库
-SQLAlchemy==2.0.28
+SQLAlchemy==2.0.38
 alembic==1.13.1
 
 # 表单和验证
