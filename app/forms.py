@@ -1,7 +1,8 @@
 from flask_wtf import FlaskForm # type: ignore
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, IntegerField, SelectField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, IntegerField, SelectField, DateTimeField, DecimalField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, NumberRange
 from app.models import User
+from app.utils.constants import SERVICE_CHOICES
 
 class LoginForm(FlaskForm):
     username = StringField('用户名', validators=[DataRequired()])
@@ -27,9 +28,39 @@ class RegistrationForm(FlaskForm):
             raise ValidationError('该邮箱已被注册')
 
 class TaskForm(FlaskForm):
-    title = StringField('标题', validators=[DataRequired(), Length(min=1, max=140)])
-    description = TextAreaField('描述', validators=[DataRequired(), Length(min=1, max=1000)])
-    submit = SubmitField('提交')
+    title = StringField('任务标题', validators=[
+        DataRequired(message='请输入任务标题'),
+        Length(min=2, max=100, message='标题长度必须在2-100字符之间')
+    ])
+    
+    service_category = SelectField('服务类别', 
+        choices=SERVICE_CHOICES,
+        validators=[DataRequired(message='请选择服务类别')]
+    )
+    
+    description = TextAreaField('任务描述', validators=[
+        DataRequired(message='请输入任务描述'),
+        Length(min=10, max=1000, message='描述长度必须在10-1000字符之间')
+    ])
+    
+    location = StringField('地点', validators=[
+        DataRequired(message='请输入任务地点'),
+        Length(max=100)
+    ])
+    
+    deadline = DateTimeField('截止日期', 
+        format='%Y-%m-%dT%H:%M',
+        validators=[DataRequired(message='请选择截止日期')]
+    )
+    
+    budget = DecimalField('预算 (元)', 
+        validators=[
+            DataRequired(message='请输入任务预算'),
+            NumberRange(min=1, message='预算必须大于0')
+        ]
+    )
+    
+    submit = SubmitField('发布任务')
 
 class ReviewForm(FlaskForm):
     content = TextAreaField('Review Content', validators=[DataRequired()])

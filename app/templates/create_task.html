@@ -1,24 +1,110 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Create Task</h1>
-    <form action="{{ url_for('task.create_task') }}" method="post">
-        {{ form.hidden_tag() }}
-        <p>
-            {{ form.title.label }}<br>
-            {{ form.title(size=32) }}<br>
-            {% for error in form.title.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.description.label }}<br>
-            {{ form.description(cols=50, rows=4) }}<br>
-            {% for error in form.description.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>{{ form.submit() }}</p>
-        <a href="{{ url_for('task.tasks') }}" class="btn">Cancel</a>
-    </form>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">发布新任务</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
+                            {% for error in form.title.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.service_category.label(class="form-label") }}
+                            <select class="form-select" id="service_category" name="service_category" required>
+                                {% for value, label in form.service_category.choices %}
+                                    {% if '.' not in value %}
+                                        {% if value != '' %}
+                                            <option disabled class="fw-bold bg-light">{{ label }}</option>
+                                        {% else %}
+                                            <option value="">{{ label }}</option>
+                                        {% endif %}
+                                    {% else %}
+                                        <option value="{{ value }}"{% if form.service_category.data == value %} selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=4) }}
+                            {% for error in form.description.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.deadline.label(class="form-label") }}
+                                {{ form.deadline(class="form-control" + (" is-invalid" if form.deadline.errors else ""), type="datetime-local") }}
+                                {% for error in form.deadline.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.budget.label(class="form-label") }}
+                                {{ form.budget(class="form-control" + (" is-invalid" if form.budget.errors else ""), type="number", step="0.01", min="0") }}
+                                {% for error in form.budget.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.location.label(class="form-label") }}
+                            {{ form.location(class="form-control" + (" is-invalid" if form.location.errors else "")) }}
+                            {% for error in form.location.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary") }}
+                            <a href="{{ url_for('task.tasks') }}" class="btn btn-secondary">取消</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 表单验证
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+
+// 设置最小日期为当前时间
+document.addEventListener('DOMContentLoaded', function() {
+    var now = new Date();
+    var tzoffset = now.getTimezoneOffset() * 60000;
+    var localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0,16);
+    document.getElementById('deadline').min = localISOTime;
+});
+</script>
 {% endblock %}

@@ -3,35 +3,36 @@
 {% block title %}Edit Task - {{ task.title }}{% endblock %}
 
 {% block content %}
-    <div class="task-form-container">
-        <h1>Edit Task</h1>
-        <form method="POST" action="{{ url_for('task.edit_task', task_id=task.id) }}" class="task-form">
-            {{ form.hidden_tag() }}
-            
-            <div class="form-group">
-                {{ form.title.label(class="form-label") }}
-                {{ form.title(class="form-control", placeholder="Enter task title") }}
-                {% if form.title.errors %}
-                    {% for error in form.title.errors %}
-                        <span class="error-message">{{ error }}</span>
-                    {% endfor %}
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                {{ form.description.label(class="form-label") }}
-                {{ form.description(class="form-control", rows=5, placeholder="Enter task description") }}
-                {% if form.description.errors %}
-                    {% for error in form.description.errors %}
-                        <span class="error-message">{{ error }}</span>
-                    {% endfor %}
-                {% endif %}
-            </div>
-
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Update Task</button>
-                <a href="{{ url_for('task.task_detail', task_id=task.id) }}" class="btn btn-secondary">Cancel</a>
-            </div>
-        </form>
-    </div>
+<div class="container mt-5">
+    <h1>编辑任务</h1>
+    <form method="POST" action="{{ url_for('task.edit_task', task_id=task.id) }}" class="task-form">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.title.label(class="form-label") }}
+            {{ form.title(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.service_category.label(class="form-label") }}
+            {{ form.service_category(class="form-select") }}
+        </div>
+        <div class="mb-3">
+            {{ form.location.label(class="form-label") }}
+            {{ form.location(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.deadline.label(class="form-label") }}
+            {{ form.deadline(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.budget.label(class="form-label") }}
+            {{ form.budget(class="form-control") }}
+        </div>
+        <button type="submit" class="btn btn-primary">更新任务</button>
+        <a href="{{ url_for('task.tasks') }}" class="btn btn-secondary">取消</a>
+    </form>
+</div>
 {% endblock %}

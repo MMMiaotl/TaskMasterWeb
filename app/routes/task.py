@@ -4,6 +4,8 @@ from app import db
 from app.models import Task
 from app.forms import TaskForm
 from sqlalchemy import or_
+from datetime import datetime
+from app.utils.constants import SERVICE_CATEGORIES
 
 task_bp = Blueprint('task', __name__)
 
@@ -37,16 +39,29 @@ def tasks():
 def create_task():
     form = TaskForm()
     if form.validate_on_submit():
-        task = Task(
-            title=form.title.data,
-            description=form.description.data,
-            user_id=current_user.id
-        )
-        db.session.add(task)
-        db.session.commit()
-        flash('任务创建成功！')
-        return redirect(url_for('task.tasks'))
-    return render_template('create_task.html', title='创建任务', form=form)
+        try:
+            task = Task(
+                title=form.title.data,
+                description=form.description.data,
+                service_category=form.service_category.data,
+                location=form.location.data,
+                deadline=form.deadline.data,
+                budget=form.budget.data,
+                user_id=current_user.id
+            )
+            db.session.add(task)
+            db.session.commit()
+            flash('任务发布成功！', 'success')
+            return redirect(url_for('task.tasks'))
+        except Exception as e:
+            db.session.rollback()
+            flash('发布任务时出错：' + str(e), 'danger')
+            return redirect(url_for('task.create_task'))
+    
+    return render_template('create_task.html', 
+                         title='发布任务', 
+                         form=form,
+                         categories=SERVICE_CATEGORIES)
 
 @task_bp.route('/task/<int:task_id>')
 def task_detail(task_id):
@@ -57,21 +72,30 @@ def task_detail(task_id):
 @login_required
 def edit_task(task_id):
     task = Task.query.get_or_404(task_id)
-    if task.author != current_user:
+    if task.user_id != current_user.id:
         flash('你没有权限编辑这个任务')
         return redirect(url_for('task.tasks'))
     
-    form = TaskForm()
+    form = TaskForm(obj=task)
     if form.validate_on_submit():
         task.title = form.title.data
         task.description = form.description.data
+        task.service_category = form.service_category.data
+        task.location = form.location.data
+        task.deadline = form.deadline.data
+        task.budget = form.budget.data
         db.session.commit()
         flash('任务已更新')
         return redirect(url_for('task.task_detail', task_id=task.id))
     elif request.method == 'GET':
         form.title.data = task.title
         form.description.data = task.description
-    return render_template('edit_task.html', title='编辑任务', form=form)
+        form.service_category.data = task.service_category
+        form.location.data = task.location
+        form.deadline.data = task.deadline
+        form.budget.data = task.budget
+
+    return render_template('edit_task.html', title='编辑任务', form=form, task=task)
 
 @task_bp.route('/task/<int:task_id>/delete', methods=['POST'])
 @login_required
