@@ -8,7 +8,7 @@ service_bp = Blueprint('service', __name__, url_prefix='/service')
 SERVICES = {
     'daily': {
         'name': '日常生活',
-        'items': [
+        'services': [
             {'id': 'moving', 'name': '搬家服务', 'icon': 'fa-truck'},
             {'id': 'pickup', 'name': '接送机', 'icon': 'fa-plane-arrival'},
             {'id': 'driving', 'name': '代驾服务', 'icon': 'fa-car'},
@@ -17,7 +17,7 @@ SERVICES = {
     },
     'professional': {
         'name': '专业服务',
-        'items': [
+        'services': [
             {'id': 'housing', 'name': '房产中介', 'icon': 'fa-home'},
             {'id': 'company', 'name': '公司注册', 'icon': 'fa-building'},
             {'id': 'translation', 'name': '文件翻译', 'icon': 'fa-file-alt'},
@@ -26,7 +26,7 @@ SERVICES = {
     },
     'business': {
         'name': '商业服务',
-        'items': [
+        'services': [
             {'id': 'accounting', 'name': '会计税务', 'icon': 'fa-calculator'},
             {'id': 'legal', 'name': '法律咨询', 'icon': 'fa-gavel'},
             {'id': 'investment', 'name': '投资理财', 'icon': 'fa-chart-line'},
@@ -38,21 +38,21 @@ SERVICES = {
 @service_bp.route('/<category>/<service_id>')
 def service_page(category, service_id):
     try:
-        # 添加调试日志
-        current_app.logger.info(f"Accessing service page with category: {category}, service_id: {service_id}")
+        current_app.logger.info(f"尝试访问服务页面 - 分类: {category}, 服务ID: {service_id}")
+        current_app.logger.info(f"所有可用分类: {list(SERVICES.keys())}")
+        
+        category_info = SERVICES.get(category)
+        if not category_info:
+            current_app.logger.error(f"未找到分类: {category}")
+            current_app.logger.info(f"可用分类列表: {SERVICES.keys()}")
+            return render_template('errors/404.html'), 404
+
+        current_app.logger.info(f"找到分类信息: {category_info['name']}")
+        current_app.logger.info(f"该分类下的服务项: {[item['id'] for item in category_info['services']]}")
         
         # 获取当前服务的信息
         service_info = None
-        category_info = SERVICES.get(category)
-        
-        # 打印调试信息
-        current_app.logger.info(f"Category info: {category_info}")
-        
-        if not category_info:
-            current_app.logger.error(f"Category not found: {category}")
-            return render_template('errors/404.html'), 404
-            
-        for service_item in category_info['items']:
+        for service_item in category_info['services']:
             if service_item['id'] == service_id:
                 service_info = service_item
                 break
