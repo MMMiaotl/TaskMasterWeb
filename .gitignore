@@ -37,3 +37,14 @@ ENV/
 
 # Environment variables
 .env
+
+# 保留migrations目录但忽略其中的__pycache__
+migrations/*
+!migrations/.gitignore
+!migrations/README
+!migrations/alembic.ini
+!migrations/env.py
+!migrations/script.py.mako
+!migrations/versions
+migrations/versions/*
+!migrations/versions/.gitignore
