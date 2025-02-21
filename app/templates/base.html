@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,10 +14,10 @@
 </head>
 <body class="bg-light">
     <!-- 导航栏 -->
-    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top bg-white shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <i class="fas fa-handshake me-2"></i>TaskHub
+                <i class="fas fa-handshake me-2"></i>Task Master
             </a>
             <!-- 在导航栏品牌后添加汉堡菜单按钮 -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
@@ -27,16 +27,60 @@
             <!-- 简化后的导航菜单 -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown mega-menu">
                         <a class="nav-link dropdown-toggle" href="#" role="button" 
                            data-bs-toggle="dropdown" aria-expanded="false">
                             Services
                         </a>
                         <ul class="dropdown-menu dropdown-menu-lg">
-                            <li><h6 class="dropdown-header">Categories</h6></li>
-                            <li><a class="dropdown-item" href="#">Home Services</a></li>
-                            <li><a class="dropdown-item" href="#">Professional</a></li>
-                            <li><a class="dropdown-item" href="#">Business</a></li>
+                            <!-- 日常生活服务 -->
+                            <li class="dropdown-item">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h6 class="dropdown-header">Daily Life</h6>
+                                        <ul class="list-unstyled">
+                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='daily', service_id='moving') }}">
+                                                <i class="fas fa-truck me-2"></i>Moving Help</a></li>
+                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='daily', service_id='pickup') }}">
+                                                <i class="fas fa-plane-arrival me-2"></i>Airport Pickup</a></li>
+                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='daily', service_id='driving') }}">
+                                                <i class="fas fa-car me-2"></i>Driving Service</a></li>
+                                            <li><a class="dropdown-item" href="#">
+                                                <i class="fas fa-tools me-2"></i>Home Repair</a></li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <!-- 专业服务 -->
+                                    <div class="col-md-4">
+                                        <h6 class="dropdown-header">Professional</h6>
+                                        <ul class="list-unstyled">
+                                            <li><a class="dropdown-item" href="#">
+                                                <i class="fas fa-home me-2"></i>Real Estate</a></li>
+                                            <li><a class="dropdown-item" href="#">
+                                                <i class="fas fa-building me-2"></i>Company Setup</a></li>
+                                            <li><a class="dropdown-item" href="#">
+                                                <i class="fas fa-file-alt me-2"></i>Translation</a></li>
+                                            <li><a class="dropdown-item" href="#">
+                                                <i class="fas fa-graduation-cap me-2"></i>Study Abroad</a></li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <!-- 商业服务 -->
+                                    <div class="col-md-4">
+                                        <h6 class="dropdown-header">Business</h6>
+                                        <ul class="list-unstyled">
+                                            <li><a class="dropdown-item" href="#">
+                                                <i class="fas fa-calculator me-2"></i>Accounting</a></li>
+                                            <li><a class="dropdown-item" href="#">
+                                                <i class="fas fa-gavel me-2"></i>Legal Advice</a></li>
+                                            <li><a class="dropdown-item" href="#">
+                                                <i class="fas fa-chart-line me-2"></i>Investment</a></li>
+                                            <li><a class="dropdown-item" href="#">
+                                                <i class="fas fa-store me-2"></i>Shop Transfer</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </li>
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -64,15 +108,15 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="{{ url_for('user.user_profile') }}">
-                                    <i class="fas fa-user me-2"></i>个人资料</a></li>
+                                    <i class="fas fa-user me-2"></i>Profile</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
-                                    <i class="fas fa-sign-out-alt me-2"></i>退出登录</a></li>
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
                             </ul>
                         </div>
                         {% else %}
                         <div class="d-flex gap-2">
-                            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary">登录</a>
-                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary">注册</a>
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary">Login</a>
+                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Sign Up</a>
                         </div>
                         {% endif %}
                     </div>

@@ -15,6 +15,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    padding-top: 80px; /* 根据导航栏高度调整 */
 }
 
 /* 导航栏样式 */
@@ -285,7 +286,8 @@ body {
 /* 服务页面特定样式 */
 .service-sidebar {
     position: sticky;
-    top: 1rem;
+    top: 100px; /* 根据导航栏高度调整 */
+    margin-top: 1rem; /* 减少顶部间距 */
 }
 
 .service-card {
@@ -324,8 +326,7 @@ body {
 
 /* 新增首页样式 */
 .hero-section {
-    background: linear-gradient(45deg, #f8f9fa 0%, #ffffff 100%);
-    padding: 8rem 0 6rem;
+    padding: 4rem 0;
 }
 
 .search-box-large {
@@ -335,8 +336,12 @@ body {
 
 .search-box-large .form-control {
     border-radius: 50px;
-    padding: 1.2rem 2rem;
-    font-size: 1.1rem;
+    padding: 1rem 1.5rem;
+}
+
+.search-box-large .btn {
+    border-radius: 50px;
+    padding: 1rem 2rem;
 }
 
 .service-card {
@@ -423,4 +428,163 @@ body {
     .language-switcher {
         margin-right: auto;
     }
+}
+
+/* 首页专属样式 */
+.text-gradient {
+    background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.quick-tags .badge {
+    padding: 0.6em 1em;
+    border-radius: 1em;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(43,45,66,0.1);
+}
+
+.quick-tags .badge:hover {
+    background: var(--primary-color) !important;
+    color: white !important;
+    transform: translateY(-2px);
+}
+
+/* 服务类别卡片 */
+.service-category-card {
+    border: 1px solid rgba(43,45,66,0.08);
+    transition: transform 0.3s ease;
+    overflow: hidden;
+    position: relative;
+}
+
+.service-category-card:hover {
+    transform: translateY(-5px);
+}
+
+.service-category-card::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-color);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.service-category-card:hover::after {
+    opacity: 1;
+}
+
+/* 大菜单样式 */
+.mega-menu .dropdown-menu {
+    width: 800px;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.mega-menu .dropdown-item {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.mega-menu .dropdown-item:hover {
+    background: rgba(43,45,66,0.05);
+}
+
+.mega-menu .dropdown-header {
+    color: var(--primary-color);
+    font-weight: 600;
+    padding: 0.5rem 0;
+    margin-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.mega-menu .list-unstyled {
+    margin-bottom: 1rem;
+}
+
+/* 响应式调整 */
+@media (max-width: 992px) {
+    .mega-menu .dropdown-menu {
+        width: 100%;
+    }
+    
+    .mega-menu .row {
+        flex-direction: column;
+    }
+    
+    .mega-menu .col-md-4 {
+        margin-bottom: 1.5rem;
+    }
+}
+
+.mega-menu .dropdown-item i {
+    width: 20px;
+    text-align: center;
+    margin-right: 0.75rem;
+    color: var(--primary-color);
+}
+
+/* 服务页面样式 */
+.service-detail {
+    border: none;
+    border-radius: 12px;
+    background: white;
+    padding: 2rem;
+    margin-top: 1rem; /* 减少顶部间距 */
+}
+
+.service-content {
+    margin-top: 1.5rem;
+    line-height: 1.8;
+    color: var(--text-dark);
+}
+
+.service-actions {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.filter-section .card {
+    border: none;
+    border-radius: 12px;
+}
+
+.task-card {
+    border: none;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.task-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.alert {
+    border-radius: 12px;
+}
+
+/* 添加新的样式 */
+.category-card {
+    border: none;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+}
+
+.featured-tasks {
+    padding: 4rem 0;
 } 

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, current_app
-from flask_login import current_user
+from flask_login import current_user, login_required
 from app.models import Task
 from sqlalchemy import or_
 
@@ -38,22 +38,110 @@ SERVICES = {
 }
 
 @service_bp.route('/<category>/<service_id>')
+@login_required
 def service_page(category, service_id):
     try:
-        # 查询与服务类别相关的任务
+        # 获取当前服务信息
+        current_service = get_service_by_id(service_id)
+        if not current_service:
+            current_app.logger.error(f"Service not found: {service_id}")
+            return render_template('errors/404.html'), 404
+            
+        # 获取所有服务分类
+        services = get_all_services()
+        
+        # 查询相关任务
         tasks = Task.query.filter(Task.service_category == f"{category}.{service_id}").all()
         
-        # 获取服务信息（假设您有一个服务信息字典或模型）
-        service_info = {
-            'id': service_id,
-            'name': '搬家服务'  # 这里可以根据实际情况动态获取
-        }
-        
         return render_template('service/service_page.html',
-                               services=SERVICES,
-                               current_category=category,
-                               current_service=service_info,
-                               tasks=tasks)
+                             current_service=current_service,
+                             services=services,
+                             tasks=tasks,
+                             category=category,
+                             service_id=service_id)
     except Exception as e:
         current_app.logger.error(f"Error in service_page: {str(e)}")
-        return render_template('errors/404.html'), 404 
+        return render_template('errors/404.html'), 404
+
+def get_service_by_id(service_id):
+    # 这里实现从数据库或配置中获取服务信息的逻辑
+    # 示例使用硬编码数据
+    services = {
+        'moving': {
+            'id': 'moving',
+            'name': 'Moving Help',
+            'description': 'Professional moving services',
+            'icon': 'fa-truck'
+        },
+        'pickup': {
+            'id': 'pickup',
+            'name': 'Airport Pickup',
+            'description': 'Reliable airport pickup services',
+            'icon': 'fa-plane-arrival'
+        },
+        'driving': {
+            'id': 'driving',
+            'name': 'Driving Service',
+            'description': 'Professional driving services',
+            'icon': 'fa-car'
+        },
+        'repair': {
+            'id': 'repair',
+            'name': 'Home Repair',
+            'description': 'Professional home repair services',
+            'icon': 'fa-tools'
+        },
+        'housing': {
+            'id': 'housing',
+            'name': 'Real Estate',
+            'description': 'Professional real estate services',
+            'icon': 'fa-home'
+        },
+        'company': {
+            'id': 'company',
+            'name': 'Company Setup',
+            'description': 'Professional company setup services',
+            'icon': 'fa-building'
+        },
+        'translation': {
+            'id': 'translation',
+            'name': 'Translation',
+            'description': 'Professional translation services',
+            'icon': 'fa-file-alt'
+        },
+        'education': {
+            'id': 'education',
+            'name': 'Study Abroad',
+            'description': 'Professional study abroad services',
+            'icon': 'fa-graduation-cap'
+        },
+        'accounting': {
+            'id': 'accounting',
+            'name': 'Accounting',
+            'description': 'Professional accounting services',
+            'icon': 'fa-calculator'
+        },
+        'legal': {
+            'id': 'legal',
+            'name': 'Legal Advice',
+            'description': 'Professional legal advice services',
+            'icon': 'fa-gavel'
+        },
+        'investment': {
+            'id': 'investment',
+            'name': 'Investment',
+            'description': 'Professional investment services',
+            'icon': 'fa-chart-line'
+        },
+        'shop': {
+            'id': 'shop',
+            'name': 'Shop Transfer',
+            'description': 'Professional shop transfer services',
+            'icon': 'fa-store'
+        }
+    }
+    return services.get(service_id)
+
+def get_all_services():
+    # 返回所有服务分类
+    return SERVICES  # 使用之前定义的SERVICES常量 

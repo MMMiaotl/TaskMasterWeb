@@ -1,0 +1,3 @@
+def send_notification(user, message):
+    subject = f"Task Master 通知"
+    # ... 

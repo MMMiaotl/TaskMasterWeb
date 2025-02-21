@@ -1,137 +1,204 @@
 {% extends "base.html" %}
 
-{% block title %}{{ current_service.name }} - 海帮{% endblock %}
+{% block title %}{{ current_service.name }} - Task Master{% endblock %}
 
 {% block content %}
-<div class="row g-4">
-    <!-- 侧边栏 -->
-    <div class="col-md-3">
-        <div class="service-sidebar">
-            <div class="card shadow-sm">
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        {% for category_id, category_data in services.items() %}
-                            <div class="list-group-item border-0">
-                                <h6 class="mb-2 text-primary">{{ category_data.name }}</h6>
-                                {% for service_item in category_data.services %}
-                                    <a href="{{ url_for('service.service_page', category=category_id, service_id=service_item.id) }}" 
-                                       class="list-group-item-action d-flex align-items-center py-2 px-3 text-decoration-none rounded-3 
-                                              {% if service_item.id == current_service.id %}active bg-primary text-white{% endif %}">
-                                        <i class="fas {{ service_item.icon }} me-2"></i>
-                                        <span>{{ service_item.name }}</span>
-                                    </a>
-                                {% endfor %}
-                            </div>
-                        {% endfor %}
+<!-- 在页面顶部添加调试信息 -->
+{% if debug %}
+<div class="alert alert-info">
+    <p>Category: {{ category }}</p>
+    <p>Service ID: {{ service_id }}</p>
+    <p>Current Service: {{ current_service }}</p>
+</div>
+{% endif %}
+
+<div class="container-fluid">
+    <div class="row g-4 mt-1">
+        <!-- 侧边栏 -->
+        <div class="col-md-2">
+            <div class="service-sidebar">
+                <div class="card shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for category_id, category_data in services.items() %}
+                                <div class="list-group-item border-0">
+                                    <h6 class="mb-2 text-primary">{{ category_data.name }}</h6>
+                                    {% for service_item in category_data.services %}
+                                        <a href="{{ url_for('service.service_page', category=category_id, service_id=service_item.id) }}" 
+                                           class="list-group-item-action d-flex align-items-center py-2 px-3 text-decoration-none rounded-3 
+                                                  {% if service_item.id == current_service.id %}active bg-primary text-white{% endif %}">
+                                            <i class="fas {{ service_item.icon }} me-2"></i>
+                                            <span>{{ service_item.name }}</span>
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- 主要内容区 -->
-    <div class="col-md-9">
-        <!-- 页面标题 -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h2 class="mb-1">{{ current_service.name }}</h2>
-                <p class="text-muted mb-0">在这里找到您需要的{{ current_service.name }}服务</p>
-            </div>
-            <a href="{{ url_for('task.create_task', service_type=current_service.id) }}" class="btn btn-primary">
-                <i class="fas fa-plus-circle me-2"></i>发布需求
-            </a>
-        </div>
-        
-        <!-- 筛选器 -->
-        <div class="filter-section mb-4">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <select class="form-select">
-                        <option selected>价格排序</option>
-                        <option>从低到高</option>
-                        <option>从高到低</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <select class="form-select">
-                        <option selected>发布时间</option>
-                        <option>最新发布</option>
-                        <option>一周内</option>
-                        <option>一月内</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <select class="form-select">
-                        <option selected>服务区域</option>
-                        <option>全部区域</option>
-                        <option>市中心</option>
-                        <option>郊区</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 任务列表 -->
-        <div class="row g-3">
-            {% for task in tasks %}
-            <div class="col-12">
-                <div class="card border mb-3 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div class="flex-grow-1">
-                                <h5 class="card-title mb-3">
-                                    <a href="{{ url_for('task.task_detail', task_id=task.id) }}" 
-                                       class="text-decoration-none text-dark">
-                                        {{ task.title }}
-                                    </a>
-                                </h5>
-                                
-                                <div class="task-meta mb-3">
-                                    <span class="badge bg-primary me-2">
-                                        {{ task.service_main_category }}
-                                    </span>
-                                    <span class="text-muted me-3">
-                                        <i class="fas fa-map-marker-alt"></i>
-                                        {{ task.location }}
-                                    </span>
-                                    <span class="text-muted me-3">
-                                        <i class="fas fa-clock"></i>
-                                        {{ task.deadline.strftime('%Y-%m-%d') }}
-                                    </span>
-                                    <span class="text-success fw-bold">
-                                        <i class="fas fa-yen-sign"></i>
-                                        {{ task.budget | int }}欧元
-                                    </span>
-                                </div>
 
-                                <p class="card-text text-muted">
-                                    {{ task.description|truncate(120) }}
-                                </p>
+        <!-- 主要内容区 -->
+        <div class="col-md-9">
+            <div class="service-detail mt-0">
+                <div class="card-body">
+                    <h1 class="display-5 fw-bold mb-3">{{ current_service.name }}</h1>
+                    <div class="service-content">
+                        <p class="lead text-muted">{{ current_service.description }}</p>
+                    </div>
+                    
+                    <!-- 添加服务相关操作 -->
+                    <div class="service-actions mt-4">
+                        <a href="{{ url_for('task.create_task', service_id=current_service.id) }}" 
+                           class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus me-2"></i>Post a Task
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 筛选器 -->
+            <div class="filter-section mt-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <select class="form-select">
+                                    <option selected>Sort by Price</option>
+                                    <option>Low to High</option>
+                                    <option>High to Low</option>
+                                </select>
                             </div>
-                            
-                            <div class="ms-4 text-end">
-                                <a href="{{ url_for('task.task_detail', task_id=task.id) }}" 
-                                   class="btn btn-primary btn-sm">
-                                    查看详情
-                                </a>
-                                <div class="mt-2 small text-muted">
-                                    发布于 {{ task.created_at.strftime('%m-%d') }}
-                                </div>
+                            <div class="col-md-3">
+                                <select class="form-select">
+                                    <option selected>Sort by Date</option>
+                                    <option>Newest First</option>
+                                    <option>Last Week</option>
+                                    <option>Last Month</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select">
+                                    <option selected>Location</option>
+                                    <option>All Areas</option>
+                                    <option>City Center</option>
+                                    <option>Suburbs</option>
+                                </select>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            {% else %}
-            <div class="col-12">
-                <div class="alert alert-info text-center py-4">
-                    <i class="fas fa-info-circle fa-2x mb-3"></i>
-                    <h5>当前没有相关任务</h5>
-                    <p class="mb-0">成为第一个发布需求的人吧！</p>
+
+            <!-- 任务列表 -->
+            <div class="task-list mt-3">
+                <div class="row g-4">
+                    {% for task in tasks %}
+                    <div class="col-12">
+                        <div class="task-card card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h3 class="h5 mb-3">
+                                            <a href="{{ url_for('task.task_detail', task_id=task.id) }}" 
+                                               class="text-decoration-none text-dark">
+                                                {{ task.title }}
+                                            </a>
+                                        </h3>
+                                        
+                                        <div class="task-meta mb-3">
+                                            <span class="badge bg-primary me-2">
+                                                {{ task.service_main_category }}
+                                            </span>
+                                            <span class="text-muted me-3">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                                {{ task.location }}
+                                            </span>
+                                            <span class="text-muted me-3">
+                                                <i class="fas fa-clock"></i>
+                                                {{ task.deadline.strftime('%Y-%m-%d') }}
+                                            </span>
+                                            <span class="text-success fw-bold">
+                                                <i class="fas fa-yen-sign"></i>
+                                                {{ task.budget | int }}欧元
+                                            </span>
+                                        </div>
+
+                                        <p class="card-text text-muted">
+                                            {{ task.description|truncate(120) }}
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="ms-4 text-end">
+                                        <a href="{{ url_for('task.task_detail', task_id=task.id) }}" 
+                                           class="btn btn-primary btn-sm">
+                                            查看详情
+                                        </a>
+                                        <div class="mt-2 small text-muted">
+                                            发布于 {{ task.created_at.strftime('%m-%d') }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info text-center py-4">
+                            <i class="fas fa-info-circle fa-2x mb-3"></i>
+                            <h5>当前没有相关任务</h5>
+                            <p class="mb-0">成为第一个发布需求的人吧！</p>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
-            {% endfor %}
         </div>
     </div>
 </div>
+
+<!-- 添加自定义样式 -->
+{% block styles %}
+<style>
+.service-detail {
+    border: none;
+    border-radius: 12px;
+    background: white;
+    padding: 2rem;
+}
+
+.service-content {
+    margin-top: 1.5rem;
+    line-height: 1.8;
+    color: var(--text-dark);
+}
+
+.service-actions {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.filter-section .card {
+    border: none;
+    border-radius: 12px;
+}
+
+.task-card {
+    border: none;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.task-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.alert {
+    border-radius: 12px;
+}
+</style>
+{% endblock %}
 {% endblock %} 
