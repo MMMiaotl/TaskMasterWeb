@@ -106,12 +106,12 @@
                                                     </a>
                                                 </h5>
                                                 <div class="message-preview">
-                                                    {% if task.messages.count() > 0 %}
+                                                    {% if task.messages|length > 0 %}
                                                         <small class="text-muted">
                                                             最新消息：{{ task.messages[-1].created_at|datetimeformat }} 
                                                             <a href="{{ url_for('task.task_conversation', task_id=task.id) }}" 
                                                                class="btn btn-sm btn-outline-primary ms-2">
-                                                                查看完整对话（{{ task.messages.count() }}条）
+                                                                查看完整对话（{{ task.messages|length }}条）
                                                             </a>
                                                         </small>
                                                     {% endif %}
@@ -127,7 +127,7 @@
                                             <span class="mx-2">•</span>
                                             <small class="text-muted">
                                                 <i class="fas fa-comments me-1"></i>
-                                                {{ task.messages.count() }} 条留言
+                                                {{ task.messages|length }} 条留言
                                             </small>
                                         </div>
                                     </div>
