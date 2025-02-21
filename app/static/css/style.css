@@ -636,4 +636,54 @@ body {
 
 .contact-page .accordion-body {
     color: #666;
+}
+
+/* How It Works Section */
+.how-it-works-section {
+    background-color: #f8f9fa;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.how-it-works-section h2 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.step-circle {
+    width: 60px;
+    height: 60px;
+    line-height: 60px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+.progress-line {
+    position: absolute;
+    top: 30px;
+    left: 12.5%;
+    width: 75%;
+    height: 2px;
+    background-color: var(--primary-color);
+    z-index: 0;
+}
+
+.how-it-works-section h4 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #333;
+    margin-top: 1rem;
+}
+
+.how-it-works-section p {
+    color: #666;
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
 } 
