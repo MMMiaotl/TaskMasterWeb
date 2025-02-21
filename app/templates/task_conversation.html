@@ -3,63 +3,108 @@
 {% block title %}{{ task.title }} - 对话记录{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <!-- 任务信息头 -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2>{{ task.title }}</h2>
-                    <p class="text-muted mb-0">
-                        状态：<span class="badge bg-{{ 'success' if task.status == 'completed' else 'primary' }}">
-                            {{ task.status|status_translate }}
-                        </span>
-                    </p>
-                </div>
-                <div class="text-end">
-                    <p class="mb-0">预算：¥{{ task.budget }}</p>
-                    <p class="text-muted mb-0">截止：{{ task.deadline|datetimeformat }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 对话记录 -->
-    <div class="conversation-timeline">
-        {% for message in messages %}
-        <div class="message-item mb-4 {% if message.sender_id == current_user.id %}message-sent{% else %}message-received{% endif %}">
-            <div class="card">
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- 侧边栏 -->
+        <div class="col-md-3">
+            <div class="card" style="height: 100%; position: sticky; top: 1rem;">
                 <div class="card-body">
-                    <div class="message-header d-flex justify-content-between mb-2">
-                        <div>
-                            <strong>{{ message.sender.username }}</strong>
-                            <small class="text-muted ms-2">{{ message.created_at|datetimeformat }}</small>
-                        </div>
-                        {% if message.task_id %}
-                        <small class="text-muted">关联任务：{{ message.task.title }}</small>
-                        {% endif %}
-                    </div>
-                    <div class="message-content">
-                        {{ message.content }}
-                    </div>
+                    <h5 class="card-title">我的任务</h5>
+                    <ul class="list-group list-group-flush">
+                        {% for user_task in user_tasks %}
+                        <li class="list-group-item {% if user_task.id == task.id %}active{% endif %}">
+                            <a href="{{ url_for('task.task_conversation', task_id=user_task.id) }}" class="text-decoration-none">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ user_task.title }}</strong>
+                                        <small class="d-block text-muted">{{ user_task.created_at|datetimeformat }}</small>
+                                    </div>
+                                    {% if user_task.status == 'completed' %}
+                                    <span class="badge bg-success">已完成</span>
+                                    {% elif user_task.status == 'in_progress' %}
+                                    <span class="badge bg-warning">进行中</span>
+                                    {% else %}
+                                    <span class="badge bg-primary">未开始</span>
+                                    {% endif %}
+                                </div>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
         </div>
-        {% endfor %}
-    </div>
 
-    <!-- 快速回复框 -->
-    <div class="card mt-4">
-        <div class="card-body">
-            <form method="POST" action="{{ url_for('message.send_message', recipient_id=task.user.id, task_id=task.id) }}">
-                <div class="input-group">
-                    <textarea name="content" class="form-control" 
-                              placeholder="输入回复内容..." rows="2" required></textarea>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i> 发送
-                    </button>
+        <!-- 主内容区 -->
+        <div class="col-md-9">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2>{{ task.title }}</h2>
+                            <p class="text-muted mb-0">
+                                Status: {{ task.status | status_translate }}
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <p class="mb-0">预算：¥{{ task.budget }}</p>
+                            <p class="text-muted mb-0">截止：{{ task.deadline|datetimeformat }}</p>
+                        </div>
+                    </div>
                 </div>
-            </form>
+            </div>
+
+            <!-- 对话记录 -->
+            <div class="conversation-timeline" id="conversation-timeline">
+                {% for message in messages %}
+                <div class="message-item mb-4 {% if message.sender_id == current_user.id %}message-sent{% else %}message-received{% endif %}">
+                    <div class="d-flex align-items-start {% if message.sender_id == current_user.id %}flex-row-reverse{% endif %}">
+                        <!-- 用户头像 -->
+                        <div class="flex-shrink-0 {% if message.sender_id == current_user.id %}ms-3{% else %}me-3{% endif %}">
+                            <img src="{{ message.sender.avatar_url or url_for('static', filename='images/default-avatar.jpg') }}" 
+                                 alt="{{ message.sender.username }}" 
+                                 class="rounded-circle" 
+                                 width="40" 
+                                 height="40">
+                        </div>
+                        <!-- 消息内容 -->
+                        <div class="flex-grow-1">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="message-header d-flex justify-content-between mb-2">
+                                        <div>
+                                            <strong>{{ message.sender.username }}</strong>
+                                            <small class="text-muted ms-2">{{ message.created_at|datetimeformat }}</small>
+                                        </div>
+                                        {% if message.task_id %}
+                                        <small class="text-muted">关联任务：{{ message.task.title }}</small>
+                                        {% endif %}
+                                    </div>
+                                    <div class="message-content">
+                                        {{ message.content }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- 快速回复框 -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <form id="message-form" method="POST" action="{{ url_for('task.task_conversation', task_id=task.id) }}">
+                        <div class="input-group">
+                            <textarea name="content" class="form-control" 
+                                      placeholder="输入回复内容..." rows="2" required></textarea>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> 发送
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -73,9 +118,62 @@
     border-right: 4px solid #28a745;
     margin-right: 20%;
 }
+.list-group-item.active {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+.list-group-item.active a {
+    color: #000;
+}
 .datetimeformat {
     font-size: 0.9em;
     color: #6c757d;
 }
 </style>
+
+<script>
+document.getElementById('message-form').addEventListener('submit', function(event) {
+    event.preventDefault();  // 阻止默认表单提交
+    const formData = new FormData(this);
+
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 清空输入框
+            this.querySelector('textarea').value = '';
+            
+            // 动态添加新消息到对话记录
+            const timeline = document.getElementById('conversation-timeline');
+            const newMessage = document.createElement('div');
+            newMessage.className = 'message-item mb-4 message-sent';  // 假设当前用户发送
+            newMessage.innerHTML = `
+                <div class="card">
+                    <div class="card-body">
+                        <div class="message-header d-flex justify-content-between mb-2">
+                            <div>
+                                <strong>${data.message.sender}</strong>
+                                <small class="text-muted ms-2">${data.message.created_at}</small>
+                            </div>
+                        </div>
+                        <div class="message-content">
+                            ${data.message.content}
+                        </div>
+                    </div>
+                </div>
+            `;
+            timeline.appendChild(newMessage);
+        } else {
+            alert(data.error || '发送失败，请重试');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+</script>
 {% endblock %} 

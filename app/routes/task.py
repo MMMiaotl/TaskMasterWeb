@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, flash, redirect, url_for, request
+from flask import Blueprint, render_template, flash, redirect, url_for, request, jsonify
 from flask_login import current_user, login_required
 from app import db
-from app.models import Task
+from app.models import Task, Message
 from app.forms import TaskForm
 from sqlalchemy import or_
 from datetime import datetime
@@ -108,4 +108,37 @@ def delete_task(task_id):
     db.session.delete(task)
     db.session.commit()
     flash('Your task has been deleted.')
-    return redirect(url_for('task.tasks')) 
+    return redirect(url_for('task.tasks'))
+
+@task_bp.route('/task/<int:task_id>/conversation', methods=['GET', 'POST'])
+@login_required
+def task_conversation(task_id):
+    task = Task.query.get_or_404(task_id)
+    user_tasks = Task.query.filter_by(user_id=current_user.id).order_by(Task.created_at.desc()).all()  # 查询当前用户的所有任务
+    
+    if request.method == 'POST':
+        content = request.form.get('content')
+        if content:
+            recipient_id = task.user_id
+            message = Message(
+                content=content,
+                sender_id=current_user.id,
+                recipient_id=recipient_id,
+                task_id=task_id,
+                created_at=datetime.utcnow()
+            )
+            db.session.add(message)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': {
+                    'content': message.content,
+                    'sender': message.sender.username,
+                    'created_at': message.created_at.strftime('%Y-%m-%d %H:%M')
+                }
+            })
+        return jsonify({'success': False, 'error': '内容不能为空'})
+    
+    messages = Message.query.filter_by(task_id=task_id).order_by(Message.created_at.asc()).all()
+    return render_template('task_conversation.html', task=task, messages=messages, user_tasks=user_tasks) 

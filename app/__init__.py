@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_babel import Babel
 from flask_migrate import Migrate
-import os
+from app.filters import status_translate
 
 # 创建实例
 db = SQLAlchemy()
@@ -35,6 +35,34 @@ def create_app():
     from app.routes import init_app as init_routes
     init_routes(app)
     
+    # 添加自定义Jinja过滤器
+    #@app.template_filter('merge')
+    #@pass_context
+    #def merge_filter(ctx, d, u):
+    #    d.update(u)
+    #    return d
+
+    #@app.template_filter('another_filter')
+    #@pass_context
+    #def another_filter(ctx, value):
+        # 过滤器逻辑
+    #    return modified_value
+
+    from app.routes.task import task_bp
+
+    # 定义 status_translate 过滤器
+    @app.template_filter('status_translate')
+    def status_translate(status):
+        translations = {
+            'open': 'Open',
+            'in_progress': 'In Progress',
+            'completed': 'Completed',
+            'cancelled': 'Cancelled'
+        }
+        return translations.get(status, status)
+
+    app.jinja_env.filters['status_translate'] = status_translate
+
     return app
 
 # 用户加载函数

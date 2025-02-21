@@ -686,4 +686,76 @@ body {
     color: #666;
     font-size: 0.95rem;
     margin-top: 0.5rem;
+}
+
+.conversation-timeline {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.message-item {
+    clear: both;
+}
+
+.message-sent {
+    margin-left: auto;
+    max-width: 70%;
+}
+
+.message-received {
+    margin-right: auto;
+    max-width: 70%;
+}
+
+.message-sent .card {
+    border-left: 4px solid #0d6efd;
+    background-color: #f0f8ff;
+}
+
+.message-received .card {
+    border-right: 4px solid #28a745;
+    background-color: #f8f9fa;
+}
+
+.message-header {
+    font-size: 0.9rem;
+}
+
+.message-content {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #333;
+}
+
+/* 头像样式 */
+.rounded-circle {
+    object-fit: cover;
+}
+
+/* 侧边栏样式 */
+.sidebar {
+    position: sticky;
+    top: 1rem;
+    height: calc(100vh - 2rem);
+    overflow-y: auto;
+}
+
+.sidebar .card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.sidebar .list-group-item {
+    border: none;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.sidebar .list-group-item:last-child {
+    border-bottom: none;
+}
+
+.sidebar .list-group-item:hover {
+    background-color: #f8f9fa;
 } 

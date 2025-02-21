@@ -18,6 +18,7 @@ class User(UserMixin, db.Model):
     bio = db.Column(db.Text)
     location = db.Column(db.String(64))
     website = db.Column(db.String(128))
+    avatar_url = db.Column(db.String(200))  # 用户头像URL
     
     # 关系
     tasks = db.relationship('Task', backref='author', lazy='dynamic')
