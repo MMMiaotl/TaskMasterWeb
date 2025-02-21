@@ -587,4 +587,29 @@ body {
 
 .featured-tasks {
     padding: 4rem 0;
+}
+
+.footer-section {
+    border-top: 1px solid rgba(0,0,0,0.1);
+    margin-top: 4rem;
+}
+
+.footer-section h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.footer-section ul li {
+    margin-bottom: 0.5rem;
+}
+
+.footer-section a {
+    color: #666;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-section a:hover {
+    color: var(--primary-color);
 } 
