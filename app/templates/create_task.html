@@ -50,7 +50,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 {{ form.deadline.label(class="form-label") }}
-                                {{ form.deadline(class="form-control" + (" is-invalid" if form.deadline.errors else ""), type="datetime-local") }}
+                                {{ form.deadline(class="form-control" + (" is-invalid" if form.deadline.errors else ""), type="date") }}
                                 {% for error in form.deadline.errors %}
                                     <div class="invalid-feedback">{{ error }}</div>
                                 {% endfor %}

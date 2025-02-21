@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm # type: ignore
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, IntegerField, SelectField, DateTimeField, DecimalField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, IntegerField, SelectField, DateField, DecimalField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, NumberRange
 from app.models import User
 from app.utils.constants import SERVICE_CHOICES
@@ -48,12 +48,12 @@ class TaskForm(FlaskForm):
         Length(max=100)
     ])
     
-    deadline = DateTimeField('截止日期', 
-        format='%Y-%m-%dT%H:%M',
+    deadline = DateField('截止日期', 
+        format='%Y-%m-%d',
         validators=[DataRequired(message='请选择截止日期')]
     )
     
-    budget = DecimalField('预算 (元)', 
+    budget = DecimalField('预算 (欧元)', 
         validators=[
             DataRequired(message='请输入任务预算'),
             NumberRange(min=1, message='预算必须大于0')
