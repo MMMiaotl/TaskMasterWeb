@@ -47,4 +47,8 @@ def set_language(language):
 
 @main_bp.route('/contact')
 def contact():
-    return render_template('contact.html') 
+    return render_template('contact.html')
+
+@main_bp.route('/our_story')
+def our_story():
+    return render_template('our_story.html') 
