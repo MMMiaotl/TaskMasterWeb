@@ -4,6 +4,13 @@ from datetime import datetime
 class Task(db.Model):
     __tablename__ = 'tasks'
     
+    STATUS_CHOICES = {
+        0: '等待接单',
+        1: '等待执行',
+        2: '任务完成',
+        3: '付款完成'
+    }
+    
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
@@ -13,7 +20,7 @@ class Task(db.Model):
     location = db.Column(db.String(100), nullable=False)
     deadline = db.Column(db.DateTime, nullable=False)
     budget = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String(20), default='open')
+    status = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

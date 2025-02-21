@@ -26,6 +26,20 @@
                 {% endif %}
             </div>
 
+            <!-- 进度模块 -->
+            <div class="progress-module">
+                <div class="progress-bar">
+                    <div class="progress-line"></div>
+                    {% for step in range(1, 5) %}
+                    <div class="progress-step {% if task.status|int >= step %}completed{% endif %} {% if task.status|int == step %}current{% endif %}" 
+                         style="left: calc({{ (step - 1) * 100 / 4 }}%);">
+                        <div class="step-marker"></div>
+                        <span class="step-label">{{ ['等待接单', '等待执行', '任务完成', '付款完成'][loop.index0] }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
             <!-- 操作按钮 -->
             <div class="task-actions mt-4">
                 <a href="{{ url_for('task.tasks') }}" class="btn btn-secondary">返回任务列表</a>
@@ -46,4 +60,98 @@
         </div>
     </div>
 </div>
+
+<style>
+/* 进度模块容器 */
+.progress-module {
+    padding: 2rem 0;
+    position: relative;
+}
+
+/* 进度条容器 */
+.progress-bar {
+    position: relative;
+    height: 80px;  /* 为状态点留出空间 */
+}
+
+/* 进度条横线 */
+.progress-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #e2e8f0;
+    transform: translateY(-50%);
+    z-index: 0;
+}
+
+/* 进度步骤 */
+.progress-step {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+}
+
+/* 步骤标记 */
+.step-marker {
+    width: 16px;
+    height: 16px;
+    background: #e2e8f0;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+/* 步骤标签 */
+.step-label {
+    position: absolute;
+    top: 20px;
+    font-size: 0.875rem;
+    color: #64748b;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* 完成状态 */
+.progress-step.completed .step-marker {
+    background: #4f46e5;
+    box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
+}
+
+.progress-step.completed .step-label {
+    color: #4f46e5;
+    font-weight: 500;
+}
+
+/* 当前状态 */
+.progress-step.current .step-marker {
+    transform: scale(1.2);
+    background: #4f46e5;
+    box-shadow: 0 4px 8px rgba(79, 70, 229, 0.3);
+}
+
+.progress-step.current .step-label {
+    color: #4f46e5;
+    font-weight: 600;
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+    .step-marker {
+        width: 12px;
+        height: 12px;
+    }
+
+    .step-label {
+        font-size: 0.75rem;
+        white-space: normal;
+        width: 60px;
+        line-height: 1.2;
+    }
+}
+</style>
 {% endblock %}
