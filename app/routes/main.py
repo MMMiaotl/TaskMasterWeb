@@ -43,4 +43,8 @@ def index():
 def set_language(language):
     if language in current_app.config.get('BABEL_SUPPORTED_LOCALES', ['en', 'zh']):
         session['lang'] = language
-    return redirect(request.referrer or url_for('main.index')) 
+    return redirect(request.referrer or url_for('main.index'))
+
+@main_bp.route('/contact')
+def contact():
+    return render_template('contact.html') 
