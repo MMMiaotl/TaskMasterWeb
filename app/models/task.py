@@ -21,8 +21,7 @@ class Task(db.Model):
     # 定义与消息的关系
     messages = db.relationship(
         'Message', 
-        back_populates='task', 
-        lazy='dynamic',  # 添加动态加载
+        back_populates='task',
         cascade='all, delete-orphan'
     )
 
