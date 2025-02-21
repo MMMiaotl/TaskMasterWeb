@@ -14,7 +14,11 @@ class Message(db.Model):
         default=datetime.utcnow,
         nullable=False
     )
-    task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'))
+    task_id = db.Column(
+        db.Integer, 
+        db.ForeignKey('tasks.id'),
+        nullable=False
+    )
     is_read = db.Column(db.Boolean, default=False)
 
     task = db.relationship('Task', back_populates='messages')

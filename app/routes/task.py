@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, flash, redirect, url_for, request, jsonify
 from flask_login import current_user, login_required
 from app import db
-from app.models import Task, Message
+from app.models import Task, Message, User
 from app.forms import TaskForm
 from sqlalchemy import or_
 from datetime import datetime
@@ -66,7 +66,24 @@ def create_task():
 @task_bp.route('/task/<int:task_id>')
 def task_detail(task_id):
     task = Task.query.get_or_404(task_id)
-    return render_template('task_detail.html', task=task)
+    
+    # 获取感兴趣的用户（发送过消息的用户）
+    interested_users = set()
+    for message in task.messages:
+        if message.sender_id != task.author.id:
+            interested_users.add(message.sender)
+    
+    # 获取平台推荐用户（这里可以根据你的推荐算法实现）
+    recommended_users = User.query.filter(
+        User.id != task.author.id
+    ).order_by(
+        db.func.random()
+    ).limit(5).all()
+    
+    return render_template('task_detail.html', 
+                         task=task,
+                         interested_users=interested_users,
+                         recommended_users=recommended_users)
 
 @task_bp.route('/task/<int:task_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -141,4 +158,64 @@ def task_conversation(task_id):
         return jsonify({'success': False, 'error': '内容不能为空'})
     
     messages = Message.query.filter_by(task_id=task_id).order_by(Message.created_at.asc()).all()
-    return render_template('task_conversation.html', task=task, messages=messages, user_tasks=user_tasks) 
+    return render_template('task_conversation.html', task=task, messages=messages, user_tasks=user_tasks)
+
+@task_bp.route('/task/<int:task_id>/invite/<int:user_id>', methods=['POST'])
+@login_required
+def send_invitation(task_id, user_id):
+    task = Task.query.get_or_404(task_id)
+    user = User.query.get_or_404(user_id)
+    
+    # 检查当前用户是否有权限发送邀请
+    if task.author != current_user:
+        flash('你没有权限发送邀请', 'error')
+        return redirect(url_for('task.task_detail', task_id=task_id))
+    
+    # 检查任务状态
+    if task.status != 0:  # 0 表示等待接单
+        flash('该任务已经有人接单', 'warning')
+        return redirect(url_for('task.task_detail', task_id=task_id))
+    
+    try:
+        # 创建邀请消息
+        message = Message(
+            content=f"{current_user.username} 邀请你参与任务：{task.title}。是否接受？",
+            sender_id=current_user.id,
+            recipient_id=user_id,
+            task_id=task_id,
+            created_at=datetime.utcnow()  # 确保时间戳被记录
+        )
+        db.session.add(message)
+        db.session.commit()
+        
+        flash('邀请已发送', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('发送邀请时出错：' + str(e), 'error')
+    
+    return redirect(url_for('task.task_detail', task_id=task_id))
+
+@task_bp.route('/task/invitation/<int:message_id>/accept', methods=['POST'])
+@login_required
+def accept_invitation(message_id):
+    message = Message.query.get_or_404(message_id)
+    if message.recipient_id != current_user.id:
+        flash('你没有权限接受这个邀请', 'error')
+        return redirect(url_for('task.tasks'))
+    
+    task = Task.query.get_or_404(message.task_id)
+    task.status = 1  # 假设1表示已接单
+    db.session.commit()
+    flash('你已接受邀请', 'success')
+    return redirect(url_for('task.task_detail', task_id=task.id))
+
+@task_bp.route('/task/invitation/<int:message_id>/reject', methods=['POST'])
+@login_required
+def reject_invitation(message_id):
+    message = Message.query.get_or_404(message_id)
+    if message.recipient_id != current_user.id:
+        flash('你没有权限拒绝这个邀请', 'error')
+        return redirect(url_for('task.tasks'))
+    
+    flash('你已拒绝邀请', 'info')
+    return redirect(url_for('task.tasks')) 

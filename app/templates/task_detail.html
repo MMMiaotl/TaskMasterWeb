@@ -61,6 +61,96 @@
     </div>
 </div>
 
+<div class="row mt-4">
+    <!-- 感兴趣的用户 -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">感兴趣的用户</h5>
+            </div>
+            <div class="card-body">
+                {% if interested_users %}
+                    <div class="list-group">
+                        {% for user in interested_users %}
+                        <div class="list-group-item d-flex align-items-center">
+                            <img src="{{ user.avatar_url or url_for('static', filename='images/default-avatar.jpg') }}" 
+                                 class="rounded-circle me-3" 
+                                 alt="{{ user.username }}"
+                                 style="width: 40px; height: 40px;">
+                            <div>
+                                <h6 class="mb-1">{{ user.username }}</h6>
+                                <small class="text-muted">评分：{{ user.average_rating|default(0)|round(1) }}</small>
+                            </div>
+                            <div class="ms-auto d-flex gap-2">
+                                <a href="{{ url_for('message.send_message', recipient_id=user.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    联系
+                                </a>
+                                <form action="{{ url_for('task.send_invitation', task_id=task.id, user_id=user.id) }}" 
+                                      method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        选择
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">目前还没有用户表示感兴趣</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 平台推荐 -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">平台推荐</h5>
+            </div>
+            <div class="card-body">
+                {% if recommended_users %}
+                    <div class="list-group">
+                        {% for user in recommended_users %}
+                        <div class="list-group-item d-flex align-items-center">
+                            <img src="{{ user.avatar_url or url_for('static', filename='images/default-avatar.jpg') }}" 
+                                 class="rounded-circle me-3" 
+                                 alt="{{ user.username }}"
+                                 style="width: 40px; height: 40px;">
+                            <div>
+                                <h6 class="mb-1">{{ user.username }}</h6>
+                                <small class="text-muted">评分：{{ user.average_rating|default(0)|round(1) }}</small>
+                            </div>
+                            <div class="ms-auto d-flex gap-2">
+                                <a href="{{ url_for('message.send_message', recipient_id=user.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    联系
+                                </a>
+                                <form action="{{ url_for('task.send_invitation', task_id=task.id, user_id=user.id) }}" 
+                                      method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        选择
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-user-plus fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">暂时没有推荐用户</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 /* 进度模块容器 */
 .progress-module {

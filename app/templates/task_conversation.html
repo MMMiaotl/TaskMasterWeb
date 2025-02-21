@@ -83,6 +83,10 @@
                                     <div class="message-content">
                                         {{ message.content }}
                                     </div>
+                                    {% if message.is_invitation %}
+                                        <button onclick="acceptInvitation({{ message.id }})">接受</button>
+                                        <button onclick="rejectInvitation({{ message.id }})">拒绝</button>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>

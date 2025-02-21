@@ -20,7 +20,7 @@ class Task(db.Model):
     location = db.Column(db.String(100), nullable=False)
     deadline = db.Column(db.DateTime, nullable=False)
     budget = db.Column(db.Float, nullable=False)
-    status = db.Column(db.Integer, default=0)
+    status = db.Column(db.Integer, default=0)  # 0: 等待接单, 1: 已接单, 2: 进行中, 3: 已完成
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

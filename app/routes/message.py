@@ -77,4 +77,41 @@ def send_task_message(recipient_id, task_id):
         db.session.commit()
         flash('消息已发送')
     
-    return redirect(url_for('task.task_conversation', task_id=task_id)) 
+    return redirect(url_for('task.task_conversation', task_id=task_id))
+
+@message_bp.route('/message/<int:message_id>/respond_invitation', methods=['POST'])
+@login_required
+def respond_invitation(message_id):
+    message = Message.query.get_or_404(message_id)
+    task = message.task
+    
+    # 检查当前用户是否有权限响应邀请
+    if message.recipient != current_user:
+        flash('你没有权限响应此邀请', 'error')
+        return redirect(url_for('message.user_messages'))
+    
+    # 检查任务状态
+    if task.status != 0:
+        flash('该任务已经有人接单', 'warning')
+        return redirect(url_for('message.user_messages'))
+    
+    try:
+        response = request.form.get('response')
+        if response == 'accept':
+            message.invitation_accepted = True
+            task.status = 1  # 将任务状态改为"已接单"
+            task.executor_id = current_user.id  # 设置任务执行者
+            flash('你已成功接受任务', 'success')
+        elif response == 'reject':
+            message.invitation_accepted = False
+            flash('你已拒绝任务邀请', 'info')
+        else:
+            flash('无效的响应', 'error')
+            return redirect(url_for('message.user_messages'))
+        
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        flash('处理邀请时出错：' + str(e), 'error')
+    
+    return redirect(url_for('message.user_messages'))
