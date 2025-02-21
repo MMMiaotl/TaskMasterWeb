@@ -10,11 +10,13 @@
             <div class="card profile-card">
                 <div class="card-body text-center">
                     <div class="profile-image mb-4">
-                        <img src="{{ user_info.avatar_url or url_for('static', filename='img/default-avatar.png') }}" 
+                        <img src="{{ user_info.avatar_url or url_for('static', filename='images/default-avatar.jpg') }}" 
                              class="rounded-circle img-thumbnail" 
                              alt="{{ user_info.username }}"
                              style="width: 150px; height: 150px; object-fit: cover;">
                     </div>
+                    
+                    
                     <h3 class="card-title mb-3">{{ user_info.username }}</h3>
                     {% if user_info.role %}
                         <span class="badge bg-primary mb-3">{{ user_info.role }}</span>
