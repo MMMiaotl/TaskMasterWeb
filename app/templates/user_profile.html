@@ -105,7 +105,17 @@
                                                         {{ task.title }}
                                                     </a>
                                                 </h5>
-                                                <p class="card-text text-muted">{{ task.description[:150] }}...</p>
+                                                <div class="message-preview">
+                                                    {% if task.messages|length > 0 %}
+                                                        <small class="text-muted">
+                                                            最新消息：{{ task.messages[-1].created_at|datetimeformat }} 
+                                                            <a href="{{ url_for('task.task_conversation', task_id=task.id) }}" 
+                                                               class="btn btn-sm btn-outline-primary ms-2">
+                                                                查看完整对话（{{ task.messages|length }}条）
+                                                            </a>
+                                                        </small>
+                                                    {% endif %}
+                                                </div>
                                             </div>
                                             <span class="badge bg-success">预算: ¥{{ task.budget }}</span>
                                         </div>
@@ -117,7 +127,7 @@
                                             <span class="mx-2">•</span>
                                             <small class="text-muted">
                                                 <i class="fas fa-comments me-1"></i>
-                                                {{ task.messages.count() }} 条留言
+                                                {{ task.messages|length }} 条留言
                                             </small>
                                         </div>
                                     </div>
@@ -173,6 +183,23 @@
                     </div>
                 </div>
             </div>
+
+            <h3>回复过的消息</h3>
+            {% if current_user.sent_messages.count() > 0 %}
+                <ul class="list-group">
+                    {% for message in current_user.sent_messages %}
+                        <li class="list-group-item">
+                            <strong>发给:</strong> {{ message.recipient.username }} |
+                            <strong>时间:</strong> {{ message.created_at.strftime('%Y-%m-%d %H:%M') if message.created_at else '未知时间' }} |
+                            <a href="{{ url_for('message.send_message', recipient_id=message.recipient.id) }}" class="btn btn-sm btn-outline-primary">查看消息</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>暂无回复记录</p>
+            {% endif %}
+
+            <a href="{{ url_for('message.user_messages') }}" class="btn btn-outline-secondary">查看我的消息</a>
         </div>
     </div>
 </div>

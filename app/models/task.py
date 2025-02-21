@@ -19,12 +19,7 @@ class Task(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     # 定义与消息的关系
-    messages = db.relationship(
-        'Message',
-        backref='task',
-        lazy='dynamic',
-        cascade='all, delete-orphan'
-    )
+    messages = db.relationship('Message', back_populates='task', cascade='all, delete-orphan')
 
     def __init__(self, **kwargs):
         super(Task, self).__init__(**kwargs)
