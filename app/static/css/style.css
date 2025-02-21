@@ -758,4 +758,34 @@ body {
 
 .sidebar .list-group-item:hover {
     background-color: #f8f9fa;
+}
+
+/* 评分样式 */
+.rating-summary {
+    font-size: 1.2rem;
+    color: #f39c12;
+}
+
+.average-rating {
+    font-weight: bold;
+}
+
+.total-ratings {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.ratings-list .card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.rating-score {
+    font-size: 1.2rem;
+    color: #f39c12;
+}
+
+.rating-comment {
+    font-size: 0.9rem;
+    color: #333;
 } 

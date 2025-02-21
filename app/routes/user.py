@@ -17,9 +17,18 @@ def user_profile():
 @user_bp.route('/profile/<username>')
 def other_user_profile(username):
     user = User.query.filter_by(username=username).first_or_404()
-    return render_template('user_profile.html', user_info=user)
+    user_info = {
+        'average_rating': user.average_rating or 0,
+        'phone': user.phone,
+        'bio': user.bio,
+        'location': user.location,
+        'website': user.website,
+        'avatar_url': user.avatar_url
+    }
+    return render_template('user_profile.html', user_info=user_info)
 
 @user_bp.route('/user/<username>')
+@login_required
 def user_reviews(username):
     user = User.query.filter_by(username=username).first_or_404()
     poster_reviews = Review.query.filter_by(reviewee_id=user.id, role='poster').all()

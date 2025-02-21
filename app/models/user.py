@@ -2,6 +2,7 @@ from app import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from app.models.rating import Rating  # 导入 Rating 类
 
 class User(UserMixin, db.Model):
     __tablename__ = 'user'
@@ -20,6 +21,10 @@ class User(UserMixin, db.Model):
     website = db.Column(db.String(128))
     avatar_url = db.Column(db.String(200))  # 用户头像URL
     
+    # 评分相关字段
+    total_ratings = db.Column(db.Integer, default=0)  # 总评分次数
+    average_rating = db.Column(db.Float, default=0.0)  # 平均评分
+    
     # 关系
     tasks = db.relationship('Task', backref='author', lazy='dynamic')
     sent_messages = db.relationship(
@@ -36,6 +41,13 @@ class User(UserMixin, db.Model):
         lazy='dynamic',
         cascade='all, delete-orphan'
     )
+    ratings_received = db.relationship(
+        'Rating',
+        foreign_keys='Rating.rated_user_id',
+        backref=db.backref('rated_user', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan'
+    )
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -48,6 +60,11 @@ class User(UserMixin, db.Model):
     
     def update_last_seen(self):
         self.last_seen = datetime.utcnow()
+        db.session.commit()
+    
+    def update_rating(self, new_rating):
+        self.total_ratings += 1
+        self.average_rating = (self.average_rating * (self.total_ratings - 1) + new_rating) / self.total_ratings
         db.session.commit()
     
     def __repr__(self):

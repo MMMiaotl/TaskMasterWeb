@@ -9,31 +9,32 @@
         <div class="col-md-4">
             <div class="card profile-card">
                 <div class="card-body text-center">
-                    <div class="profile-image mb-4">
+                    <div class="profile-header">
                         <img src="{{ user_info.avatar_url or url_for('static', filename='images/default-avatar.jpg') }}" 
-                             class="rounded-circle img-thumbnail" 
-                             alt="{{ user_info.username }}"
+                             alt="{{ user_info.username }}" 
+                             class="profile-avatar"
                              style="width: 150px; height: 150px; object-fit: cover;">
+                        <h1>{{ user_info.username }}</h1>
                     </div>
                     
-                    
-                    <h3 class="card-title mb-3">{{ user_info.username }}</h3>
                     {% if user_info.role %}
                         <span class="badge bg-primary mb-3">{{ user_info.role }}</span>
                     {% endif %}
                     
                     <div class="profile-stats d-flex justify-content-around mb-4">
                         <div class="stat-item">
-                            <h4 class="mb-0">{{ current_user.tasks.count() }}</h4>
+                            <h4 class="mb-0">{{ user_info.tasks.count() }}</h4>
                             <small class="text-muted">发布任务</small>
                         </div>
                         <div class="stat-item">
-                            <h4 class="mb-0">{{ user_info.rating or 0 }}</h4>
-                            <small class="text-muted">评分</small>
-                        </div>
-                        <div class="stat-item">
-                            <h4 class="mb-0">{{ user_info.completed_tasks or 0 }}</h4>
-                            <small class="text-muted">完成任务</small>
+                            <div class="rating-summary">
+                                <span class="average-rating">
+                                    {{ (user_info.average_rating or 0)|round(1) }} <i class="fas fa-star"></i>
+                                </span>
+                                <span class="total-ratings">
+                                    （{{ user_info.total_ratings }} 条评分）
+                                </span>
+                            </div>
                         </div>
                     </div>
 
@@ -150,37 +151,35 @@
 
                         <!-- 评价列表 -->
                         <div class="tab-pane fade" id="reviews">
-                            {% if user_info.reviews %}
-                                {% for review in user_info.reviews %}
-                                <div class="review-card card mb-3">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between">
-                                            <div class="review-rating">
-                                                {% for i in range(review.rating) %}
-                                                    <i class="fas fa-star text-warning"></i>
-                                                {% endfor %}
+                            <div class="ratings-section mt-4">
+                                <h3>历史评分</h3>
+                                {% if user_info.ratings_received.count() > 0 %}
+                                    <div class="ratings-list">
+                                        {% for rating in user_info.ratings_received %}
+                                        <div class="card mb-3">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <strong>{{ rating.rater.username }}</strong>
+                                                        <span class="text-muted ms-2">{{ rating.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                                    </div>
+                                                    <div class="rating-score">
+                                                        {{ rating.score }} <i class="fas fa-star"></i>
+                                                    </div>
+                                                </div>
+                                                {% if rating.comment %}
+                                                <div class="rating-comment mt-2">
+                                                    {{ rating.comment }}
+                                                </div>
+                                                {% endif %}
                                             </div>
-                                            <small class="text-muted">
-                                                {{ review.created_at.strftime('%Y-%m-%d') }}
-                                            </small>
                                         </div>
-                                        <p class="card-text mt-2">{{ review.content }}</p>
-                                        <div class="reviewer-info">
-                                            <img src="{{ review.reviewer.avatar_url or url_for('static', filename='img/default-avatar.png') }}" 
-                                                 class="rounded-circle me-2" 
-                                                 alt="{{ review.reviewer.username }}"
-                                                 style="width: 30px; height: 30px;">
-                                            <small>{{ review.reviewer.username }}</small>
-                                        </div>
+                                        {% endfor %}
                                     </div>
-                                </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="text-center py-5">
-                                    <i class="fas fa-star fa-3x text-muted mb-3"></i>
-                                    <p class="text-muted">暂无评价</p>
-                                </div>
-                            {% endif %}
+                                {% else %}
+                                    <p>暂无评分记录</p>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
