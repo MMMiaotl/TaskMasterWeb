@@ -3,6 +3,11 @@ from datetime import datetime
 
 class Review(db.Model):
     __tablename__ = 'reviews'
+
+    # 添加复合唯一约束
+    __table_args__ = (
+        db.UniqueConstraint('task_id', 'reviewer_id', name='uq_task_reviewer'), 
+    )
     
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
@@ -12,7 +17,7 @@ class Review(db.Model):
     # 外键关系
     reviewer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     reviewee_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False) 
+    task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
     
     # 评价类型（'poster' 或 'executor'）
     role = db.Column(db.String(20), nullable=False)

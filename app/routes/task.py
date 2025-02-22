@@ -270,6 +270,16 @@ def update_task_status(task_id):
 def review_executor(task_id):
     task = Task.query.get_or_404(task_id)
     
+    # 验证是否已评价
+    existing_review = Review.query.filter_by(
+        task_id=task_id,
+        reviewer_id=current_user.id
+    ).first()
+    
+    if existing_review:
+        flash('您已经评价过该任务', 'warning')
+        return redirect(url_for('task.task_detail', task_id=task_id))
+
     # 权限验证
     if current_user.id not in [task.user_id, task.executor_id]:
         flash('您无权进行此操作', 'error')
