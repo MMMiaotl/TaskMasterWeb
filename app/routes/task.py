@@ -269,33 +269,31 @@ def update_task_status(task_id):
 @login_required
 def review_executor(task_id):
     task = Task.query.get_or_404(task_id)
-
-    # 检查权限
+    
+    # 权限验证
     if current_user.id not in [task.user_id, task.executor_id]:
-        flash('You are not authorized to review this task.')
-        return redirect(url_for('task_detail', task_id=task.id))
+        flash('您无权进行此操作', 'error')
+        return redirect(url_for('task.task_detail', task_id=task.id))
 
-    # 自动确定被评价者
+    # 自动确定评价角色
     is_executor = (current_user.id == task.executor_id)
     reviewee_id = task.user_id if is_executor else task.executor_id
+    role = 'poster' if is_executor else 'executor'  # 关键修改点
 
     if request.method == 'POST':
-        # 处理评价逻辑
         rating = int(request.form.get('rating'))
         content = request.form.get('comment')
 
-        # 保存评价
         review = Review(
             rating=rating,
             content=content,
             reviewer_id=current_user.id,
             reviewee_id=reviewee_id,
             task_id=task_id,
-            role='executor'  # 自动设置评价角色
+            role=role  # 使用动态设置的角色
         )
         db.session.add(review)
         db.session.commit()
-
         flash('评价已提交', 'success')
         return redirect(url_for('task.task_detail', task_id=task_id))
 
