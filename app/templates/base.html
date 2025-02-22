@@ -11,6 +11,15 @@
     <!-- 自定义CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block extra_css %}{% endblock %}
+    <style>
+        .rating-stars {
+            font-size: 1.2rem;
+            color: #ffd700;
+        }
+        .rating-stars .text-muted {
+            color: #6c757d !important;
+        }
+    </style>
 </head>
 <body class="bg-light">
     <!-- 导航栏 -->

@@ -12,7 +12,7 @@ class Review(db.Model):
     # 外键关系
     reviewer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     reviewee_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)  # 注意这里改成了'tasks.id'
+    task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False) 
     
     # 评价类型（'poster' 或 'executor'）
     role = db.Column(db.String(20), nullable=False)

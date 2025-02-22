@@ -156,35 +156,35 @@
 
                         <!-- 评价列表 -->
                         <div class="tab-pane fade" id="reviews">
-                            {% if user_info.reviews %}
-                                {% for review in user_info.reviews %}
-                                <div class="review-card card mb-3">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between">
-                                            <div class="review-rating">
-                                                {% for i in range(review.rating) %}
-                                                    <i class="fas fa-star text-warning"></i>
-                                                {% endfor %}
+                            {% if user_info.reviews_received.count() > 0 %}
+                                <div class="row">
+                                    {% for review in user_info.reviews_received %}
+                                        <div class="col-md-6 mb-4">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <div class="d-flex align-items-center mb-3">
+                                                        <div class="rating-stars">
+                                                            {% for i in range(1,6) %}
+                                                                <i class="fas fa-star{{ ' text-warning' if i <= review.rating else ' text-muted' }}"></i>
+                                                            {% endfor %}
+                                                        </div>
+                                                        <small class="text-muted ms-2">{{ review.created_at|datetimeformat }}</small>
+                                                    </div>
+                                                    <p class="card-text">{{ review.content }}</p>
+                                                    <div class="text-end">
+                                                        <small class="text-muted">
+                                                            来自：<a href="{{ url_for('user.user_profile', username=review.reviewer.username) }}">{{ review.reviewer.username }}</a>
+                                                        </small>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <small class="text-muted">
-                                                {{ review.created_at.strftime('%Y-%m-%d') }}
-                                            </small>
                                         </div>
-                                        <p class="card-text mt-2">{{ review.content }}</p>
-                                        <div class="reviewer-info">
-                                            <img src="{{ review.reviewer.avatar_url or url_for('static', filename='img/default-avatar.png') }}" 
-                                                 class="rounded-circle me-2" 
-                                                 alt="{{ review.reviewer.username }}"
-                                                 style="width: 30px; height: 30px;">
-                                            <small>{{ review.reviewer.username }}</small>
-                                        </div>
-                                    </div>
+                                    {% endfor %}
                                 </div>
-                                {% endfor %}
                             {% else %}
                                 <div class="text-center py-5">
-                                    <i class="fas fa-star fa-3x text-muted mb-3"></i>
-                                    <p class="text-muted">暂无评价</p>
+                                    <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">暂无收到的评价</p>
                                 </div>
                             {% endif %}
                         </div>
