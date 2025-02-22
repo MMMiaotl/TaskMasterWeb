@@ -4,6 +4,7 @@ from flask_login import LoginManager
 from flask_babel import Babel
 from flask_migrate import Migrate
 from app.filters import status_translate
+from config import Config
 
 # 创建实例
 db = SQLAlchemy()
@@ -18,7 +19,6 @@ def create_app():
     app = Flask(__name__)
     
     # 配置导入
-    from config import Config
     app.config.from_object(Config)
     
     # 初始化扩展
@@ -62,6 +62,11 @@ def create_app():
         return translations.get(status, status)
 
     app.jinja_env.filters['status_translate'] = status_translate
+
+    # 将配置添加到模板全局变量
+    @app.context_processor
+    def inject_config():
+        return dict(config=app.config)
 
     return app
 

@@ -1,0 +1,9 @@
+<div class="dropdown">
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown">
+        {{ _('Language') }}
+    </button>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="{{ url_for('main.set_language', lang='zh') }}">中文</a></li>
+        <li><a class="dropdown-item" href="{{ url_for('main.set_language', lang='en') }}">English</a></li>
+    </ul>
+</div> 

@@ -20,16 +20,21 @@ body {
 
 /* 导航栏样式 */
 .navbar {
-    backdrop-filter: blur(10px);
-    background-color: rgba(255, 255, 255, 0.95) !important;
-    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-    padding: 0.8rem 1rem;
+    padding: 1rem 0;
 }
 
 .navbar-brand {
-    font-weight: 600;
-    color: var(--text-dark) !important;
-    letter-spacing: -0.5px;
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--primary-color) !important;
+}
+
+.navbar-brand:hover {
+    opacity: 0.8;
+}
+
+.navbar-nav .nav-link {
+    padding: 0.5rem 1rem;
 }
 
 .nav-link {
@@ -782,4 +787,40 @@ body {
 
 .user-list .btn {
     min-width: 80px;
+}
+
+/* 添加或修改以下样式 */
+.nav-item.dropdown .nav-link {
+    border: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+    padding: 0.5rem 1rem;
+    color: inherit;
+}
+
+.nav-item.dropdown .nav-link:hover {
+    color: #0d6efd;
+    background-color: transparent;
+}
+
+.nav-item.dropdown .dropdown-menu {
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
+    margin-top: 0.5rem;
+}
+
+/* 保持下拉菜单的样式 */
+.dropdown-menu-lg {
+    min-width: 600px;
+    padding: 1rem;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+    color: #212529;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #0d6efd;
 } 
