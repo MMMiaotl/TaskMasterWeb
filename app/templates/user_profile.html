@@ -86,10 +86,16 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" id="invitations-tab" data-bs-toggle="tab" href="#invitations">
+                                收到的任务邀请
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" id="reviews-tab" data-bs-toggle="tab" href="#reviews">
                                 收到的评价
                             </a>
                         </li>
+                        
                     </ul>
 
                     <div class="tab-content mt-4" id="profileTabsContent">
@@ -179,6 +185,43 @@
                                 <div class="text-center py-5">
                                     <i class="fas fa-star fa-3x text-muted mb-3"></i>
                                     <p class="text-muted">暂无评价</p>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 收到的任务邀请 -->
+                        <div class="tab-pane fade" id="invitations">
+                            {% if user_info.invited_tasks.count() > 0 %}
+                                <div class="list-group">
+                                    {% for task in user_info.invited_tasks %}
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6>{{ task.author.username }} 邀请你参与任务：{{ task.title }}</h6>
+                                                    <small class="text-muted">{{ task.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                                </div>
+                                                <div>
+                                                    <a href="{{ url_for('task.task_detail', task_id=task.id) }}" 
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        查看任务
+                                                    </a>
+                                                    <form action="{{ url_for('task.respond_invitation', task_id=task.id) }}" method="POST" class="d-inline">
+                                                        <button type="submit" name="response" value="accept" class="btn btn-sm btn-outline-success">
+                                                            接受邀请
+                                                        </button>
+                                                        <button type="submit" name="response" value="reject" class="btn btn-sm btn-outline-danger">
+                                                            拒绝邀请
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <i class="fas fa-envelope fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">暂无任务邀请</p>
                                 </div>
                             {% endif %}
                         </div>

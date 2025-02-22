@@ -63,10 +63,15 @@ class TaskForm(FlaskForm):
     submit = SubmitField('发布任务')
 
 class ReviewForm(FlaskForm):
-    content = TextAreaField('Review Content', validators=[DataRequired()])
-    rating = IntegerField('Rating (1-5)', validators=[DataRequired(), NumberRange(min=1, max=5)])
-    role = SelectField('Role', choices=[('poster', 'As Poster'), ('executor', 'As Executor')], validators=[DataRequired()])
-    submit = SubmitField('Submit Review')
+    rating = IntegerField('评分', validators=[
+        DataRequired(),
+        NumberRange(min=1, max=5, message='评分必须在1-5之间')
+    ])
+    content = TextAreaField('评价内容', validators=[
+        DataRequired(),
+        Length(min=10, max=500)
+    ])
+    submit = SubmitField('提交评价')
 
 class MessageForm(FlaskForm):
     content = TextAreaField('消息内容', validators=[DataRequired(), Length(min=1, max=1000)])

@@ -143,26 +143,34 @@ def create_review(task_id):
     task = Task.query.get_or_404(task_id)
     form = ReviewForm()
 
-    # 确保当前用户是任务的发布人或执行人
-    if current_user.id != task.user_id and current_user.id != task.executor_id:
-        flash('You are not authorized to review this task.')
-        return redirect(url_for('task_detail', task_id=task.id))
+    # 权限检查：只有任务相关方可以评价
+    if current_user.id not in [task.user_id, task.executor_id]:
+        flash('无权评价此任务', 'error')
+        return redirect(url_for('task.task_detail', task_id=task.id))
+
+    # 自动确定评价角色
+    is_executor = (current_user.id == task.executor_id)
+    reviewee_id = task.user_id if is_executor else task.executor_id
+    role = 'executor' if is_executor else 'poster'
 
     if form.validate_on_submit():
         review = Review(
             content=form.content.data,
             rating=form.rating.data,
             reviewer_id=current_user.id,
-            reviewee_id=task.user_id if form.role.data == 'poster' else task.executor_id,
+            reviewee_id=reviewee_id,
             task_id=task.id,
-            role=form.role.data
+            role=role
         )
         db.session.add(review)
         db.session.commit()
-        flash('Your review has been submitted!')
-        return redirect(url_for('task_detail', task_id=task.id))
+        flash('评价提交成功', 'success')
+        return redirect(url_for('task.task_detail', task_id=task.id))
 
-    return render_template('create_review.html', form=form, task=task)
+    return render_template('create_review.html', 
+                         form=form, 
+                         task=task,
+                         role=role.capitalize())  # 传递角色信息到模板
 
 @app.route('/user/<username>/reviews')
 def user_reviews(username):

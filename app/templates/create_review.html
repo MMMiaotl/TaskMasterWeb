@@ -3,49 +3,48 @@
 {% block title %}Create Review - {{ task.title }}{% endblock %}
 
 {% block content %}
-    <h1>Create Review for Task: {{ task.title }}</h1>
-    <form method="POST" action="{{ url_for('create_review', task_id=task.id) }}">
-        {{ form.hidden_tag() }}
-        
-        <div class="form-group">
-            {{ form.content.label(class="form-label") }}
-            {{ form.content(class="form-control", rows=5, placeholder="Enter your review") }}
-            {% if form.content.errors %}
-                <div class="alert alert-danger">
-                    {% for error in form.content.errors %}
-                        <span>{{ error }}</span>
-                    {% endfor %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">评价{{ role }}</h4>
                 </div>
-            {% endif %}
-        </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- 评分 -->
+                        <div class="mb-3">
+                            {{ form.rating.label(class="form-label") }}
+                            {{ form.rating(class="form-control") }}
+                            {% for error in form.rating.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
 
-        <div class="form-group">
-            {{ form.rating.label(class="form-label") }}
-            {{ form.rating(class="form-control", placeholder="Enter rating (1-5)") }}
-            {% if form.rating.errors %}
-                <div class="alert alert-danger">
-                    {% for error in form.rating.errors %}
-                        <span>{{ error }}</span>
-                    {% endfor %}
+                        <!-- 评价内容 -->
+                        <div class="mb-4">
+                            {{ form.content.label(class="form-label") }}
+                            {{ form.content(class="form-control", rows=4) }}
+                            {% for error in form.content.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check-circle"></i> 提交评价
+                            </button>
+                            <a href="{{ url_for('task.task_detail', task_id=task.id) }}" 
+                               class="btn btn-secondary">
+                                <i class="fas fa-times-circle"></i> 取消
+                            </a>
+                        </div>
+                    </form>
                 </div>
-            {% endif %}
+            </div>
         </div>
-
-        <div class="form-group">
-            {{ form.role.label(class="form-label") }}
-            {{ form.role(class="form-control") }}
-            {% if form.role.errors %}
-                <div class="alert alert-danger">
-                    {% for error in form.role.errors %}
-                        <span>{{ error }}</span>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div>
-
-        <div class="form-group">
-            <button type="submit" class="btn btn-primary">Submit Review</button>
-            <a href="{{ url_for('task_detail', task_id=task.id) }}" class="btn btn-secondary">Cancel</a>
-        </div>
-    </form>
+    </div>
+</div>
 {% endblock %}

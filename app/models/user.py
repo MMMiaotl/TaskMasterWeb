@@ -21,7 +21,7 @@ class User(UserMixin, db.Model):
     avatar_url = db.Column(db.String(200))  # 用户头像URL
     
     # 关系
-    tasks = db.relationship('Task', backref='author', lazy='dynamic')
+    tasks = db.relationship('Task', foreign_keys='Task.user_id', backref='author', lazy='dynamic')
     sent_messages = db.relationship(
         'Message',
         primaryjoin="User.id==Message.sender_id",
@@ -35,6 +35,15 @@ class User(UserMixin, db.Model):
         backref=db.backref('recipient', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan'
+    )
+
+    invited_tasks = db.relationship(
+        'Task',
+        secondary='messages',
+        primaryjoin="and_(Message.recipient_id==User.id, Message.is_invitation==True)",
+        secondaryjoin="Message.task_id==Task.id",
+        viewonly=True,
+        lazy='dynamic'
     )
 
     def set_password(self, password):

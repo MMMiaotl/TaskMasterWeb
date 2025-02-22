@@ -1,13 +1,13 @@
 from flask import Blueprint, render_template, flash, redirect, url_for, request, jsonify
 from flask_login import current_user, login_required
 from app import db
-from app.models import Task, Message, User
-from app.forms import TaskForm
+from app.models import Task, Message, User, Review
+from app.forms import TaskForm, ReviewForm
 from sqlalchemy import or_
 from datetime import datetime
 from app.utils.constants import SERVICE_CATEGORIES
 
-task_bp = Blueprint('task', __name__)
+task_bp = Blueprint('task', __name__, url_prefix='/task')
 
 @task_bp.route('/tasks')
 def tasks():
@@ -183,6 +183,7 @@ def send_invitation(task_id, user_id):
             sender_id=current_user.id,
             recipient_id=user_id,
             task_id=task_id,
+            is_invitation=True,
             created_at=datetime.utcnow()  # 确保时间戳被记录
         )
         db.session.add(message)
@@ -218,4 +219,85 @@ def reject_invitation(message_id):
         return redirect(url_for('task.tasks'))
     
     flash('你已拒绝邀请', 'info')
-    return redirect(url_for('task.tasks')) 
+    return redirect(url_for('task.tasks'))
+
+@task_bp.route('/task/<int:task_id>/respond_invitation', methods=['POST'])
+@login_required
+def respond_invitation(task_id):
+    task = Task.query.get_or_404(task_id)
+    
+    # 检查当前用户是否被邀请
+    if not current_user.invited_tasks.filter_by(id=task_id).first():
+        flash('你没有权限响应此邀请', 'error')
+        return redirect(url_for('user.user_profile', username=current_user.username))
+    
+    response = request.form.get('response')
+    if response == 'accept':
+        # 处理接受邀请的逻辑
+        task.status = 1  # 假设1表示已接单
+        task.executor_id = current_user.id
+        flash('你已成功接受任务邀请', 'success')
+    elif response == 'reject':
+        # 处理拒绝邀请的逻辑
+        flash('你已拒绝任务邀请', 'info')
+    else:
+        flash('无效的响应', 'error')
+    
+    db.session.commit()
+    return redirect(url_for('user.user_profile', username=current_user.username))
+
+@task_bp.route('/task/<int:task_id>/update_status', methods=['POST'])
+@login_required
+def update_task_status(task_id):
+    task = Task.query.get_or_404(task_id)
+    new_status = int(request.form.get('status'))
+
+    # 检查权限
+    if (new_status == 2 and current_user.id != task.executor_id) or \
+       (new_status == 3 and current_user.id != task.user_id):
+        flash('你没有权限执行此操作', 'error')
+        return redirect(url_for('task.task_detail', task_id=task_id))
+
+    # 更新状态
+    task.status = new_status
+    db.session.commit()
+
+    flash('任务状态已更新', 'success')
+    return redirect(url_for('task.task_detail', task_id=task_id))
+
+@task_bp.route('/task/<int:task_id>/review_executor', methods=['GET', 'POST'])
+@login_required
+def review_executor(task_id):
+    task = Task.query.get_or_404(task_id)
+    
+    # 权限验证：只有任务相关方可以评价
+    if current_user.id not in [task.user_id, task.executor_id]:
+        flash('您无权进行此操作', 'error')
+        return redirect(url_for('task.task_detail', task_id=task_id))
+
+    form = ReviewForm()
+    
+    # 自动确定评价角色
+    is_executor = (current_user.id == task.executor_id)
+    reviewee_id = task.user_id if is_executor else task.executor_id
+    role = 'executor' if is_executor else 'poster'
+
+    if form.validate_on_submit():
+        # 创建评价记录
+        review = Review(
+            rating=form.rating.data,
+            content=form.content.data,
+            reviewer_id=current_user.id,
+            reviewee_id=reviewee_id,
+            task_id=task.id,
+            role=role
+        )
+        db.session.add(review)
+        db.session.commit()
+        flash('评价提交成功', 'success')
+        return redirect(url_for('task.task_detail', task_id=task.id))
+
+    return render_template('create_review.html', 
+                         form=form, 
+                         task=task,
+                         role=role.capitalize()) 

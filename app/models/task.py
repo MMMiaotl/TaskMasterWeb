@@ -24,7 +24,8 @@ class Task(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    
+    executor_id = db.Column(db.Integer, db.ForeignKey('user.id', name='fk_task_executor'), nullable=True)
+    executor = db.relationship('User', foreign_keys=[executor_id])
 
     # 定义与消息的关系
     messages = db.relationship(
@@ -36,9 +37,17 @@ class Task(db.Model):
     def __init__(self, **kwargs):
         super(Task, self).__init__(**kwargs)
         if self.service_category:
-            main_cat, sub_cat = self.service_category.split('.')
-            self.service_main_category = main_cat
-            self.service_sub_category = sub_cat
+            try:
+                main_cat, sub_cat = self.service_category.split('.')
+                self.service_main_category = main_cat
+                self.service_sub_category = sub_cat
+            except ValueError:
+                # 如果格式不正确，可以记录日志或设置默认值
+                self.service_main_category = self.service_category
+                self.service_sub_category = None
 
     def __repr__(self):
         return f'<Task {self.title}>' 
+
+    def get_status_name(self):
+        return self.STATUS_CHOICES.get(self.status, '未知状态') 
