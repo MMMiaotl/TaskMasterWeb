@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 
-{% block title %}Helpers{% endblock %}
 
 {% block content %}
 <!-- 顶部搜索栏 -->
@@ -9,11 +8,11 @@
         <div class="row align-items-center">
             <div class="col-lg-6">
                 <h1 class="display-4 fw-bold mb-4">
-                    Find the help you need, 
-                    <span class="text-gradient">anytime</span>
+                    {{ _('Find the help you need, ') }}
+                    <span class="text-gradient">{{ _('anytime') }}</span>
                 </h1>
                 <p class="lead mb-4">
-                    Connect with skilled professionals for all your needs
+                    {{ _('Connect with skilled professionals for all your needs') }}
                 </p>
                 <div class="search-box-large">
                     <form class="d-flex gap-2">

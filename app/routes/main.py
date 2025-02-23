@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, current_app, session, red
 from app.models import Task
 from sqlalchemy import or_
 from flask_login import current_user
+import time
 
 main_bp = Blueprint('main', __name__)
 
@@ -41,9 +42,21 @@ def index():
 
 @main_bp.route('/set_language/<language>')
 def set_language(language):
-    if language in current_app.config.get('BABEL_SUPPORTED_LOCALES', ['en', 'zh']):
-        session['lang'] = language
-    return redirect(request.referrer or url_for('main.index'))
+    current_app.logger.debug(f"[LANG] Setting language to: {language}")
+    current_app.logger.debug(f"[LANG] Current session before: {dict(session)}")
+    current_app.logger.debug(f"[LANG] Supported locales: {current_app.config['BABEL_SUPPORTED_LOCALES']}")
+    
+    if language in current_app.config['BABEL_SUPPORTED_LOCALES']:
+        session['language'] = language
+        session.modified = True
+        current_app.logger.debug(f"[LANG] Session updated: {dict(session)}")
+    else:
+        current_app.logger.warning(f"[LANG] Invalid language requested: {language}")
+    
+    referrer = request.referrer
+    current_app.logger.debug(f"[LANG] Referrer URL: {referrer}")
+    
+    return redirect(referrer or url_for('main.index'))
 
 @main_bp.route('/contact')
 def contact():

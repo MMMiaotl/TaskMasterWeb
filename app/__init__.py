@@ -1,4 +1,4 @@
-from flask import Flask, request, session, g
+from flask import Flask, request, session, g, current_app
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_babel import Babel
@@ -9,11 +9,23 @@ from config import Config
 # 创建实例
 db = SQLAlchemy()
 login_manager = LoginManager()
-babel = Babel()
 migrate = Migrate()
+babel = Babel()
 
 def get_locale():
-    return request.accept_languages.best_match(['zh', 'en'])
+    current_app.logger.debug(f"[LOCALE] Entering get_locale()")
+    current_app.logger.debug(f"[LOCALE] Session contents: {dict(session)}")
+    current_app.logger.debug(f"[LOCALE] Request headers: {dict(request.headers)}")
+    current_app.logger.debug(f"[LOCALE] Accept Languages: {request.accept_languages}")
+    
+    if 'language' in session:
+        lang = session['language']
+        current_app.logger.debug(f"[LOCALE] Using session language: {lang}")
+        return lang
+    
+    browser_lang = request.accept_languages.best_match(current_app.config['BABEL_SUPPORTED_LOCALES'])
+    current_app.logger.debug(f"[LOCALE] Using browser language: {browser_lang}")
+    return browser_lang or 'zh'
 
 def create_app():
     app = Flask(__name__)
@@ -26,6 +38,14 @@ def create_app():
     login_manager.init_app(app)
     babel.init_app(app, locale_selector=get_locale)
     migrate.init_app(app, db)
+    
+    # 添加模板上下文
+    @app.context_processor
+    def inject_template_globals():
+        return {
+            'get_locale': get_locale,
+            'current_language': session.get('language', 'zh')
+        }
     
     # 设置登录视图
     login_manager.login_view = 'auth.login'
@@ -67,6 +87,42 @@ def create_app():
     @app.context_processor
     def inject_config():
         return dict(config=app.config)
+    
+    # 添加调试中间件
+    @app.after_request
+    def print_session(response):
+        if app.debug:  # 直接使用app对象而不是current_app
+            from flask import session
+            print(f"[DEBUG] Session contents: {dict(session)}")
+            print(f"[DEBUG] Response headers: {response.headers}")
+        return response
+
+    # 注册CLI命令
+    from app.cli import compile_translations, update_translations
+    app.cli.add_command(compile_translations)
+    app.cli.add_command(update_translations)
+
+    @app.before_request
+    def before_request():
+        # 打印请求前的语言状态
+        current_app.logger.debug(f"[BEFORE] Current language: {get_locale()}")
+        current_app.logger.debug(f"[BEFORE] Session data: {dict(session)}")
+
+    @app.before_request
+    def check_translations():
+        missing = []
+        required = [
+            'Helpers', 'Find the help you need, ', 'anytime',
+            'Connect with skilled professionals for all your needs',
+            'Language', 'Login', 'Sign Up'
+        ]
+        
+        for text in required:
+            if gettext(text) == text:
+                missing.append(text)
+        
+        if missing:
+            current_app.logger.error(f"Missing translations: {missing}")
 
     return app
 
@@ -75,9 +131,6 @@ def create_app():
 def load_user(id):
     from app.models import User
     return User.query.get(int(id))
-
-# 创建应用实例
-app = create_app()
 
 # 确保导出必要的名称
 __all__ = ['create_app', 'db', 'login_manager', 'babel', 'migrate']
