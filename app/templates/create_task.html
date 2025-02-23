@@ -56,7 +56,7 @@
                                 {% endfor %}
                             </div>
                             <div class="col-md-6 mb-3">
-                                {{ form.budget.label(class="form-label") }}
+                                {{ form.budget.label(class="form-label", text=_("预算金额（%(currency)s）", currency=config['CURRENCY_CODE'])) }}
                                 {{ form.budget(class="form-control" + (" is-invalid" if form.budget.errors else ""), type="number", step="0.01", min="0") }}
                                 {% for error in form.budget.errors %}
                                     <div class="invalid-feedback">{{ error }}</div>

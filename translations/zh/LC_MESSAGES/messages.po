@@ -3,23 +3,41 @@
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
 #
-msgid "Welcome to TaskMaster"
-msgstr "任务达人"
-
-msgid "Easy Task Management"
-msgstr "任务管理"
-
-"Project-Id-Version: PROJECT VERSION v1v1\n"
-"Report-Msgid-Bugs-To: test@example.com\n"
-"POT-Creation-Date: 2025-01-26 15:58+0100\n"
-"PO-Revision-Date: 2025-01-26 15:58+0100\n"
-"Last-Translator: FULL NAME <test@example.com>\n"
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-02-22 23:35+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh\n"
 "Language-Team: zh <LL@li.org>\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.16.0\n"
+"Generated-By: Babel 2.17.0\n"
 
+# Chinese translations for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#~ msgid "Welcome to TaskMaster"
+#~ msgstr "任务达人"
+
+#~ msgid "Easy Task Management"
+#~ msgstr ""
+#~ "任务管理Project-Id-Version: PROJECT VERSION v1v1\n"
+#~ "Report-Msgid-Bugs-To: test@example.com\n"
+#~ "POT-Creation-Date: 2025-01-26 15:58+0100\n"
+#~ "PO-Revision-Date: 2025-01-26 15:58+0100\n"
+#~ "Last-Translator: FULL NAME <test@example.com>\n"
+#~ "Language: zh\n"
+#~ "Language-Team: zh <LL@li.org>\n"
+#~ "Plural-Forms: nplurals=1; plural=0;\n"
+#~ "MIME-Version: 1.0\n"
+#~ "Content-Type: text/plain; charset=utf-8\n"
+#~ "Content-Transfer-Encoding: 8bit\n"
+#~ "Generated-By: Babel 2.16.0\n"
 

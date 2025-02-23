@@ -1,3 +1,7 @@
 {% macro _(text) %}
     {{ gettext(text) }}
 {% endmacro %}
+
+{% macro format_currency(amount) %}
+{{ config['CURRENCY_SYMBOL'] }}{{ "%.2f"|format(amount) }}
+{% endmacro %}
