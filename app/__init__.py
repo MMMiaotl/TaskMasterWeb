@@ -13,19 +13,16 @@ migrate = Migrate()
 babel = Babel()
 
 def get_locale():
-    current_app.logger.debug(f"[LOCALE] Entering get_locale()")
-    current_app.logger.debug(f"[LOCALE] Session contents: {dict(session)}")
-    current_app.logger.debug(f"[LOCALE] Request headers: {dict(request.headers)}")
-    current_app.logger.debug(f"[LOCALE] Accept Languages: {request.accept_languages}")
+    # 添加调试日志
+    print(f"Current session language: {session.get('language')}")
+    print(f"Available languages: {current_app.config['BABEL_SUPPORTED_LOCALES']}")
     
     if 'language' in session:
-        lang = session['language']
-        current_app.logger.debug(f"[LOCALE] Using session language: {lang}")
-        return lang
+        print(f"Using session language: {session['language']}")
+        return session['language']
     
-    browser_lang = request.accept_languages.best_match(current_app.config['BABEL_SUPPORTED_LOCALES'])
-    current_app.logger.debug(f"[LOCALE] Using browser language: {browser_lang}")
-    return browser_lang or 'zh'
+    # 默认返回中文
+    return 'zh'
 
 def create_app():
     app = Flask(__name__)
@@ -96,33 +93,6 @@ def create_app():
             print(f"[DEBUG] Session contents: {dict(session)}")
             print(f"[DEBUG] Response headers: {response.headers}")
         return response
-
-    # 注册CLI命令
-    from app.cli import compile_translations, update_translations
-    app.cli.add_command(compile_translations)
-    app.cli.add_command(update_translations)
-
-    @app.before_request
-    def before_request():
-        # 打印请求前的语言状态
-        current_app.logger.debug(f"[BEFORE] Current language: {get_locale()}")
-        current_app.logger.debug(f"[BEFORE] Session data: {dict(session)}")
-
-    @app.before_request
-    def check_translations():
-        missing = []
-        required = [
-            'Helpers', 'Find the help you need, ', 'anytime',
-            'Connect with skilled professionals for all your needs',
-            'Language', 'Login', 'Sign Up'
-        ]
-        
-        for text in required:
-            if gettext(text) == text:
-                missing.append(text)
-        
-        if missing:
-            current_app.logger.error(f"Missing translations: {missing}")
 
     return app
 
