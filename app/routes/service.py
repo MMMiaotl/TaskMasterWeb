@@ -38,7 +38,6 @@ SERVICES = {
 }
 
 @service_bp.route('/<category>/<service_id>')
-@login_required
 def service_page(category, service_id):
     try:
         # 获取当前服务信息
