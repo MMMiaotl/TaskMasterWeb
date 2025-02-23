@@ -19,6 +19,31 @@
         .rating-stars .text-muted {
             color: #6c757d !important;
         }
+        .search-box-large {
+            position: relative;
+            z-index: 1000;
+        }
+
+        #searchSuggestions {
+            z-index: 1001;
+            top: 100%;
+        }
+
+        #searchSuggestions .list-group-item {
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
+        }
+
+        #searchSuggestions .list-group-item:first-child {
+            border-top-left-radius: 0.25rem;
+            border-top-right-radius: 0.25rem;
+        }
+
+        #searchSuggestions .list-group-item:last-child {
+            border-bottom-left-radius: 0.25rem;
+            border-bottom-right-radius: 0.25rem;
+        }
     </style>
     <!-- 在<head>部分添加缓存控制 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -165,7 +190,68 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    {% block extra_js %}{% endblock %}
+    {% block extra_js %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const suggestionsContainer = document.getElementById('searchSuggestions');
+        const suggestionsList = suggestionsContainer.querySelector('.list-group');
+        let debounceTimer;
+
+        // 添加输入事件监听
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const query = this.value.trim();
+            
+            if (query.length < 1) {
+                suggestionsContainer.classList.add('d-none');
+                return;
+            }
+
+            // 使用防抖处理输入
+            debounceTimer = setTimeout(() => {
+                fetch(`/search/suggestions?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        suggestionsList.innerHTML = '';
+                        
+                        if (data.length > 0) {
+                            data.forEach(item => {
+                                const a = document.createElement('a');
+                                a.href = item.url;
+                                a.className = 'list-group-item list-group-item-action';
+                                a.innerHTML = `
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">${item.title}</h6>
+                                    </div>
+                                    <small class="text-muted">${item.description}</small>
+                                `;
+                                suggestionsList.appendChild(a);
+                            });
+                            suggestionsContainer.classList.remove('d-none');
+                        } else {
+                            suggestionsContainer.classList.add('d-none');
+                        }
+                    });
+            }, 300);
+        });
+
+        // 点击外部关闭建议框
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                suggestionsContainer.classList.add('d-none');
+            }
+        });
+
+        // 输入框获得焦点时，如果有内容则显示建议
+        searchInput.addEventListener('focus', function() {
+            if (this.value.trim().length > 0) {
+                suggestionsContainer.classList.remove('d-none');
+            }
+        });
+    });
+    </script>
+    {% endblock %}
 
     <!-- 在页面底部添加 -->
     {% if config['DEBUG'] %}

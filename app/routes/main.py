@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, current_app, session, redirect, url_for
+from flask import Blueprint, render_template, request, current_app, session, redirect, url_for, jsonify
 from app.models import Task
 from sqlalchemy import or_
 from flask_login import current_user
@@ -64,4 +64,28 @@ def contact():
 
 @main_bp.route('/our_story')
 def our_story():
-    return render_template('our_story.html') 
+    return render_template('our_story.html')
+
+@main_bp.route('/search/suggestions')
+def search_suggestions():
+    query = request.args.get('q', '').strip()
+    if not query or len(query) < 1:
+        return jsonify([])
+    
+    # 从数据库中查询相关任务
+    suggestions = Task.query.filter(
+        or_(
+            Task.title.ilike(f'%{query}%'),
+            Task.description.ilike(f'%{query}%')
+        )
+    ).limit(5).all()
+    
+    # 格式化建议结果
+    results = [{
+        'id': task.id,
+        'title': task.title,
+        'description': task.description[:100] + '...' if len(task.description) > 100 else task.description,
+        'url': url_for('task.task_detail', task_id=task.id)
+    } for task in suggestions]
+    
+    return jsonify(results) 
