@@ -1,28 +1,13 @@
 from flask import Blueprint, render_template, current_app, request, jsonify, url_for
 from flask_login import current_user, login_required
-from app.models import Task
+from app.models import Task, ServiceView
 from sqlalchemy import or_
 from app.utils.constants import SERVICE_CATEGORIES
+from app import db
+from datetime import datetime
 
 # 修改蓝图名称
 service_bp = Blueprint('service', __name__, url_prefix='/service')
-
-# 服务分类数据 - 使用常量文件中的定义
-def get_services_from_categories():
-    services = {}
-    for category in SERVICE_CATEGORIES:
-        services[category['id']] = {
-            'name': category['name'],
-            'services': [
-                {
-                    'id': subcategory[0],
-                    'name': subcategory[1],
-                    'icon': get_icon_for_service(subcategory[0])
-                }
-                for subcategory in category['subcategories']
-            ]
-        }
-    return services
 
 # 获取服务对应的图标
 def get_icon_for_service(service_id):
@@ -60,6 +45,9 @@ def get_service_details():
 @service_bp.route('/<category>/<service_id>')
 def service_page(category, service_id):
     try:
+        # 记录浏览量
+        ServiceView.increment_view(category, service_id)
+        
         # 获取服务数据
         services = get_services_from_categories()
         service_details = get_service_details()
@@ -105,4 +93,21 @@ def search_suggestions():
         'url': url_for('task.task_detail', task_id=task.id)
     } for task in suggestions]
     
-    return jsonify(results) 
+    return jsonify(results)
+
+# 服务分类数据 - 使用常量文件中的定义
+def get_services_from_categories():
+    services = {}
+    for category in SERVICE_CATEGORIES:
+        services[category['id']] = {
+            'name': category['name'],
+            'services': [
+                {
+                    'id': subcategory[0],
+                    'name': subcategory[1],
+                    'icon': get_icon_for_service(subcategory[0])
+                }
+                for subcategory in category['subcategories']
+            ]
+        }
+    return services 

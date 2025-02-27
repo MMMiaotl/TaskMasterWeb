@@ -83,27 +83,20 @@
     <div class="container">
         <h2 class="section-title mb-4 text-center">Popular Services</h2>
         <div class="row g-4">
-            {% for category in categories %}
-            <div class="col-md-4">
-                <div class="category-card card h-100 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-3">
-                            <i class="fas {{ category.icon }} fa-2x me-3 text-primary"></i>
-                            <h3 class="h5 mb-0">{{ category.name }}</h3>
+            {% for service in popular_services %}
+            <div class="col-md-3">
+                <a href="{{ url_for('service.service_page', category=service.category, service_id=service.id) }}" 
+                   class="text-decoration-none">
+                    <div class="category-card card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas {{ service.icon }} fa-2x me-3 text-primary"></i>
+                                <h3 class="h5 mb-0">{{ service.name }}</h3>
+                            </div>
+                            <p class="card-text text-muted small">{{ service.description }}</p>
                         </div>
-                        <ul class="list-unstyled">
-                            {% for service in category.services %}
-                            <li class="mb-2">
-                                <a href="{{ url_for('service.service_page', category=category.id, service_id=service.id) }}" 
-                                   class="text-decoration-none text-dark">
-                                    <i class="fas fa-chevron-right me-2 text-muted"></i>
-                                    {{ service.name }}
-                                </a>
-                            </li>
-                            {% endfor %}
-                        </ul>
                     </div>
-                </div>
+                </a>
             </div>
             {% endfor %}
         </div>
@@ -127,7 +120,7 @@
                         </h3>
                         <div class="task-meta mb-3">
                             <span class="badge bg-primary me-2">
-                                {{ task.service_main_category }}
+                                {{ task.service_category }}
                             </span>
                             <span class="text-muted me-3">
                                 <i class="fas fa-map-marker-alt"></i>
@@ -141,12 +134,12 @@
                     <div class="card-footer bg-transparent">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-success fw-bold">
-                                <i class="fas fa-yen-sign"></i>
-                                {{ task.budget | int }}欧元
+                                <i class="fas fa-euro-sign"></i>
+                                {{ task.budget }}
                             </span>
                             <a href="{{ url_for('task.task_detail', task_id=task.id) }}" 
                                class="btn btn-sm btn-outline-primary">
-                                查看详情
+                                View Details
                             </a>
                         </div>
                     </div>

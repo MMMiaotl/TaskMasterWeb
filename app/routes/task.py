@@ -67,6 +67,13 @@ def create_task():
 def task_detail(task_id):
     task = Task.query.get_or_404(task_id)
     
+    # 增加浏览计数，确保 view_count 不是 None
+    if task.view_count is None:
+        task.view_count = 1
+    else:
+        task.view_count += 1
+    db.session.commit()
+    
     # 获取感兴趣的用户（发送过消息的用户）
     interested_users = set()
     for message in task.messages:

@@ -26,6 +26,8 @@ class Task(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     executor_id = db.Column(db.Integer, db.ForeignKey('user.id', name='fk_task_executor'), nullable=True)
     executor = db.relationship('User', foreign_keys=[executor_id])
+    view_count = db.Column(db.Integer, default=0)
+    featured = db.Column(db.Boolean, default=False)
 
     # 定义与消息的关系
     messages = db.relationship(
