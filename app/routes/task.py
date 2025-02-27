@@ -307,4 +307,28 @@ def review_executor(task_id):
         flash('评价已提交', 'success')
         return redirect(url_for('task.task_detail', task_id=task_id))
 
-    return render_template('review_executor.html', task=task) 
+    return render_template('review_executor.html', task=task)
+
+@task_bp.route('/search/suggestions')
+def search_suggestions():
+    query = request.args.get('q', '').strip()
+    if not query or len(query) < 1:
+        return jsonify([])
+    
+    # 从数据库中查询相关任务
+    suggestions = Task.query.filter(
+        or_(
+            Task.title.ilike(f'%{query}%'),
+            Task.description.ilike(f'%{query}%')
+        )
+    ).limit(5).all()
+    
+    # 格式化建议结果
+    results = [{
+        'id': task.id,
+        'title': task.title,
+        'description': task.description[:100] + '...' if len(task.description) > 100 else task.description,
+        'url': url_for('task.task_detail', task_id=task.id)
+    } for task in suggestions]
+    
+    return jsonify(results) 

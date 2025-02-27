@@ -500,3 +500,60 @@ msgstr ""
 msgid "Not a valid float value."
 msgstr ""
 
+msgid "日常生活"
+msgstr "Daily Life"
+
+msgid "专业服务"
+msgstr "Professional Services"
+
+msgid "商业服务"
+msgstr "Business Services"
+
+msgid "搬家服务"
+msgstr "Moving Service"
+
+msgid "接送机"
+msgstr "Airport Pickup"
+
+msgid "代驾服务"
+msgstr "Driving Service"
+
+msgid "装修维修"
+msgstr "Home Repair"
+
+msgid "房产中介"
+msgstr "Real Estate"
+
+msgid "公司注册"
+msgstr "Company Registration"
+
+msgid "文件翻译"
+msgstr "Document Translation"
+
+msgid "留学咨询"
+msgstr "Study Abroad"
+
+msgid "会计税务"
+msgstr "Accounting & Tax"
+
+msgid "法律咨询"
+msgstr "Legal Consulting"
+
+msgid "投资理财"
+msgstr "Investment"
+
+msgid "商铺转让"
+msgstr "Shop Transfer"
+
+msgid "查看详情"
+msgstr "View Details"
+
+msgid "发布任务"
+msgstr "Post a Task"
+
+msgid "当前没有相关任务"
+msgstr "No tasks available"
+
+msgid "成为第一个发布需求的人吧！"
+msgstr "Be the first to post a task!"
+

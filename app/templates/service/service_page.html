@@ -52,7 +52,7 @@
                     <div class="service-actions mt-4">
                         <a href="{{ url_for('task.create_task', service_id=current_service.id) }}" 
                            class="btn btn-primary btn-lg">
-                            <i class="fas fa-plus me-2"></i>Post a Task
+                            <i class="fas fa-plus me-2"></i>发布任务
                         </a>
                     </div>
                 </div>
@@ -107,26 +107,23 @@
                                             </a>
                                         </h3>
                                         
-                                        <div class="task-meta mb-3">
-                                            <span class="badge bg-primary me-2">
-                                                {{ task.service_main_category }}
+                                        <div class="task-meta d-flex flex-wrap gap-3 mb-2">
+                                            <span class="d-flex align-items-center">
+                                                <i class="fas fa-tag me-2 text-muted"></i>
+                                                {{ task.service_category }}
                                             </span>
-                                            <span class="text-muted me-3">
-                                                <i class="fas fa-map-marker-alt"></i>
-                                                {{ task.location }}
+                                            <span class="d-flex align-items-center">
+                                                <i class="fas fa-map-marker-alt me-2 text-muted"></i>
+                                                {{ task.location or '线上' }}
                                             </span>
-                                            <span class="text-muted me-3">
-                                                <i class="fas fa-clock"></i>
-                                                {{ task.deadline.strftime('%Y-%m-%d') }}
-                                            </span>
-                                            <span class="text-success fw-bold">
-                                                <i class="fas fa-yen-sign"></i>
-                                                {{ task.budget | int }}欧元
+                                            <span class="d-flex align-items-center">
+                                                <i class="fas fa-euro-sign me-2 text-muted"></i>
+                                                {{ task.budget }}
                                             </span>
                                         </div>
-
-                                        <p class="card-text text-muted">
-                                            {{ task.description|truncate(120) }}
+                                        
+                                        <p class="text-muted mb-0">
+                                            {{ task.description|truncate(100) }}
                                         </p>
                                     </div>
                                     
