@@ -88,6 +88,25 @@ def set_language(language):
 def contact():
     return render_template('contact.html')
 
+@main_bp.route('/professionals')
+def professionals():
+    """专业人士页面，展示可提供的服务和热门/高报酬任务"""
+    # 获取所有服务类别
+    service_categories = SERVICE_CATEGORIES
+    
+    # 获取热门任务（按浏览量排序）
+    popular_tasks = Task.query.order_by(Task.view_count.desc()).limit(4).all()
+    
+    # 获取高报酬任务（按预算排序）
+    high_paying_tasks = Task.query.order_by(Task.budget.desc()).limit(4).all()
+    
+    return render_template(
+        'professionals.html',
+        service_categories=service_categories,
+        popular_tasks=popular_tasks,
+        high_paying_tasks=high_paying_tasks
+    )
+
 @main_bp.route('/our_story')
 def our_story():
     return render_template('our_story.html')

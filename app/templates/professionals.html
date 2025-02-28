@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block title %}专业人士平台 - 海帮{% endblock %}
+
+{% block content %}
+<!-- 顶部横幅 -->
+<section class="hero-section bg-light py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">
+                    成为<span class="text-gradient">专业服务者</span>
+                </h1>
+                <p class="lead mb-4">
+                    利用您的专业技能，接取任务，获得收入
+                </p>
+                <div class="d-flex gap-3">
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('user.user_profile') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-user-circle me-2"></i>管理我的服务
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>立即注册
+                    </a>
+                    {% endif %}
+                    <a href="#service-categories" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-list me-2"></i>浏览服务类别
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <img src="{{ url_for('static', filename='images/photo0.jpg') }}" 
+                     alt="专业人士" class="img-fluid rounded-3">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 为什么选择我们 -->
+<section class="why-choose-us py-5">
+    <div class="container">
+        <h2 class="section-title text-center mb-5">为什么选择海帮平台</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mx-auto mb-3">
+                        <i class="fas fa-euro-sign fa-2x text-primary"></i>
+                    </div>
+                    <h3 class="h5 mb-3">灵活收入</h3>
+                    <p class="text-muted">根据您的时间和专业技能，自由选择任务，获得额外收入</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mx-auto mb-3">
+                        <i class="fas fa-calendar-alt fa-2x text-primary"></i>
+                    </div>
+                    <h3 class="h5 mb-3">灵活时间</h3>
+                    <p class="text-muted">自由安排工作时间，平衡工作与生活</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mx-auto mb-3">
+                        <i class="fas fa-star fa-2x text-primary"></i>
+                    </div>
+                    <h3 class="h5 mb-3">建立声誉</h3>
+                    <p class="text-muted">通过优质服务获得好评，建立个人品牌和专业声誉</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 服务类别 -->
+<section id="service-categories" class="service-categories py-5 bg-light">
+    <div class="container">
+        <h2 class="section-title text-center mb-5">您可以提供哪些服务？</h2>
+        <div class="row g-4">
+            {% for category in service_categories %}
+            <div class="col-md-4">
+                <div class="category-card card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h5 mb-3">{{ category.name }}</h3>
+                        <ul class="list-unstyled">
+                            {% for subcategory in category.subcategories %}
+                            <li class="mb-2">
+                                <a href="{{ url_for('service.service_page', category=category.id, service_id=subcategory[0]) }}" 
+                                   class="text-decoration-none">
+                                    <i class="fas {{ subcategory[2] }} me-2 text-primary"></i>
+                                    {{ subcategory[1] }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- 热门任务 -->
+<section class="popular-tasks py-5">
+    <div class="container">
+        <h2 class="section-title text-center mb-5">热门任务</h2>
+        <div class="row g-4">
+            {% for task in popular_tasks %}
+            <div class="col-md-6 col-lg-3">
+                <div class="task-card card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="badge bg-primary me-2">热门</span>
+                            <span class="text-muted small">
+                                <i class="fas fa-eye me-1"></i>{{ task.view_count }}次浏览
+                            </span>
+                        </div>
+                        <h3 class="h5 mb-3">
+                            <a href="{{ url_for('task.task_detail', task_id=task.id) }}" 
+                               class="text-decoration-none text-dark">
+                                {{ task.title }}
+                            </a>
+                        </h3>
+                        <div class="task-meta mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-tag me-2 text-muted"></i>
+                                <span>{{ task.service_category }}</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-map-marker-alt me-2 text-muted"></i>
+                                <span>{{ task.location }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-success fw-bold">
+                                <i class="fas fa-euro-sign"></i>
+                                {{ task.budget }}
+                            </span>
+                            <a href="{{ url_for('task.task_detail', task_id=task.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                查看详情
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- 高报酬任务 -->
+<section class="high-paying-tasks py-5 bg-light">
+    <div class="container">
+        <h2 class="section-title text-center mb-5">高报酬任务</h2>
+        <div class="row g-4">
+            {% for task in high_paying_tasks %}
+            <div class="col-md-6 col-lg-3">
+                <div class="task-card card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="badge bg-success me-2">高报酬</span>
+                            <span class="text-success fw-bold">
+                                <i class="fas fa-euro-sign me-1"></i>{{ task.budget }}
+                            </span>
+                        </div>
+                        <h3 class="h5 mb-3">
+                            <a href="{{ url_for('task.task_detail', task_id=task.id) }}" 
+                               class="text-decoration-none text-dark">
+                                {{ task.title }}
+                            </a>
+                        </h3>
+                        <div class="task-meta mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-tag me-2 text-muted"></i>
+                                <span>{{ task.service_category }}</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-map-marker-alt me-2 text-muted"></i>
+                                <span>{{ task.location }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">
+                                发布于 {{ task.created_at.strftime('%m-%d') }}
+                            </span>
+                            <a href="{{ url_for('task.task_detail', task_id=task.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                查看详情
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- 如何开始 -->
+<section class="how-to-start py-5">
+    <div class="container">
+        <h2 class="section-title text-center mb-5">如何开始</h2>
+        <div class="row position-relative">
+            <!-- 连接线 -->
+            <div class="progress-line"></div>
+            
+            <!-- 步骤 1 -->
+            <div class="col-md-3 text-center">
+                <div class="step-circle">1</div>
+                <h4 class="mt-3">创建账户</h4>
+                <p class="text-muted">注册并完善您的个人资料</p>
+            </div>
+            
+            <!-- 步骤 2 -->
+            <div class="col-md-3 text-center">
+                <div class="step-circle">2</div>
+                <h4 class="mt-3">选择服务类别</h4>
+                <p class="text-muted">选择您擅长的服务类别</p>
+            </div>
+            
+            <!-- 步骤 3 -->
+            <div class="col-md-3 text-center">
+                <div class="step-circle">3</div>
+                <h4 class="mt-3">浏览任务</h4>
+                <p class="text-muted">查找适合您的任务</p>
+            </div>
+            
+            <!-- 步骤 4 -->
+            <div class="col-md-3 text-center">
+                <div class="step-circle">4</div>
+                <h4 class="mt-3">开始接单</h4>
+                <p class="text-muted">提供优质服务并获得报酬</p>
+            </div>
+        </div>
+        <div class="text-center mt-5">
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('user.user_profile') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-user-circle me-2"></i>进入我的账户
+            </a>
+            {% else %}
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-user-plus me-2"></i>立即注册
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- 添加自定义样式 -->
+{% block styles %}
+<style>
+.hero-section {
+    background: white;
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.section-title {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 2rem;
+}
+
+.feature-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    height: 100%;
+}
+
+.feature-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: rgba(13, 110, 253, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.category-card {
+    transition: box-shadow 0.3s ease;
+}
+
+.category-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.task-card {
+    transition: box-shadow 0.3s ease;
+}
+
+.task-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.progress-line {
+    position: absolute;
+    top: 2.5rem;
+    left: 15%;
+    right: 15%;
+    height: 2px;
+    background: #e9ecef;
+    z-index: 0;
+}
+
+.step-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+</style>
+{% endblock %}
+{% endblock %} 
