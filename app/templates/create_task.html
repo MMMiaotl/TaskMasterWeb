@@ -1,117 +1,442 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-5 mb-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">发布新任务</h3>
+        <div class="col-lg-8">
+            <!-- 进度指示器 -->
+            <div class="progress-container mb-4">
+                <div class="progress" style="height: 4px;">
+                    <div class="progress-bar bg-primary" role="progressbar" id="form-progress-bar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
-                <div class="card-body">
-                    {% if preselect_category %}
-                    <div class="alert alert-info mb-4">
-                        <i class="fas fa-info-circle me-2"></i>
-                        根据您的搜索"{{ preselect_category }}"，我们已为您预选了最匹配的服务类别。
+                <div class="d-flex justify-content-between mt-2">
+                    <div class="step active" data-step="1">
+                        <div class="step-circle">1</div>
+                        <div class="step-text">服务类别</div>
                     </div>
-                    {% endif %}
-                    
-                    <form method="POST" class="needs-validation" novalidate>
+                    <div class="step" data-step="2">
+                        <div class="step-circle">2</div>
+                        <div class="step-text">任务详情</div>
+                    </div>
+                    <div class="step" data-step="3">
+                        <div class="step-circle">3</div>
+                        <div class="step-text">时间和预算</div>
+                    </div>
+                    <div class="step" data-step="4">
+                        <div class="step-circle">4</div>
+                        <div class="step-text">确认发布</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 表单卡片 -->
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body p-4">
+                    <form method="POST" class="needs-validation" id="task-form" novalidate>
                         {{ form.hidden_tag() }}
                         
-                        <div class="mb-3">
-                            {{ form.title.label(class="form-label") }}
-                            {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
-                            {% for error in form.title.errors %}
-                                <div class="invalid-feedback">{{ error }}</div>
-                            {% endfor %}
+                        <!-- 步骤1：服务类别 -->
+                        <div class="form-step" id="step-1">
+                            <h3 class="card-title mb-4">选择服务类别</h3>
+                            
+                            {% if preselect_category %}
+                            <div class="alert alert-info mb-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                根据您的搜索"{{ preselect_category }}"，我们已为您预选了最匹配的服务类别。
+                            </div>
+                            {% endif %}
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">您需要什么类型的服务？</label>
+                                <div class="service-categories">
+                                    <select class="form-select form-select-lg" id="service_category" name="service_category" required>
+                                        {% for value, label in form.service_category.choices %}
+                                            {% if '.' not in value %}
+                                                {% if value != '' %}
+                                                    <option disabled class="fw-bold bg-light">{{ label }}</option>
+                                                {% else %}
+                                                    <option value="">{{ label }}</option>
+                                                {% endif %}
+                                            {% else %}
+                                                <option value="{{ value }}"{% if form.service_category.data == value %} selected{% endif %}>
+                                                    {{ label }}
+                                                </option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                    <div class="invalid-feedback">请选择服务类别</div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end mt-4">
+                                <button type="button" class="btn btn-primary btn-lg px-4 next-step">下一步</button>
+                            </div>
                         </div>
-
-                        <div class="mb-3">
-                            {{ form.service_category.label(class="form-label") }}
-                            <select class="form-select" id="service_category" name="service_category" required>
-                                {% for value, label in form.service_category.choices %}
-                                    {% if '.' not in value %}
-                                        {% if value != '' %}
-                                            <option disabled class="fw-bold bg-light">{{ label }}</option>
-                                        {% else %}
-                                            <option value="">{{ label }}</option>
-                                        {% endif %}
+                        
+                        <!-- 步骤2：任务详情 -->
+                        <div class="form-step d-none" id="step-2">
+                            <h3 class="card-title mb-4">描述您的需求</h3>
+                            
+                            <div class="mb-4">
+                                <label for="title" class="form-label fw-bold">任务标题</label>
+                                {{ form.title(class="form-control form-control-lg", placeholder="简短描述您需要的服务，例如：客厅墙面粉刷") }}
+                                <div class="form-text">清晰的标题可以帮助服务提供者更好地理解您的需求</div>
+                                <div class="invalid-feedback">
+                                    {% if form.title.errors %}
+                                        {{ form.title.errors[0] }}
                                     {% else %}
-                                        <option value="{{ value }}"{% if form.service_category.data == value %} selected{% endif %}>
-                                            {{ label }}
-                                        </option>
+                                        请输入任务标题
                                     {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.description.label(class="form-label") }}
-                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=4) }}
-                            {% for error in form.description.errors %}
-                                <div class="invalid-feedback">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form.deadline.label(class="form-label") }}
-                                {{ form.deadline(class="form-control" + (" is-invalid" if form.deadline.errors else ""), type="date") }}
-                                {% for error in form.deadline.errors %}
-                                    <div class="invalid-feedback">{{ error }}</div>
-                                {% endfor %}
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                {{ form.budget.label(class="form-label", text=_("预算金额（%(currency)s）", currency=config['CURRENCY_CODE'])) }}
-                                {{ form.budget(class="form-control" + (" is-invalid" if form.budget.errors else ""), type="number", step="0.01", min="0") }}
-                                {% for error in form.budget.errors %}
-                                    <div class="invalid-feedback">{{ error }}</div>
-                                {% endfor %}
+                            
+                            <div class="mb-4">
+                                <label for="description" class="form-label fw-bold">详细描述</label>
+                                {{ form.description(class="form-control", rows=5, placeholder="详细描述您的需求，包括具体要求、面积大小、材料偏好等信息") }}
+                                <div class="form-text">详细的描述可以帮助您获得更准确的报价</div>
+                                <div class="invalid-feedback">
+                                    {% if form.description.errors %}
+                                        {{ form.description.errors[0] }}
+                                    {% else %}
+                                        请输入任务描述
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="location" class="form-label fw-bold">服务地点</label>
+                                {{ form.location(class="form-control form-control-lg", placeholder="输入详细地址或区域") }}
+                                <div class="form-text">准确的地点信息有助于匹配附近的服务提供者</div>
+                                <div class="invalid-feedback">
+                                    {% if form.location.errors %}
+                                        {{ form.location.errors[0] }}
+                                    {% else %}
+                                        请输入服务地点
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-outline-secondary btn-lg px-4 prev-step">上一步</button>
+                                <button type="button" class="btn btn-primary btn-lg px-4 next-step">下一步</button>
                             </div>
                         </div>
-
-                        <div class="mb-3">
-                            {{ form.location.label(class="form-label") }}
-                            {{ form.location(class="form-control" + (" is-invalid" if form.location.errors else "")) }}
-                            {% for error in form.location.errors %}
-                                <div class="invalid-feedback">{{ error }}</div>
-                            {% endfor %}
+                        
+                        <!-- 步骤3：时间和预算 -->
+                        <div class="form-step d-none" id="step-3">
+                            <h3 class="card-title mb-4">设置时间和预算</h3>
+                            
+                            <div class="mb-4">
+                                <label for="deadline" class="form-label fw-bold">您希望何时完成这项服务？</label>
+                                {{ form.deadline(class="form-control form-control-lg", type="date") }}
+                                <div class="form-text">选择您期望服务完成的最晚日期</div>
+                                <div class="invalid-feedback">
+                                    {% if form.deadline.errors %}
+                                        {{ form.deadline.errors[0] }}
+                                    {% else %}
+                                        请选择截止日期
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="budget" class="form-label fw-bold">您的预算是多少？</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">€</span>
+                                    {{ form.budget(class="form-control", type="number", step="0.01", min="0", placeholder="输入金额") }}
+                                </div>
+                                <div class="form-text">设置合理的预算可以吸引更多优质服务提供者</div>
+                                <div class="invalid-feedback">
+                                    {% if form.budget.errors %}
+                                        {{ form.budget.errors[0] }}
+                                    {% else %}
+                                        请输入有效的预算金额
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-outline-secondary btn-lg px-4 prev-step">上一步</button>
+                                <button type="button" class="btn btn-primary btn-lg px-4 next-step">下一步</button>
+                            </div>
                         </div>
-
-                        <div class="d-grid gap-2">
-                            {{ form.submit(class="btn btn-primary") }}
-                            <a href="{{ url_for('task.tasks') }}" class="btn btn-secondary">取消</a>
+                        
+                        <!-- 步骤4：确认发布 -->
+                        <div class="form-step d-none" id="step-4">
+                            <h3 class="card-title mb-4">确认并发布</h3>
+                            
+                            <div class="task-summary mb-4">
+                                <h4 class="h5 mb-3">任务摘要</h4>
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <dl class="row mb-0">
+                                            <dt class="col-sm-4">服务类别:</dt>
+                                            <dd class="col-sm-8" id="summary-category"></dd>
+                                            
+                                            <dt class="col-sm-4">任务标题:</dt>
+                                            <dd class="col-sm-8" id="summary-title"></dd>
+                                            
+                                            <dt class="col-sm-4">服务地点:</dt>
+                                            <dd class="col-sm-8" id="summary-location"></dd>
+                                            
+                                            <dt class="col-sm-4">截止日期:</dt>
+                                            <dd class="col-sm-8" id="summary-deadline"></dd>
+                                            
+                                            <dt class="col-sm-4">预算:</dt>
+                                            <dd class="col-sm-8" id="summary-budget"></dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                发布任务后，服务提供者将能够查看您的任务并提交报价。您可以随时在个人中心查看和管理您的任务。
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-outline-secondary btn-lg px-4 prev-step">上一步</button>
+                                <button type="submit" class="btn btn-success btn-lg px-4">发布任务</button>
+                            </div>
                         </div>
                     </form>
+                </div>
+            </div>
+            
+            <!-- 帮助信息 -->
+            <div class="card mt-4 border-0 bg-light">
+                <div class="card-body">
+                    <h5><i class="fas fa-lightbulb text-warning me-2"></i>小贴士</h5>
+                    <p class="mb-0">详细的任务描述和合理的预算可以帮助您更快找到合适的服务提供者。如需帮助，请查看<a href="{{ url_for('main.user_guide') }}">使用指南</a>或<a href="{{ url_for('main.contact') }}">联系我们</a>。</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-// 表单验证
-(function () {
-    'use strict'
-    var forms = document.querySelectorAll('.needs-validation')
-    Array.prototype.slice.call(forms).forEach(function (form) {
-        form.addEventListener('submit', function (event) {
-            if (!form.checkValidity()) {
-                event.preventDefault()
-                event.stopPropagation()
-            }
-            form.classList.add('was-validated')
-        }, false)
-    })
-})()
+{% block styles %}
+<style>
+.progress-container {
+    padding: 0 10px;
+}
 
-// 设置最小日期为当前时间
+.step {
+    text-align: center;
+    position: relative;
+    width: 25%;
+}
+
+.step-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px;
+    font-weight: bold;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.step.active .step-circle {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+
+.step.completed .step-circle {
+    background-color: #198754;
+    color: white;
+    border-color: #198754;
+}
+
+.step-text {
+    font-size: 0.85rem;
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.step.active .step-text,
+.step.completed .step-text {
+    color: #212529;
+    font-weight: 500;
+}
+
+.form-step {
+    transition: all 0.3s ease;
+}
+
+.service-categories {
+    max-height: 300px;
+    overflow-y: auto;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
 document.addEventListener('DOMContentLoaded', function() {
-    var now = new Date();
-    var tzoffset = now.getTimezoneOffset() * 60000;
-    var localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0,16);
-    document.getElementById('deadline').min = localISOTime;
+    // 获取所有步骤元素
+    const steps = document.querySelectorAll('.form-step');
+    const progressBar = document.getElementById('form-progress-bar');
+    const stepIndicators = document.querySelectorAll('.step');
+    const form = document.getElementById('task-form');
+    
+    // 当前步骤
+    let currentStep = 1;
+    const totalSteps = steps.length;
+    
+    // 下一步按钮点击事件
+    document.querySelectorAll('.next-step').forEach(button => {
+        button.addEventListener('click', function() {
+            // 验证当前步骤
+            if (validateStep(currentStep)) {
+                // 如果验证通过，前进到下一步
+                if (currentStep < totalSteps) {
+                    goToStep(currentStep + 1);
+                }
+            }
+        });
+    });
+    
+    // 上一步按钮点击事件
+    document.querySelectorAll('.prev-step').forEach(button => {
+        button.addEventListener('click', function() {
+            if (currentStep > 1) {
+                goToStep(currentStep - 1);
+            }
+        });
+    });
+    
+    // 跳转到指定步骤
+    function goToStep(stepNumber) {
+        // 隐藏所有步骤
+        steps.forEach(step => {
+            step.classList.add('d-none');
+        });
+        
+        // 显示目标步骤
+        document.getElementById(`step-${stepNumber}`).classList.remove('d-none');
+        
+        // 更新进度条
+        const progress = (stepNumber - 1) / (totalSteps - 1) * 100;
+        progressBar.style.width = `${progress}%`;
+        progressBar.setAttribute('aria-valuenow', progress);
+        
+        // 更新步骤指示器
+        stepIndicators.forEach((indicator, index) => {
+            const step = index + 1;
+            indicator.classList.remove('active', 'completed');
+            
+            if (step === stepNumber) {
+                indicator.classList.add('active');
+            } else if (step < stepNumber) {
+                indicator.classList.add('completed');
+            }
+        });
+        
+        // 更新当前步骤
+        currentStep = stepNumber;
+        
+        // 如果是最后一步，更新摘要信息
+        if (currentStep === totalSteps) {
+            updateSummary();
+        }
+    }
+    
+    // 验证当前步骤
+    function validateStep(stepNumber) {
+        let isValid = true;
+        const currentStepElement = document.getElementById(`step-${stepNumber}`);
+        
+        // 根据当前步骤验证不同的字段
+        if (stepNumber === 1) {
+            const categorySelect = document.getElementById('service_category');
+            if (!categorySelect.value) {
+                categorySelect.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                categorySelect.classList.remove('is-invalid');
+            }
+        } else if (stepNumber === 2) {
+            const title = document.getElementById('title');
+            const description = document.getElementById('description');
+            const location = document.getElementById('location');
+            
+            if (!title.value) {
+                title.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                title.classList.remove('is-invalid');
+            }
+            
+            if (!description.value || description.value.length < 10) {
+                description.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                description.classList.remove('is-invalid');
+            }
+            
+            if (!location.value) {
+                location.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                location.classList.remove('is-invalid');
+            }
+        } else if (stepNumber === 3) {
+            const deadline = document.getElementById('deadline');
+            const budget = document.getElementById('budget');
+            
+            if (!deadline.value) {
+                deadline.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                deadline.classList.remove('is-invalid');
+            }
+            
+            if (!budget.value || parseFloat(budget.value) <= 0) {
+                budget.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                budget.classList.remove('is-invalid');
+            }
+        }
+        
+        return isValid;
+    }
+    
+    // 更新摘要信息
+    function updateSummary() {
+        const categorySelect = document.getElementById('service_category');
+        const categoryText = categorySelect.options[categorySelect.selectedIndex].text;
+        document.getElementById('summary-category').textContent = categoryText;
+        
+        document.getElementById('summary-title').textContent = document.getElementById('title').value;
+        document.getElementById('summary-location').textContent = document.getElementById('location').value;
+        
+        const deadline = document.getElementById('deadline').value;
+        const formattedDate = new Date(deadline).toLocaleDateString('zh-CN');
+        document.getElementById('summary-deadline').textContent = formattedDate;
+        
+        const budget = document.getElementById('budget').value;
+        document.getElementById('summary-budget').textContent = `€${budget}`;
+    }
+    
+    // 设置最小日期为当前日期
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('deadline').min = today;
+    
+    // 表单提交验证
+    form.addEventListener('submit', function(event) {
+        if (!validateStep(currentStep)) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+    });
 });
 </script>
+{% endblock %}
 {% endblock %}
