@@ -62,38 +62,47 @@
             <div class="filter-section mt-3">
                 <div class="card shadow-sm">
                     <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-md-3">
-                                <select class="form-select">
-                                    <option selected>Sort by Price</option>
-                                    <option>Low to High</option>
-                                    <option>High to Low</option>
-                                </select>
+                        <form method="GET" id="filter-form">
+                            <input type="hidden" name="category" value="{{ category }}">
+                            <input type="hidden" name="service_id" value="{{ service_id }}">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <select class="form-select filter-select" name="price_sort" data-filter="price">
+                                        <option value="" {% if not request.args.get('price_sort') %}selected{% endif %}>按价格排序</option>
+                                        <option value="asc" {% if request.args.get('price_sort') == 'asc' %}selected{% endif %}>从低到高</option>
+                                        <option value="desc" {% if request.args.get('price_sort') == 'desc' %}selected{% endif %}>从高到低</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select filter-select" name="date_sort" data-filter="date">
+                                        <option value="" {% if not request.args.get('date_sort') %}selected{% endif %}>按日期排序</option>
+                                        <option value="newest" {% if request.args.get('date_sort') == 'newest' %}selected{% endif %}>最新优先</option>
+                                        <option value="last_week" {% if request.args.get('date_sort') == 'last_week' %}selected{% endif %}>上周</option>
+                                        <option value="last_month" {% if request.args.get('date_sort') == 'last_month' %}selected{% endif %}>上个月</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select filter-select" name="location" data-filter="location">
+                                        <option value="" {% if not request.args.get('location') %}selected{% endif %}>位置</option>
+                                        <option value="all" {% if request.args.get('location') == 'all' %}selected{% endif %}>所有区域</option>
+                                        <option value="city_center" {% if request.args.get('location') == 'city_center' %}selected{% endif %}>市中心</option>
+                                        <option value="suburbs" {% if request.args.get('location') == 'suburbs' %}selected{% endif %}>郊区</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 text-end">
+                                    <button type="button" id="reset-filters" class="btn btn-outline-secondary">
+                                        <i class="fas fa-redo me-1"></i> 重置筛选
+                                    </button>
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <select class="form-select">
-                                    <option selected>Sort by Date</option>
-                                    <option>Newest First</option>
-                                    <option>Last Week</option>
-                                    <option>Last Month</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-select">
-                                    <option selected>Location</option>
-                                    <option>All Areas</option>
-                                    <option>City Center</option>
-                                    <option>Suburbs</option>
-                                </select>
-                            </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>
 
             <!-- 任务列表 -->
             <div class="task-list mt-3">
-                <div class="row g-4">
+                <div class="row g-4" id="task-container">
                     {% for task in tasks %}
                     <div class="col-12">
                         <div class="task-card card shadow-sm">
@@ -197,5 +206,77 @@
     border-radius: 12px;
 }
 </style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 获取所有过滤器选择框
+    const filterSelects = document.querySelectorAll('.filter-select');
+    const resetButton = document.getElementById('reset-filters');
+    const taskContainer = document.getElementById('task-container');
+    
+    // 当前过滤器状态
+    let currentFilters = {
+        price_sort: '{{ request.args.get("price_sort", "") }}',
+        date_sort: '{{ request.args.get("date_sort", "") }}',
+        location: '{{ request.args.get("location", "") }}'
+    };
+    
+    // 更新任务列表函数
+    function updateTaskList() {
+        // 显示加载状态
+        taskContainer.innerHTML = '<div class="col-12 text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">加载中...</span></div></div>';
+        
+        // 构建查询参数
+        const params = new URLSearchParams();
+        if (currentFilters.price_sort) params.append('price_sort', currentFilters.price_sort);
+        if (currentFilters.date_sort) params.append('date_sort', currentFilters.date_sort);
+        if (currentFilters.location) params.append('location', currentFilters.location);
+        
+        // 发送AJAX请求
+        fetch(`/service/ajax_tasks/{{ category }}/{{ service_id }}?${params.toString()}`)
+            .then(response => response.text())
+            .then(html => {
+                taskContainer.innerHTML = html;
+                
+                // 更新URL，但不刷新页面
+                const newUrl = `{{ url_for('service.service_page', category=category, service_id=service_id) }}?${params.toString()}`;
+                history.pushState({}, '', newUrl);
+            })
+            .catch(error => {
+                console.error('加载任务列表时出错:', error);
+                taskContainer.innerHTML = '<div class="col-12"><div class="alert alert-danger">加载任务列表时出错，请刷新页面重试。</div></div>';
+            });
+    }
+    
+    // 为每个过滤器添加事件监听器
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            const filterName = this.name;
+            currentFilters[filterName] = this.value;
+            updateTaskList();
+        });
+    });
+    
+    // 重置按钮事件
+    resetButton.addEventListener('click', function() {
+        // 重置所有过滤器
+        filterSelects.forEach(select => {
+            select.value = '';
+        });
+        
+        // 清空当前过滤器状态
+        currentFilters = {
+            price_sort: '',
+            date_sort: '',
+            location: ''
+        };
+        
+        // 更新任务列表
+        updateTaskList();
+    });
+});
+</script>
 {% endblock %}
 {% endblock %} 

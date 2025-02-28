@@ -52,6 +52,13 @@ def create_app():
     from app.routes import init_app as init_routes
     init_routes(app)
     
+    # 打印所有注册的路由
+    with app.app_context():
+        print("\n=== 所有注册的路由 ===")
+        for rule in sorted(app.url_map.iter_rules(), key=lambda x: str(x)):
+            print(f"Rule: {rule}, Endpoint: {rule.endpoint}")
+        print("=== 路由注册结束 ===\n")
+
     # 添加自定义Jinja过滤器
     #@app.template_filter('merge')
     #@pass_context

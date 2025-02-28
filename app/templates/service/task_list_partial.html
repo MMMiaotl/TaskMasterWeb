@@ -1,0 +1,55 @@
+{% for task in tasks %}
+<div class="col-12">
+    <div class="task-card card shadow-sm">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                    <h3 class="h5 mb-3">
+                        <a href="{{ url_for('task.task_detail', task_id=task.id) }}" 
+                           class="text-decoration-none text-dark">
+                            {{ task.title }}
+                        </a>
+                    </h3>
+                    
+                    <div class="task-meta d-flex flex-wrap gap-3 mb-2">
+                        <span class="d-flex align-items-center">
+                            <i class="fas fa-tag me-2 text-muted"></i>
+                            {{ task.service_category }}
+                        </span>
+                        <span class="d-flex align-items-center">
+                            <i class="fas fa-map-marker-alt me-2 text-muted"></i>
+                            {{ task.location or '线上' }}
+                        </span>
+                        <span class="d-flex align-items-center">
+                            <i class="fas fa-euro-sign me-2 text-muted"></i>
+                            {{ task.budget }}
+                        </span>
+                    </div>
+                    
+                    <p class="text-muted mb-0">
+                        {{ task.description|truncate(100) }}
+                    </p>
+                </div>
+                
+                <div class="ms-4 text-end">
+                    <a href="{{ url_for('task.task_detail', task_id=task.id) }}" 
+                       class="btn btn-primary btn-sm">
+                        查看详情
+                    </a>
+                    <div class="mt-2 small text-muted">
+                        发布于 {{ task.created_at.strftime('%m-%d') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="col-12">
+    <div class="alert alert-info text-center py-4">
+        <i class="fas fa-info-circle fa-2x mb-3"></i>
+        <h5>当前没有相关任务</h5>
+        <p class="mb-0">成为第一个发布需求的人吧！</p>
+    </div>
+</div>
+{% endfor %} 

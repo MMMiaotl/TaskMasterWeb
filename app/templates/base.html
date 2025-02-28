@@ -91,13 +91,13 @@
                                     <div class="col-md-4">
                                         <h6 class="dropdown-header">专业服务</h6>
                                         <ul class="list-unstyled">
-                                            <li><a class="dropdown-item" href="#">
+                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='professional', service_id='housing') }}">
                                                 <i class="fas fa-home me-2"></i>房产中介</a></li>
-                                            <li><a class="dropdown-item" href="#">
+                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='professional', service_id='company') }}">
                                                 <i class="fas fa-building me-2"></i>公司注册</a></li>
-                                            <li><a class="dropdown-item" href="#">
+                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='professional', service_id='translation') }}">
                                                 <i class="fas fa-file-alt me-2"></i>文件翻译</a></li>
-                                            <li><a class="dropdown-item" href="#">
+                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='professional', service_id='education') }}">
                                                 <i class="fas fa-graduation-cap me-2"></i>留学咨询</a></li>
                                         </ul>
                                     </div>
@@ -105,13 +105,13 @@
                                     <div class="col-md-4">
                                         <h6 class="dropdown-header">商业服务</h6>
                                         <ul class="list-unstyled">
-                                            <li><a class="dropdown-item" href="#">
+                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='business', service_id='accounting') }}">
                                                 <i class="fas fa-calculator me-2"></i>会计税务</a></li>
-                                            <li><a class="dropdown-item" href="#">
+                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='business', service_id='legal') }}">
                                                 <i class="fas fa-gavel me-2"></i>法律咨询</a></li>
-                                            <li><a class="dropdown-item" href="#">
+                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='business', service_id='investment') }}">
                                                 <i class="fas fa-chart-line me-2"></i>投资理财</a></li>
-                                            <li><a class="dropdown-item" href="#">
+                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='business', service_id='shop') }}">
                                                 <i class="fas fa-store me-2"></i>商铺转让</a></li>
                                         </ul>
                                     </div>

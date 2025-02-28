@@ -4,10 +4,10 @@ from app.models import Task, ServiceView
 from sqlalchemy import or_
 from app.utils.constants import SERVICE_CATEGORIES
 from app import db
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # 修改蓝图名称
-service_bp = Blueprint('service', __name__, url_prefix='/service')
+service_bp = Blueprint('service', __name__)
 
 # 获取服务对应的图标
 def get_icon_for_service(service_id):
@@ -45,31 +45,84 @@ def get_service_details():
 @service_bp.route('/<category>/<service_id>')
 def service_page(category, service_id):
     try:
-        # 记录浏览量
+        # 添加详细的请求日志
+        current_app.logger.info(f"访问服务页面: URL={request.path}, 类别={category}, 服务ID={service_id}")
+        current_app.logger.info(f"请求方法: {request.method}, 请求参数: {dict(request.args)}")
+        
+        # 获取服务详情
+        service_details = get_service_details()
+        if service_id not in service_details:
+            current_app.logger.error(f"服务ID不存在: {service_id}")
+            return render_template('errors/404.html'), 404
+        
+        current_service = service_details[service_id]
+        
+        # 记录服务访问
         ServiceView.increment_view(category, service_id)
         
-        # 获取服务数据
+        # 获取过滤器参数
+        price_sort = request.args.get('price_sort', '')
+        date_sort = request.args.get('date_sort', '')
+        location_filter = request.args.get('location', '')
+        
+        # 构建基本查询
+        query = Task.query.filter_by(
+            service_main_category=category,
+            service_sub_category=service_id
+        )
+        
+        # 应用价格排序
+        if price_sort == 'asc':
+            query = query.order_by(Task.budget.asc())
+        elif price_sort == 'desc':
+            query = query.order_by(Task.budget.desc())
+        
+        # 应用日期排序/过滤
+        now = datetime.utcnow()
+        
+        if date_sort == 'newest':
+            query = query.order_by(Task.created_at.desc())
+        elif date_sort == 'last_week':
+            one_week_ago = now - timedelta(days=7)
+            query = query.filter(Task.created_at >= one_week_ago).order_by(Task.created_at.desc())
+        elif date_sort == 'last_month':
+            one_month_ago = now - timedelta(days=30)
+            query = query.filter(Task.created_at >= one_month_ago).order_by(Task.created_at.desc())
+        else:
+            # 默认按创建时间降序排序
+            query = query.order_by(Task.created_at.desc())
+        
+        # 应用位置过滤
+        if location_filter and location_filter != 'all':
+            if location_filter == 'city_center':
+                query = query.filter(Task.location.ilike('%市中心%'))
+            elif location_filter == 'suburbs':
+                query = query.filter(Task.location.ilike('%郊区%'))
+        
+        # 执行查询并限制结果数量
+        tasks = query.limit(10).all()
+        
+        # 获取所有服务分类数据
         services = get_services_from_categories()
-        service_details = get_service_details()
         
-        # 获取当前服务信息
-        current_service = service_details.get(service_id)
-        if not current_service:
-            current_app.logger.error(f"Service not found: {service_id}")
-            return render_template('errors/404.html'), 404
-            
-        # 查询相关任务
-        tasks = Task.query.filter(Task.service_category == f"{category}.{service_id}").all()
+        # 渲染服务页面模板
+        return render_template(
+            'service/service_page.html',
+            current_service=current_service,
+            category=category,
+            service_id=service_id,
+            category_name=next((c['name'] for c in SERVICE_CATEGORIES if c['id'] == category), '未知分类'),
+            services=services,
+            tasks=tasks,
+            debug=False,  # 关闭调试信息显示
+            request=request  # 传递请求对象以便在模板中访问参数
+        )
         
-        return render_template('service/service_page.html',
-                             current_service=current_service,
-                             services=services,
-                             tasks=tasks,
-                             category=category,
-                             service_id=service_id)
     except Exception as e:
-        current_app.logger.error(f"Error in service_page: {str(e)}")
-        return render_template('errors/404.html'), 404
+        current_app.logger.error(f"服务页面错误: {str(e)}")
+        import traceback
+        current_app.logger.error(f"详细错误堆栈: {traceback.format_exc()}")
+        return f"错误: {str(e)}", 500
 
 @service_bp.route('/search/suggestions')
 def search_suggestions():
@@ -110,4 +163,81 @@ def get_services_from_categories():
                 for subcategory in category['subcategories']
             ]
         }
-    return services 
+    return services
+
+# 添加一个简单的调试路由
+@service_bp.route('/debug')
+def debug_route():
+    """简单的调试路由，用于测试服务蓝图是否正确注册"""
+    routes_info = {
+        'blueprint_name': service_bp.name,
+        'url_prefix': service_bp.url_prefix,
+        'routes': [str(rule) for rule in current_app.url_map.iter_rules() 
+                  if rule.endpoint.startswith('service.')],
+        'service_details': list(get_service_details().keys()),
+        'categories': [category['id'] for category in SERVICE_CATEGORIES]
+    }
+    return jsonify(routes_info)
+
+@service_bp.route('/')
+def service_index():
+    """服务首页，用于测试服务蓝图是否正确注册"""
+    services = get_services_from_categories()
+    return render_template('service/service_index.html', services=services)
+
+@service_bp.route('/ajax_tasks/<category>/<service_id>')
+def ajax_tasks(category, service_id):
+    try:
+        # 获取过滤器参数
+        price_sort = request.args.get('price_sort', '')
+        date_sort = request.args.get('date_sort', '')
+        location_filter = request.args.get('location', '')
+        
+        # 构建基本查询
+        query = Task.query.filter_by(
+            service_main_category=category,
+            service_sub_category=service_id
+        )
+        
+        # 应用价格排序
+        if price_sort == 'asc':
+            query = query.order_by(Task.budget.asc())
+        elif price_sort == 'desc':
+            query = query.order_by(Task.budget.desc())
+        
+        # 应用日期排序/过滤
+        now = datetime.utcnow()
+        
+        if date_sort == 'newest':
+            query = query.order_by(Task.created_at.desc())
+        elif date_sort == 'last_week':
+            one_week_ago = now - timedelta(days=7)
+            query = query.filter(Task.created_at >= one_week_ago).order_by(Task.created_at.desc())
+        elif date_sort == 'last_month':
+            one_month_ago = now - timedelta(days=30)
+            query = query.filter(Task.created_at >= one_month_ago).order_by(Task.created_at.desc())
+        else:
+            # 默认按创建时间降序排序
+            query = query.order_by(Task.created_at.desc())
+        
+        # 应用位置过滤
+        if location_filter and location_filter != 'all':
+            if location_filter == 'city_center':
+                query = query.filter(Task.location.ilike('%市中心%'))
+            elif location_filter == 'suburbs':
+                query = query.filter(Task.location.ilike('%郊区%'))
+        
+        # 执行查询并限制结果数量
+        tasks = query.limit(10).all()
+        
+        # 只渲染任务列表部分
+        return render_template(
+            'service/task_list_partial.html',
+            tasks=tasks
+        )
+        
+    except Exception as e:
+        current_app.logger.error(f"AJAX任务列表错误: {str(e)}")
+        import traceback
+        current_app.logger.error(f"详细错误堆栈: {traceback.format_exc()}")
+        return f"错误: {str(e)}", 500 

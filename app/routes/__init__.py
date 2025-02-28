@@ -12,5 +12,5 @@ def init_app(app):
     app.register_blueprint(user_bp, url_prefix='/user')
     app.register_blueprint(message_bp, url_prefix='/message')
     app.register_blueprint(main_bp)
-    app.register_blueprint(service_bp)
+    app.register_blueprint(service_bp, url_prefix='/service')
     app.register_blueprint(errors_bp) 
