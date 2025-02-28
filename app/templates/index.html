@@ -162,25 +162,25 @@
             <div class="col-md-3">
                 <h5>如何使用海帮</h5>
                 <ul class="list-unstyled">
-                    <li><a href="#">使用指南</a></li>
-                    <li><a href="#">服务标准</a></li>
-                    <li><a href="#">用户评价</a></li>
+                    <li><a href="{{ url_for('main.user_guide') }}">使用指南</a></li>
+                    <li><a href="{{ url_for('main.service_standards') }}">服务标准</a></li>
+                    <li><a href="{{ url_for('main.user_reviews') }}">用户评价</a></li>
                 </ul>
             </div>
             <div class="col-md-3">
                 <h5>资源中心</h5>
                 <ul class="list-unstyled">
-                    <li><a href="#">博客</a></li>
-                    <li><a href="#">价格指南</a></li>
-                    <li><a href="#">常见问题</a></li>
+                    <li><a href="{{ url_for('main.blog') }}">博客</a></li>
+                    <li><a href="{{ url_for('main.pricing_guide') }}">价格指南</a></li>
+                    <li><a href="{{ url_for('main.faq') }}">常见问题</a></li>
                 </ul>
             </div>
             <div class="col-md-3">
                 <h5>服务者中心</h5>
                 <ul class="list-unstyled">
-                    <li><a href="#">为什么选择海帮</a></li>
-                    <li><a href="#">注册成为服务者</a></li>
-                    <li><a href="#">更多信息</a></li>
+                    <li><a href="{{ url_for('main.why_choose_us') }}">为什么选择海帮</a></li>
+                    <li><a href="{{ url_for('main.become_provider') }}">注册成为服务者</a></li>
+                    <li><a href="{{ url_for('main.professionals') }}">专业人士平台</a></li>
                 </ul>
             </div>
             <div class="col-md-3">

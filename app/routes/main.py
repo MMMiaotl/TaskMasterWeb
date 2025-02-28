@@ -111,6 +111,38 @@ def professionals():
 def our_story():
     return render_template('our_story.html')
 
+@main_bp.route('/user_guide')
+def user_guide():
+    return render_template('user_guide.html')
+
+@main_bp.route('/service_standards')
+def service_standards():
+    return render_template('service_standards.html')
+
+@main_bp.route('/user_reviews')
+def user_reviews():
+    return render_template('user_reviews.html')
+
+@main_bp.route('/blog')
+def blog():
+    return render_template('blog.html')
+
+@main_bp.route('/pricing_guide')
+def pricing_guide():
+    return render_template('pricing_guide.html')
+
+@main_bp.route('/faq')
+def faq():
+    return render_template('faq.html')
+
+@main_bp.route('/why_choose_us')
+def why_choose_us():
+    return render_template('why_choose_us.html')
+
+@main_bp.route('/become_provider')
+def become_provider():
+    return render_template('become_provider.html')
+
 @main_bp.route('/search/suggestions')
 def search_suggestions():
     query = request.args.get('q', '').strip().lower()

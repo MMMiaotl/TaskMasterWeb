@@ -1,59 +1,290 @@
 {% extends "base.html" %}
 
-{% block title %}Reviews - {{ user.username }}{% endblock %}
+{% block title %}用户评价 - 海帮{% endblock %}
 
 {% block content %}
-    <div class="reviews-container">
-        <h1>Reviews for {{ user.username }}</h1>
-
-        <div class="reviews-section">
-            <h2>As Task Poster</h2>
-            {% if poster_reviews %}
-                <div class="review-list">
-                    {% for review in poster_reviews %}
-                    <div class="review-item">
-                        <div class="review-rating">Rating: {{ review.rating }}/5</div>
-                        <div class="review-content">{{ review.content }}</div>
-                        <div class="review-meta">
-                            <span>By: <a href="{{ url_for('user.other_user_profile', username=review.reviewer.username) }}">
-                                {{ review.reviewer.username }}</a></span>
-                            <span>Task: <a href="{{ url_for('task.task_detail', task_id=review.task.id) }}">
-                                {{ review.task.title }}</a></span>
-                            <span>Date: {{ review.created_at.strftime('%Y-%m-%d') }}</span>
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="mb-4 text-center">用户真实评价</h1>
+            <p class="lead text-center mb-5">来自海帮平台用户的真实体验和反馈</p>
+            
+            <!-- 评价筛选 -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="h4 mb-4">筛选评价</h2>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <select class="form-select" id="serviceCategory">
+                                <option value="">所有服务类别</option>
+                                <option value="daily">日常生活服务</option>
+                                <option value="professional">专业服务</option>
+                                <option value="business">商业服务</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" id="rating">
+                                <option value="">所有评分</option>
+                                <option value="5">5星</option>
+                                <option value="4">4星及以上</option>
+                                <option value="3">3星及以上</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" id="sortBy">
+                                <option value="recent">最新评价</option>
+                                <option value="highest">最高评分</option>
+                                <option value="lowest">最低评分</option>
+                            </select>
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
-            {% else %}
-                <p>No reviews as task poster.</p>
-            {% endif %}
-        </div>
-
-        <div class="reviews-section">
-            <h2>As Task Executor</h2>
-            {% if executor_reviews %}
-                <div class="review-list">
-                    {% for review in executor_reviews %}
-                    <div class="review-item">
-                        <div class="review-rating">Rating: {{ review.rating }}/5</div>
-                        <div class="review-content">{{ review.content }}</div>
-                        <div class="review-meta">
-                            <span>By: <a href="{{ url_for('user.other_user_profile', username=review.reviewer.username) }}">
-                                {{ review.reviewer.username }}</a></span>
-                            <span>Task: <a href="{{ url_for('task.task_detail', task_id=review.task.id) }}">
-                                {{ review.task.title }}</a></span>
-                            <span>Date: {{ review.created_at.strftime('%Y-%m-%d') }}</span>
+            </div>
+            
+            <!-- 评价列表 -->
+            <div class="reviews-container">
+                <!-- 评价1 -->
+                <div class="card mb-4 shadow-sm review-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename='images/avatar1.jpg') }}" alt="用户头像" class="rounded-circle me-3" width="50" height="50">
+                                <div>
+                                    <h3 class="h5 mb-0">李明</h3>
+                                    <p class="text-muted small mb-0">北京</p>
+                                </div>
+                            </div>
+                            <div class="rating-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <span class="ms-2">5.0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="service-info d-flex align-items-center mb-3">
+                            <span class="badge bg-primary me-2">搬家服务</span>
+                            <span class="text-muted small">2023年12月15日</span>
+                        </div>
+                        
+                        <p class="review-text">
+                            非常专业的搬家服务！工作人员准时到达，动作麻利，对我的物品非常小心。整个搬家过程顺利高效，没有任何损坏。价格也很合理，强烈推荐给需要搬家的朋友们。
+                        </p>
+                        
+                        <div class="review-images mt-3">
+                            <div class="row g-2">
+                                <div class="col-3">
+                                    <img src="{{ url_for('static', filename='images/review1.jpg') }}" alt="评价图片" class="img-fluid rounded">
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
-            {% else %}
-                <p>No reviews as task executor.</p>
-            {% endif %}
-        </div>
-
-        <div class="actions">
-            <a href="{{ url_for('user.other_user_profile', username=user.username) }}" class="btn">Back to Profile</a>
+                
+                <!-- 评价2 -->
+                <div class="card mb-4 shadow-sm review-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename='images/avatar2.jpg') }}" alt="用户头像" class="rounded-circle me-3" width="50" height="50">
+                                <div>
+                                    <h3 class="h5 mb-0">张华</h3>
+                                    <p class="text-muted small mb-0">上海</p>
+                                </div>
+                            </div>
+                            <div class="rating-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                                <span class="ms-2">4.5</span>
+                            </div>
+                        </div>
+                        
+                        <div class="service-info d-flex align-items-center mb-3">
+                            <span class="badge bg-primary me-2">法律咨询</span>
+                            <span class="text-muted small">2023年11月28日</span>
+                        </div>
+                        
+                        <p class="review-text">
+                            通过海帮找到了一位非常专业的法律顾问，帮我解决了租房合同的问题。顾问耐心解答我的所有问题，提供了清晰的法律建议，让我避免了潜在的纠纷。服务质量超出预期，值得信赖。
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- 评价3 -->
+                <div class="card mb-4 shadow-sm review-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename='images/avatar3.jpg') }}" alt="用户头像" class="rounded-circle me-3" width="50" height="50">
+                                <div>
+                                    <h3 class="h5 mb-0">王丽</h3>
+                                    <p class="text-muted small mb-0">广州</p>
+                                </div>
+                            </div>
+                            <div class="rating-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                                <span class="ms-2">4.0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="service-info d-flex align-items-center mb-3">
+                            <span class="badge bg-primary me-2">接送机</span>
+                            <span class="text-muted small">2023年10月10日</span>
+                        </div>
+                        
+                        <p class="review-text">
+                            司机准时在机场等候，车辆干净整洁，驾驶平稳安全。虽然当天航班延误，但司机一直耐心等待，没有额外收费。全程服务态度很好，让长途飞行后的疲惫感减轻了不少。唯一的小建议是可以提前确认一下航班信息。
+                        </p>
+                        
+                        <div class="review-images mt-3">
+                            <div class="row g-2">
+                                <div class="col-3">
+                                    <img src="{{ url_for('static', filename='images/review2.jpg') }}" alt="评价图片" class="img-fluid rounded">
+                                </div>
+                                <div class="col-3">
+                                    <img src="{{ url_for('static', filename='images/review3.jpg') }}" alt="评价图片" class="img-fluid rounded">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 评价4 -->
+                <div class="card mb-4 shadow-sm review-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename='images/avatar4.jpg') }}" alt="用户头像" class="rounded-circle me-3" width="50" height="50">
+                                <div>
+                                    <h3 class="h5 mb-0">陈强</h3>
+                                    <p class="text-muted small mb-0">深圳</p>
+                                </div>
+                            </div>
+                            <div class="rating-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <span class="ms-2">5.0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="service-info d-flex align-items-center mb-3">
+                            <span class="badge bg-primary me-2">装修维修</span>
+                            <span class="text-muted small">2023年9月5日</span>
+                        </div>
+                        
+                        <p class="review-text">
+                            找到了一位非常棒的水电工师傅，解决了我家水管漏水的问题。师傅技术精湛，工作认真负责，不仅修好了漏水点，还检查了其他可能存在问题的地方，并给出了专业建议。价格公道，服务周到，非常满意！
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- 评价5 -->
+                <div class="card shadow-sm review-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename='images/avatar5.jpg') }}" alt="用户头像" class="rounded-circle me-3" width="50" height="50">
+                                <div>
+                                    <h3 class="h5 mb-0">林小姐</h3>
+                                    <p class="text-muted small mb-0">成都</p>
+                                </div>
+                            </div>
+                            <div class="rating-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                                <span class="ms-2">4.5</span>
+                            </div>
+                        </div>
+                        
+                        <div class="service-info d-flex align-items-center mb-3">
+                            <span class="badge bg-primary me-2">留学咨询</span>
+                            <span class="text-muted small">2023年8月20日</span>
+                        </div>
+                        
+                        <p class="review-text">
+                            通过海帮找到了一位经验丰富的留学顾问，帮助我完成了英国大学的申请。顾问对英国教育体系非常了解，给了我很多实用的建议，从选校到文书都提供了专业指导。最终收到了理想大学的录取通知书，非常感谢！
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 分页 -->
+            <nav aria-label="评价分页" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">上一页</a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">下一页</a>
+                    </li>
+                </ul>
+            </nav>
         </div>
     </div>
+</div>
+
+{% block styles %}
+<style>
+    .review-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .review-card:hover {
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .rating-stars {
+        color: #ffd700;
+    }
+    
+    .review-images img {
+        object-fit: cover;
+        height: 80px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 筛选功能实现
+        const serviceCategory = document.getElementById('serviceCategory');
+        const rating = document.getElementById('rating');
+        const sortBy = document.getElementById('sortBy');
+        
+        // 监听筛选条件变化
+        serviceCategory.addEventListener('change', filterReviews);
+        rating.addEventListener('change', filterReviews);
+        sortBy.addEventListener('change', filterReviews);
+        
+        function filterReviews() {
+            // 这里可以实现实际的筛选逻辑
+            // 在实际应用中，可能需要发送AJAX请求获取筛选后的评价
+            console.log('筛选条件：', {
+                category: serviceCategory.value,
+                rating: rating.value,
+                sortBy: sortBy.value
+            });
+        }
+    });
+</script>
+{% endblock %}
 {% endblock %}

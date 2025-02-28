@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}使用指南 - 海帮{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <h1 class="mb-5 text-center">使用指南</h1>
+            
+            <!-- 导航标签 -->
+            <ul class="nav nav-tabs mb-4" id="guideTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="task-creator-tab" data-bs-toggle="tab" data-bs-target="#task-creator" type="button" role="tab" aria-controls="task-creator" aria-selected="true">
+                        <i class="fas fa-clipboard-list me-2"></i>任务发布者
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="service-provider-tab" data-bs-toggle="tab" data-bs-target="#service-provider" type="button" role="tab" aria-controls="service-provider" aria-selected="false">
+                        <i class="fas fa-briefcase me-2"></i>服务提供者
+                    </button>
+                </li>
+            </ul>
+            
+            <!-- 标签内容 -->
+            <div class="tab-content" id="guideTabContent">
+                <!-- 任务发布者指南 -->
+                <div class="tab-pane fade show active" id="task-creator" role="tabpanel" aria-labelledby="task-creator-tab">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <h2 class="card-title mb-4">任务发布者指南</h2>
+                            
+                            <!-- 步骤 1 -->
+                            <div class="guide-step mb-5">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="step-number">1</div>
+                                    <h3 class="h4 mb-0 ms-3">注册并完善个人资料</h3>
+                                </div>
+                                <div class="ms-5">
+                                    <p>在开始使用海帮发布任务前，您需要：</p>
+                                    <ul>
+                                        <li>注册一个账户并验证您的邮箱</li>
+                                        <li>完善您的个人资料，包括联系方式</li>
+                                        <li>添加您的支付方式（用于支付服务费用）</li>
+                                    </ul>
+                                    <p>完整的个人资料有助于服务提供者更好地了解您的需求，提高任务匹配的效率。</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 步骤 2 -->
+                            <div class="guide-step mb-5">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="step-number">2</div>
+                                    <h3 class="h4 mb-0 ms-3">创建并发布任务</h3>
+                                </div>
+                                <div class="ms-5">
+                                    <p>发布一个清晰、详细的任务描述是吸引合适服务提供者的关键：</p>
+                                    <ul>
+                                        <li>选择合适的任务类别</li>
+                                        <li>提供详细的任务描述，包括具体要求和期望</li>
+                                        <li>设定合理的预算范围</li>
+                                        <li>指定任务的时间要求和地点</li>
+                                        <li>上传相关图片或文件（如适用）</li>
+                                    </ul>
+                                    <p>提示：越详细的任务描述越能吸引专业的服务提供者，并获得更准确的报价。</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 步骤 3 -->
+                            <div class="guide-step mb-5">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="step-number">3</div>
+                                    <h3 class="h4 mb-0 ms-3">筛选和选择服务提供者</h3>
+                                </div>
+                                <div class="ms-5">
+                                    <p>发布任务后，您将收到来自服务提供者的报价和消息：</p>
+                                    <ul>
+                                        <li>查看服务提供者的个人资料、评价和完成率</li>
+                                        <li>比较不同服务提供者的报价和方案</li>
+                                        <li>通过平台消息系统与服务提供者沟通，澄清细节</li>
+                                        <li>选择最适合的服务提供者并确认委托</li>
+                                    </ul>
+                                    <p>建议：不要仅仅基于价格做决定，综合考虑服务提供者的经验、评价和专业度。</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 步骤 4 -->
+                            <div class="guide-step mb-5">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="step-number">4</div>
+                                    <h3 class="h4 mb-0 ms-3">任务进行与完成</h3>
+                                </div>
+                                <div class="ms-5">
+                                    <p>在任务进行过程中：</p>
+                                    <ul>
+                                        <li>保持与服务提供者的沟通</li>
+                                        <li>如有必要，可以更新任务要求（可能影响最终价格）</li>
+                                        <li>任务完成后，确认服务质量并释放支付</li>
+                                        <li>为服务提供者留下诚实的评价，帮助其他用户</li>
+                                    </ul>
+                                    <p>注意：任务完成后，请及时确认并支付，这有助于维护良好的平台生态。</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 安全提示 -->
+                            <div class="alert alert-info">
+                                <h4 class="alert-heading"><i class="fas fa-shield-alt me-2"></i>安全提示</h4>
+                                <p>为了保障您的权益，我们建议：</p>
+                                <ul>
+                                    <li>所有沟通和支付都通过平台进行，避免线下交易</li>
+                                    <li>不要提前支付全款，可以按照任务进度分阶段支付</li>
+                                    <li>如遇到问题，及时联系平台客服寻求帮助</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 服务提供者指南 -->
+                <div class="tab-pane fade" id="service-provider" role="tabpanel" aria-labelledby="service-provider-tab">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <h2 class="card-title mb-4">服务提供者指南</h2>
+                            
+                            <!-- 步骤 1 -->
+                            <div class="guide-step mb-5">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="step-number">1</div>
+                                    <h3 class="h4 mb-0 ms-3">注册并创建专业档案</h3>
+                                </div>
+                                <div class="ms-5">
+                                    <p>成为海帮的服务提供者，您需要：</p>
+                                    <ul>
+                                        <li>注册账户并完成身份验证</li>
+                                        <li>创建专业的个人档案，突出您的技能和专长</li>
+                                        <li>上传相关证书或资质证明（如适用）</li>
+                                        <li>设置您提供服务的类别和价格范围</li>
+                                        <li>添加您的作品集或过往项目展示（如适用）</li>
+                                    </ul>
+                                    <p>专业、完整的个人档案是赢得客户信任的第一步。</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 步骤 2 -->
+                            <div class="guide-step mb-5">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="step-number">2</div>
+                                    <h3 class="h4 mb-0 ms-3">寻找并投标任务</h3>
+                                </div>
+                                <div class="ms-5">
+                                    <p>有两种方式可以接到任务：</p>
+                                    <ul>
+                                        <li>浏览任务市场，筛选适合您专业领域的任务</li>
+                                        <li>设置任务提醒，当有符合您技能的新任务发布时获得通知</li>
+                                        <li>提交专业、有竞争力的报价方案</li>
+                                        <li>在投标中清晰说明您的服务内容、时间安排和价格构成</li>
+                                    </ul>
+                                    <p>提示：个性化的投标方案比通用模板更容易获得客户青睐。</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 步骤 3 -->
+                            <div class="guide-step mb-5">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="step-number">3</div>
+                                    <h3 class="h4 mb-0 ms-3">沟通与确认</h3>
+                                </div>
+                                <div class="ms-5">
+                                    <p>当客户对您的报价感兴趣时：</p>
+                                    <ul>
+                                        <li>及时回复客户的询问，澄清任务细节</li>
+                                        <li>如有必要，调整您的方案以满足客户需求</li>
+                                        <li>确认任务范围、时间和价格，避免后期误解</li>
+                                        <li>签订平台服务协议，明确双方权责</li>
+                                    </ul>
+                                    <p>良好的沟通是成功合作的基础，请保持专业和耐心。</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 步骤 4 -->
+                            <div class="guide-step mb-5">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="step-number">4</div>
+                                    <h3 class="h4 mb-0 ms-3">完成任务并获取评价</h3>
+                                </div>
+                                <div class="ms-5">
+                                    <p>提供高质量服务并建立良好声誉：</p>
+                                    <ul>
+                                        <li>按时、高质量地完成任务</li>
+                                        <li>遇到问题及时沟通，寻找解决方案</li>
+                                        <li>任务完成后，请客户确认并支付</li>
+                                        <li>邀请客户留下评价，建立您的服务声誉</li>
+                                        <li>与优质客户保持联系，获取重复业务</li>
+                                    </ul>
+                                    <p>良好的评价是获取更多任务的关键，请始终以专业态度对待每一个任务。</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 成功提示 -->
+                            <div class="alert alert-success">
+                                <h4 class="alert-heading"><i class="fas fa-award me-2"></i>成功提示</h4>
+                                <p>成为受欢迎的服务提供者：</p>
+                                <ul>
+                                    <li>保持专业形象和高质量服务</li>
+                                    <li>准时响应客户需求，遵守承诺</li>
+                                    <li>不断学习和提升您的技能</li>
+                                    <li>处理好客户反馈，包括负面评价</li>
+                                    <li>利用平台工具提高工作效率</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block styles %}
+<style>
+    .step-number {
+        width: 40px;
+        height: 40px;
+        background-color: var(--bs-primary);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+    
+    .guide-step {
+        position: relative;
+    }
+    
+    .guide-step:not(:last-child):before {
+        content: '';
+        position: absolute;
+        left: 20px;
+        top: 50px;
+        bottom: -20px;
+        width: 2px;
+        background-color: #e9ecef;
+    }
+    
+    .nav-tabs .nav-link.active {
+        border-bottom: 3px solid var(--bs-primary);
+        font-weight: 600;
+    }
+    
+    .nav-tabs .nav-link {
+        color: var(--bs-dark);
+    }
+</style>
+{% endblock %}
+{% endblock %} 

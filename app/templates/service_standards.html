@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}服务标准 - 海帮{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="mb-4 text-center">海帮服务标准</h1>
+            <p class="lead text-center mb-5">我们致力于提供高质量的服务体验，以下是我们对所有服务提供者的基本要求</p>
+            
+            <!-- 服务质量标准 -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="card-title mb-4">
+                        <i class="fas fa-award text-primary me-2"></i>服务质量标准
+                    </h2>
+                    
+                    <div class="standard-item mb-4">
+                        <h3 class="h5 mb-3">专业性</h3>
+                        <p>所有服务提供者必须在其专业领域具备相应的技能和经验。我们鼓励服务提供者上传相关证书、资质或作品集，以证明其专业能力。</p>
+                    </div>
+                    
+                    <div class="standard-item mb-4">
+                        <h3 class="h5 mb-3">准时性</h3>
+                        <p>服务提供者必须尊重时间承诺，按时到达服务地点并在约定时间内完成服务。如遇特殊情况需要延期，应提前与客户沟通并获得同意。</p>
+                    </div>
+                    
+                    <div class="standard-item mb-4">
+                        <h3 class="h5 mb-3">沟通质量</h3>
+                        <p>服务提供者应保持清晰、及时的沟通，对客户的询问应在24小时内回复。服务过程中的任何变更或问题都应立即告知客户。</p>
+                    </div>
+                    
+                    <div class="standard-item mb-4">
+                        <h3 class="h5 mb-3">服务完成度</h3>
+                        <p>服务必须按照约定的范围和质量标准完成。如果无法满足原定要求，服务提供者应提前告知客户并提供替代方案。</p>
+                    </div>
+                    
+                    <div class="standard-item">
+                        <h3 class="h5 mb-3">诚信与透明</h3>
+                        <p>服务提供者必须诚实地表述自己的能力和服务内容，不得夸大或虚假宣传。价格应透明，不得有隐藏费用。</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 服务评价体系 -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="card-title mb-4">
+                        <i class="fas fa-star text-primary me-2"></i>服务评价体系
+                    </h2>
+                    
+                    <p>为确保服务质量，我们建立了完善的评价体系：</p>
+                    
+                    <div class="row g-4 mt-2">
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body">
+                                    <h3 class="h5 mb-3">客户评价</h3>
+                                    <p class="mb-0">每次服务完成后，客户可对服务提供者进行评分和评价，涵盖专业度、沟通、准时性和整体满意度等方面。</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body">
+                                    <h3 class="h5 mb-3">服务提供者评级</h3>
+                                    <p class="mb-0">根据客户评价、完成率和响应速度等因素，服务提供者将获得不同级别的评级，影响其在平台的展示优先级。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 服务保障 -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="card-title mb-4">
+                        <i class="fas fa-shield-alt text-primary me-2"></i>服务保障
+                    </h2>
+                    
+                    <div class="standard-item mb-4">
+                        <h3 class="h5 mb-3">支付保障</h3>
+                        <p>客户的付款将由平台暂时保管，只有在服务完成并确认后才会释放给服务提供者，确保服务质量。</p>
+                    </div>
+                    
+                    <div class="standard-item mb-4">
+                        <h3 class="h5 mb-3">服务保证</h3>
+                        <p>如果服务未达到约定标准，客户可以申请退款或要求重新提供服务。我们的客服团队将协助解决纠纷。</p>
+                    </div>
+                    
+                    <div class="standard-item">
+                        <h3 class="h5 mb-3">安全保障</h3>
+                        <p>所有服务提供者都经过身份验证，我们也提供安全提示和最佳实践，确保交易和服务过程的安全。</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 违规处理 -->
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="card-title mb-4">
+                        <i class="fas fa-exclamation-triangle text-primary me-2"></i>违规处理
+                    </h2>
+                    
+                    <p>对于违反服务标准的行为，我们将采取以下措施：</p>
+                    
+                    <ul class="list-group list-group-flush mt-3">
+                        <li class="list-group-item bg-transparent px-0">
+                            <strong>首次违规：</strong> 警告并要求改进
+                        </li>
+                        <li class="list-group-item bg-transparent px-0">
+                            <strong>多次违规：</strong> 降低评级和展示优先级
+                        </li>
+                        <li class="list-group-item bg-transparent px-0">
+                            <strong>严重违规：</strong> 暂停或永久禁止在平台提供服务
+                        </li>
+                    </ul>
+                    
+                    <div class="alert alert-info mt-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        如果您遇到任何服务问题，请及时联系我们的客服团队，我们将尽快协助您解决。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
