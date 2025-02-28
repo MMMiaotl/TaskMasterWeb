@@ -67,11 +67,11 @@ body {
     border: none;
     border-radius: 12px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s ease;
+    transition: box-shadow 0.2s ease;
 }
 
 .card:hover {
-    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 /* 按钮样式 */
@@ -169,11 +169,10 @@ body {
     border: none;
     border-radius: 1rem;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: box-shadow 0.3s ease;
 }
 
 .service-card:hover {
-    transform: translateY(-5px);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
@@ -296,12 +295,11 @@ body {
 }
 
 .service-card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: box-shadow 0.3s ease;
 }
 
 .service-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .price-tag {
@@ -351,11 +349,12 @@ body {
 
 .service-card {
     border: 1px solid rgba(0,0,0,0.03);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .service-card:hover {
     background: rgba(43,45,66,0.02);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 
 .feature-icon {
@@ -453,19 +452,19 @@ body {
 .quick-tags .badge:hover {
     background: var(--primary-color) !important;
     color: white !important;
-    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 /* 服务类别卡片 */
 .service-category-card {
     border: 1px solid rgba(43,45,66,0.08);
-    transition: transform 0.3s ease;
+    transition: box-shadow 0.3s ease;
     overflow: hidden;
     position: relative;
 }
 
 .service-category-card:hover {
-    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .service-category-card::after {
@@ -565,11 +564,10 @@ body {
 .task-card {
     border: none;
     border-radius: 12px;
-    transition: all 0.3s ease;
+    transition: box-shadow 0.3s ease;
 }
 
 .task-card:hover {
-    transform: translateY(-3px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
@@ -581,7 +579,7 @@ body {
 .category-card {
     border: none;
     border-radius: 12px;
-    transition: all 0.3s ease;
+    transition: box-shadow 0.3s ease;
 }
 
 .section-title {
