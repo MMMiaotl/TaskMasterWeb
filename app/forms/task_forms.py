@@ -1,4 +1,5 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, TextAreaField, SelectField, DateField, DecimalField, SubmitField, IntegerField, BooleanField, FloatField, RadioField
 from wtforms.validators import DataRequired, Length, NumberRange, Optional
 from app.utils.constants import SERVICE_CHOICES
@@ -6,7 +7,7 @@ from app.utils.constants import SERVICE_CHOICES
 class TaskForm(FlaskForm):
     """任务创建和编辑表单"""
     title = StringField('任务标题', validators=[
-        DataRequired(message='请输入任务标题'),
+        Optional(),
         Length(min=2, max=100, message='标题长度必须在2-100字符之间')
     ])
     
@@ -16,7 +17,7 @@ class TaskForm(FlaskForm):
     )
     
     description = TextAreaField('任务描述', validators=[
-        DataRequired(message='请输入任务描述'),
+        Optional(),
         Length(min=10, max=1000, message='描述长度必须在10-1000字符之间')
     ])
     
@@ -34,6 +35,19 @@ class TaskForm(FlaskForm):
         validators=[
             Optional(),
             NumberRange(min=1, message='预算必须大于0')
+        ]
+    )
+    
+    # 新增补充信息字段
+    additional_info = TextAreaField('补充信息', 
+        validators=[Optional(), Length(max=2000, message='补充信息不能超过2000字符')]
+    )
+    
+    # 新增图片上传字段
+    task_images = FileField('上传图片', 
+        validators=[
+            Optional(),
+            FileAllowed(['jpg', 'jpeg', 'png', 'gif'], '只允许上传图片文件!')
         ]
     )
     

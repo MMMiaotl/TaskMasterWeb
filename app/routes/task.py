@@ -53,14 +53,29 @@ def create_task():
         try:
             # 创建基本任务对象
             task = Task(
-                title=form.title.data,
-                description=form.description.data,
+                title=form.title.data if form.title.data else "未命名任务",
+                description=form.description.data if form.description.data else "",
                 service_category=form.service_category.data,
                 location=form.location.data,
                 deadline=form.deadline.data,
                 budget=form.budget.data,
                 user_id=current_user.id
             )
+            
+            # 处理补充信息
+            if form.additional_info.data:
+                # 这里可以将补充信息添加到描述中或存储在单独的字段中
+                if task.description:
+                    task.description += "\n\n补充信息：\n" + form.additional_info.data
+                else:
+                    task.description = "补充信息：\n" + form.additional_info.data
+            
+            # 处理图片上传
+            if form.task_images.data:
+                # 这里需要实现图片上传和存储的逻辑
+                # 例如：保存图片到服务器，并将路径存储到数据库
+                # 这部分代码需要根据你的文件存储方式来实现
+                pass
             
             # 根据服务类别处理特定字段
             if task.service_category:
