@@ -5,7 +5,7 @@ from app.models import Task, Message, User, Review
 from app.forms import TaskForm, ReviewForm
 from sqlalchemy import or_
 from datetime import datetime
-from app.utils.constants import SERVICE_CATEGORIES
+from app.utils.constants import SERVICE_CATEGORIES, SERVICE_CHOICES
 
 task_bp = Blueprint('task', __name__, url_prefix='/task')
 
@@ -38,6 +38,16 @@ def tasks():
 @login_required
 def create_task():
     form = TaskForm()
+    
+    # 处理GET请求中的category参数
+    if request.method == 'GET' and request.args.get('category'):
+        category_name = request.args.get('category')
+        # 查找匹配的服务类别
+        for value, label in SERVICE_CHOICES:
+            if category_name.lower() in label.lower():
+                form.service_category.data = value
+                break
+    
     if form.validate_on_submit():
         try:
             task = Task(
@@ -61,7 +71,8 @@ def create_task():
     return render_template('create_task.html', 
                          title='发布任务', 
                          form=form,
-                         categories=SERVICE_CATEGORIES)
+                         categories=SERVICE_CATEGORIES,
+                         preselect_category=request.args.get('category', ''))
 
 @task_bp.route('/task/<int:task_id>')
 def task_detail(task_id):

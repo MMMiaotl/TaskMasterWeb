@@ -9,6 +9,13 @@
                     <h3 class="mb-0">发布新任务</h3>
                 </div>
                 <div class="card-body">
+                    {% if preselect_category %}
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        根据您的搜索"{{ preselect_category }}"，我们已为您预选了最匹配的服务类别。
+                    </div>
+                    {% endif %}
+                    
                     <form method="POST" class="needs-validation" novalidate>
                         {{ form.hidden_tag() }}
                         
