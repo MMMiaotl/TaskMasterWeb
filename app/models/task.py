@@ -17,9 +17,9 @@ class Task(db.Model):
     service_category = db.Column(db.String(50), nullable=False)  # 格式: "category.subcategory"
     service_main_category = db.Column(db.String(30))  # 主类别，用于快速筛选
     service_sub_category = db.Column(db.String(30))  # 子类别
-    location = db.Column(db.String(100), nullable=False)
+    location = db.Column(db.String(100), nullable=True)
     deadline = db.Column(db.DateTime, nullable=False)
-    budget = db.Column(db.Float, nullable=False)
+    budget = db.Column(db.Float, nullable=True)
     status = db.Column(db.Integer, default=0)  # 0: 等待接单, 1: 已接单, 2: 进行中, 3: 已完成
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

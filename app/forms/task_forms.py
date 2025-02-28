@@ -21,7 +21,7 @@ class TaskForm(FlaskForm):
     ])
     
     location = StringField('地点', validators=[
-        DataRequired(message='请输入任务地点'),
+        Optional(),
         Length(max=100)
     ])
     
@@ -32,7 +32,7 @@ class TaskForm(FlaskForm):
     
     budget = DecimalField('预算 (欧元)', 
         validators=[
-            DataRequired(message='请输入任务预算'),
+            Optional(),
             NumberRange(min=1, message='预算必须大于0')
         ]
     )

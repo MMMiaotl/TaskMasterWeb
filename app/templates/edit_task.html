@@ -20,7 +20,7 @@
             {{ form.service_category(class="form-select") }}
         </div>
         <div class="mb-3">
-            {{ form.location.label(class="form-label") }}
+            {{ form.location.label(class="form-label", text="服务地点 (可选)") }}
             {{ form.location(class="form-control") }}
         </div>
         <div class="mb-3">
@@ -28,7 +28,7 @@
             {{ form.deadline(class="form-control") }}
         </div>
         <div class="mb-3">
-            {{ form.budget.label(class="form-label") }}
+            {{ form.budget.label(class="form-label", text="预算 (可选)") }}
             {{ form.budget(class="form-control") }}
         </div>
         <button type="submit" class="btn btn-primary">更新任务</button>
