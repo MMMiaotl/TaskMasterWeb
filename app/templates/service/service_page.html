@@ -43,17 +43,21 @@
         <div class="col-md-9">
             <div class="service-detail mt-0">
                 <div class="card-body">
-                    <h1 class="display-5 fw-bold mb-3">{{ current_service.name }}</h1>
-                    <div class="service-content">
-                        <p class="lead text-muted">{{ current_service.description }}</p>
-                    </div>
-                    
-                    <!-- 添加服务相关操作 -->
-                    <div class="service-actions mt-4">
-                        <a href="{{ url_for('task.create_task', service_id=current_service.id) }}" 
-                           class="btn btn-primary btn-lg">
-                            <i class="fas fa-plus me-2"></i>发布任务
-                        </a>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h1 class="display-5 fw-bold mb-3">{{ current_service.name }}</h1>
+                            <div class="service-content">
+                                <p class="lead text-muted">{{ current_service.description }}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 添加服务相关操作 - 移到右侧 -->
+                        <div class="service-actions ms-4">
+                            <a href="{{ url_for('task.create_task', service_id=current_service.id) }}" 
+                               class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus me-2"></i>发布任务
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -181,9 +185,13 @@
 }
 
 .service-actions {
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid rgba(0,0,0,0.1);
+    display: flex;
+    align-items: flex-start;
+    height: 100%;
+    border: none;
+    padding: 0;
+    margin: 0;
+    background: transparent;
 }
 
 .filter-section .card {
