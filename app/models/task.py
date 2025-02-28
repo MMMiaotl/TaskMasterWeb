@@ -29,6 +29,34 @@ class Task(db.Model):
     view_count = db.Column(db.Integer, default=0)
     featured = db.Column(db.Boolean, default=False)
 
+    # 服务类别特定字段
+    # 搬家服务特定字段
+    moving_item_size = db.Column(db.String(50))  # 物品大小：小型/中型/大型
+    moving_item_quantity = db.Column(db.Integer)  # 物品数量
+    moving_has_elevator = db.Column(db.Boolean)  # 是否有电梯
+    moving_floor_number = db.Column(db.Integer)  # 楼层
+    
+    # 接送机特定字段
+    pickup_flight_number = db.Column(db.String(20))  # 航班号
+    pickup_passengers = db.Column(db.Integer)  # 乘客数量
+    pickup_luggage_count = db.Column(db.Integer)  # 行李数量
+    pickup_is_arrival = db.Column(db.Boolean)  # 是接机还是送机
+    
+    # 装修维修特定字段
+    repair_area = db.Column(db.Float)  # 面积（平方米）
+    repair_type = db.Column(db.String(50))  # 维修类型：水电/墙面/地板等
+    repair_materials_included = db.Column(db.Boolean)  # 是否包含材料
+    
+    # 法律咨询特定字段
+    legal_case_type = db.Column(db.String(50))  # 案件类型
+    legal_urgency = db.Column(db.String(20))  # 紧急程度
+    legal_documents_ready = db.Column(db.Boolean)  # 文件是否准备好
+    
+    # 留学咨询特定字段
+    education_target_country = db.Column(db.String(50))  # 目标国家
+    education_study_level = db.Column(db.String(30))  # 学习阶段：本科/硕士/博士
+    education_field = db.Column(db.String(50))  # 学习领域
+    
     # 定义与消息的关系
     messages = db.relationship(
         'Message', 

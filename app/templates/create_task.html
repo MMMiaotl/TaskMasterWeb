@@ -116,6 +116,143 @@
                                 </div>
                             </div>
                             
+                            <!-- 服务类别特定字段 -->
+                            <div id="service-specific-fields">
+                                <!-- 搬家服务特定字段 -->
+                                <div class="service-fields d-none" id="moving-fields">
+                                    <h4 class="h5 mb-3">搬家服务详情</h4>
+                                    
+                                    <div class="mb-3">
+                                        <label for="moving_item_size" class="form-label">物品大小</label>
+                                        {{ form.moving_item_size(class="form-control") }}
+                                        <div class="form-text">选择您需要搬运的物品大小类型</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="moving_item_quantity" class="form-label">物品数量</label>
+                                        {{ form.moving_item_quantity(class="form-control", type="number", min="1") }}
+                                        <div class="form-text">输入需要搬运的物品数量</div>
+                                    </div>
+                                    
+                                    <div class="mb-3 form-check">
+                                        {{ form.moving_has_elevator(class="form-check-input") }}
+                                        <label class="form-check-label" for="moving_has_elevator">是否有电梯</label>
+                                        <div class="form-text">如果您的住所有电梯，请勾选此项</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="moving_floor_number" class="form-label">楼层</label>
+                                        {{ form.moving_floor_number(class="form-control", type="number", min="0") }}
+                                        <div class="form-text">输入您的住所楼层</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 接送机特定字段 -->
+                                <div class="service-fields d-none" id="pickup-fields">
+                                    <h4 class="h5 mb-3">接送机服务详情</h4>
+                                    
+                                    <div class="mb-3">
+                                        <label for="pickup_flight_number" class="form-label">航班号</label>
+                                        {{ form.pickup_flight_number(class="form-control") }}
+                                        <div class="form-text">输入您的航班号，以便服务提供者查询航班信息</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="pickup_passengers" class="form-label">乘客数量</label>
+                                        {{ form.pickup_passengers(class="form-control", type="number", min="1") }}
+                                        <div class="form-text">输入需要接送的乘客数量</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="pickup_luggage_count" class="form-label">行李数量</label>
+                                        {{ form.pickup_luggage_count(class="form-control", type="number", min="0") }}
+                                        <div class="form-text">输入您携带的行李数量</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">服务类型</label>
+                                        <div>
+                                            {% for subfield in form.pickup_is_arrival %}
+                                            <div class="form-check form-check-inline">
+                                                {{ subfield(class="form-check-input") }}
+                                                {{ subfield.label(class="form-check-label") }}
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="form-text">选择您需要的服务类型</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 装修维修特定字段 -->
+                                <div class="service-fields d-none" id="repair-fields">
+                                    <h4 class="h5 mb-3">装修维修服务详情</h4>
+                                    
+                                    <div class="mb-3">
+                                        <label for="repair_area" class="form-label">面积（平方米）</label>
+                                        {{ form.repair_area(class="form-control", type="number", step="0.01", min="0.1") }}
+                                        <div class="form-text">输入需要维修的区域面积</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="repair_type" class="form-label">维修类型</label>
+                                        {{ form.repair_type(class="form-control") }}
+                                        <div class="form-text">选择您需要的维修类型</div>
+                                    </div>
+                                    
+                                    <div class="mb-3 form-check">
+                                        {{ form.repair_materials_included(class="form-check-input") }}
+                                        <label class="form-check-label" for="repair_materials_included">是否包含材料</label>
+                                        <div class="form-text">如果您希望服务提供者提供维修材料，请勾选此项</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 法律咨询特定字段 -->
+                                <div class="service-fields d-none" id="legal-fields">
+                                    <h4 class="h5 mb-3">法律咨询服务详情</h4>
+                                    
+                                    <div class="mb-3">
+                                        <label for="legal_case_type" class="form-label">案件类型</label>
+                                        {{ form.legal_case_type(class="form-control") }}
+                                        <div class="form-text">选择您需要咨询的法律案件类型</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="legal_urgency" class="form-label">紧急程度</label>
+                                        {{ form.legal_urgency(class="form-control") }}
+                                        <div class="form-text">选择您案件的紧急程度</div>
+                                    </div>
+                                    
+                                    <div class="mb-3 form-check">
+                                        {{ form.legal_documents_ready(class="form-check-input") }}
+                                        <label class="form-check-label" for="legal_documents_ready">文件是否准备好</label>
+                                        <div class="form-text">如果您已经准备好相关法律文件，请勾选此项</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 留学咨询特定字段 -->
+                                <div class="service-fields d-none" id="education-fields">
+                                    <h4 class="h5 mb-3">留学咨询服务详情</h4>
+                                    
+                                    <div class="mb-3">
+                                        <label for="education_target_country" class="form-label">目标国家</label>
+                                        {{ form.education_target_country(class="form-control") }}
+                                        <div class="form-text">选择您希望留学的目标国家</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="education_study_level" class="form-label">学习阶段</label>
+                                        {{ form.education_study_level(class="form-control") }}
+                                        <div class="form-text">选择您希望申请的学习阶段</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="education_field" class="form-label">学习领域</label>
+                                        {{ form.education_field(class="form-control") }}
+                                        <div class="form-text">选择您希望学习的领域</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="d-flex justify-content-between mt-4">
                                 <button type="button" class="btn btn-outline-secondary btn-lg px-4 prev-step">上一步</button>
                                 <button type="button" class="btn btn-primary btn-lg px-4 next-step">下一步</button>
@@ -185,6 +322,90 @@
                                             <dt class="col-sm-4">预算:</dt>
                                             <dd class="col-sm-8" id="summary-budget"></dd>
                                         </dl>
+                                        
+                                        <!-- 服务类别特定字段摘要 -->
+                                        <div id="service-specific-summary" class="mt-3 pt-3 border-top">
+                                            <!-- 搬家服务特定字段摘要 -->
+                                            <div class="service-summary d-none" id="moving-summary">
+                                                <h5 class="h6 mb-2">搬家服务详情</h5>
+                                                <dl class="row mb-0">
+                                                    <dt class="col-sm-4">物品大小:</dt>
+                                                    <dd class="col-sm-8" id="summary-moving-size"></dd>
+                                                    
+                                                    <dt class="col-sm-4">物品数量:</dt>
+                                                    <dd class="col-sm-8" id="summary-moving-quantity"></dd>
+                                                    
+                                                    <dt class="col-sm-4">是否有电梯:</dt>
+                                                    <dd class="col-sm-8" id="summary-moving-elevator"></dd>
+                                                    
+                                                    <dt class="col-sm-4">楼层:</dt>
+                                                    <dd class="col-sm-8" id="summary-moving-floor"></dd>
+                                                </dl>
+                                            </div>
+                                            
+                                            <!-- 接送机特定字段摘要 -->
+                                            <div class="service-summary d-none" id="pickup-summary">
+                                                <h5 class="h6 mb-2">接送机服务详情</h5>
+                                                <dl class="row mb-0">
+                                                    <dt class="col-sm-4">航班号:</dt>
+                                                    <dd class="col-sm-8" id="summary-pickup-flight"></dd>
+                                                    
+                                                    <dt class="col-sm-4">乘客数量:</dt>
+                                                    <dd class="col-sm-8" id="summary-pickup-passengers"></dd>
+                                                    
+                                                    <dt class="col-sm-4">行李数量:</dt>
+                                                    <dd class="col-sm-8" id="summary-pickup-luggage"></dd>
+                                                    
+                                                    <dt class="col-sm-4">服务类型:</dt>
+                                                    <dd class="col-sm-8" id="summary-pickup-type"></dd>
+                                                </dl>
+                                            </div>
+                                            
+                                            <!-- 装修维修特定字段摘要 -->
+                                            <div class="service-summary d-none" id="repair-summary">
+                                                <h5 class="h6 mb-2">装修维修服务详情</h5>
+                                                <dl class="row mb-0">
+                                                    <dt class="col-sm-4">面积:</dt>
+                                                    <dd class="col-sm-8" id="summary-repair-area"></dd>
+                                                    
+                                                    <dt class="col-sm-4">维修类型:</dt>
+                                                    <dd class="col-sm-8" id="summary-repair-type"></dd>
+                                                    
+                                                    <dt class="col-sm-4">是否包含材料:</dt>
+                                                    <dd class="col-sm-8" id="summary-repair-materials"></dd>
+                                                </dl>
+                                            </div>
+                                            
+                                            <!-- 法律咨询特定字段摘要 -->
+                                            <div class="service-summary d-none" id="legal-summary">
+                                                <h5 class="h6 mb-2">法律咨询服务详情</h5>
+                                                <dl class="row mb-0">
+                                                    <dt class="col-sm-4">案件类型:</dt>
+                                                    <dd class="col-sm-8" id="summary-legal-case"></dd>
+                                                    
+                                                    <dt class="col-sm-4">紧急程度:</dt>
+                                                    <dd class="col-sm-8" id="summary-legal-urgency"></dd>
+                                                    
+                                                    <dt class="col-sm-4">文件是否准备好:</dt>
+                                                    <dd class="col-sm-8" id="summary-legal-documents"></dd>
+                                                </dl>
+                                            </div>
+                                            
+                                            <!-- 留学咨询特定字段摘要 -->
+                                            <div class="service-summary d-none" id="education-summary">
+                                                <h5 class="h6 mb-2">留学咨询服务详情</h5>
+                                                <dl class="row mb-0">
+                                                    <dt class="col-sm-4">目标国家:</dt>
+                                                    <dd class="col-sm-8" id="summary-education-country"></dd>
+                                                    
+                                                    <dt class="col-sm-4">学习阶段:</dt>
+                                                    <dd class="col-sm-8" id="summary-education-level"></dd>
+                                                    
+                                                    <dt class="col-sm-4">学习领域:</dt>
+                                                    <dd class="col-sm-8" id="summary-education-field"></dd>
+                                                </dl>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -360,6 +581,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 isValid = false;
             } else {
                 categorySelect.classList.remove('is-invalid');
+                
+                // 如果选择了服务类别，显示对应的特定字段
+                showServiceSpecificFields(categorySelect.value);
             }
         } else if (stepNumber === 2) {
             const title = document.getElementById('title');
@@ -386,6 +610,87 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 location.classList.remove('is-invalid');
             }
+            
+            // 验证服务特定字段
+            const categorySelect = document.getElementById('service_category');
+            if (categorySelect.value) {
+                const parts = categorySelect.value.split('.');
+                if (parts.length === 2) {
+                    const subCategory = parts[1];
+                    
+                    // 根据子类别验证特定字段
+                    if (subCategory === 'moving') {
+                        const itemSize = document.getElementById('moving_item_size');
+                        const itemQuantity = document.getElementById('moving_item_quantity');
+                        
+                        if (!itemSize.value) {
+                            itemSize.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            itemSize.classList.remove('is-invalid');
+                        }
+                        
+                        if (!itemQuantity.value || parseInt(itemQuantity.value) < 1) {
+                            itemQuantity.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            itemQuantity.classList.remove('is-invalid');
+                        }
+                    } else if (subCategory === 'pickup') {
+                        const passengers = document.getElementById('pickup_passengers');
+                        
+                        if (!passengers.value || parseInt(passengers.value) < 1) {
+                            passengers.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            passengers.classList.remove('is-invalid');
+                        }
+                    } else if (subCategory === 'repair') {
+                        const area = document.getElementById('repair_area');
+                        const repairType = document.getElementById('repair_type');
+                        
+                        if (!area.value || parseFloat(area.value) <= 0) {
+                            area.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            area.classList.remove('is-invalid');
+                        }
+                        
+                        if (!repairType.value) {
+                            repairType.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            repairType.classList.remove('is-invalid');
+                        }
+                    } else if (subCategory === 'legal') {
+                        const caseType = document.getElementById('legal_case_type');
+                        
+                        if (!caseType.value) {
+                            caseType.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            caseType.classList.remove('is-invalid');
+                        }
+                    } else if (subCategory === 'education') {
+                        const targetCountry = document.getElementById('education_target_country');
+                        const studyLevel = document.getElementById('education_study_level');
+                        
+                        if (!targetCountry.value) {
+                            targetCountry.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            targetCountry.classList.remove('is-invalid');
+                        }
+                        
+                        if (!studyLevel.value) {
+                            studyLevel.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            studyLevel.classList.remove('is-invalid');
+                        }
+                    }
+                }
+            }
         } else if (stepNumber === 3) {
             const deadline = document.getElementById('deadline');
             const budget = document.getElementById('budget');
@@ -408,6 +713,39 @@ document.addEventListener('DOMContentLoaded', function() {
         return isValid;
     }
     
+    // 显示服务特定字段
+    function showServiceSpecificFields(categoryValue) {
+        // 隐藏所有服务特定字段
+        document.querySelectorAll('.service-fields').forEach(field => {
+            field.classList.add('d-none');
+        });
+        
+        // 如果选择了服务类别，显示对应的特定字段
+        if (categoryValue) {
+            const parts = categoryValue.split('.');
+            if (parts.length === 2) {
+                const subCategory = parts[1];
+                const fieldId = `${subCategory}-fields`;
+                const field = document.getElementById(fieldId);
+                
+                if (field) {
+                    field.classList.remove('d-none');
+                }
+            }
+        }
+    }
+    
+    // 服务类别选择变化事件
+    const categorySelect = document.getElementById('service_category');
+    categorySelect.addEventListener('change', function() {
+        showServiceSpecificFields(this.value);
+    });
+    
+    // 初始化时显示对应的服务特定字段
+    if (categorySelect.value) {
+        showServiceSpecificFields(categorySelect.value);
+    }
+    
     // 更新摘要信息
     function updateSummary() {
         const categorySelect = document.getElementById('service_category');
@@ -423,6 +761,111 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const budget = document.getElementById('budget').value;
         document.getElementById('summary-budget').textContent = `€${budget}`;
+        
+        // 隐藏所有服务特定字段摘要
+        document.querySelectorAll('.service-summary').forEach(summary => {
+            summary.classList.add('d-none');
+        });
+        
+        // 显示对应的服务特定字段摘要
+        if (categorySelect.value) {
+            const parts = categorySelect.value.split('.');
+            if (parts.length === 2) {
+                const subCategory = parts[1];
+                
+                // 搬家服务特定字段摘要
+                if (subCategory === 'moving') {
+                    document.getElementById('moving-summary').classList.remove('d-none');
+                    
+                    const itemSizeSelect = document.getElementById('moving_item_size');
+                    let itemSizeText = itemSizeSelect.value;
+                    if (itemSizeSelect.selectedIndex > 0) {
+                        itemSizeText = itemSizeSelect.options[itemSizeSelect.selectedIndex].text;
+                    }
+                    document.getElementById('summary-moving-size').textContent = itemSizeText;
+                    
+                    document.getElementById('summary-moving-quantity').textContent = document.getElementById('moving_item_quantity').value || '未指定';
+                    document.getElementById('summary-moving-elevator').textContent = document.getElementById('moving_has_elevator').checked ? '是' : '否';
+                    document.getElementById('summary-moving-floor').textContent = document.getElementById('moving_floor_number').value || '未指定';
+                }
+                
+                // 接送机特定字段摘要
+                else if (subCategory === 'pickup') {
+                    document.getElementById('pickup-summary').classList.remove('d-none');
+                    
+                    document.getElementById('summary-pickup-flight').textContent = document.getElementById('pickup_flight_number').value || '未指定';
+                    document.getElementById('summary-pickup-passengers').textContent = document.getElementById('pickup_passengers').value || '未指定';
+                    document.getElementById('summary-pickup-luggage').textContent = document.getElementById('pickup_luggage_count').value || '未指定';
+                    
+                    const pickupType = document.querySelector('input[name="pickup_is_arrival"]:checked');
+                    document.getElementById('summary-pickup-type').textContent = pickupType ? (pickupType.value === '1' ? '接机' : '送机') : '未指定';
+                }
+                
+                // 装修维修特定字段摘要
+                else if (subCategory === 'repair') {
+                    document.getElementById('repair-summary').classList.remove('d-none');
+                    
+                    const area = document.getElementById('repair_area').value;
+                    document.getElementById('summary-repair-area').textContent = area ? `${area} 平方米` : '未指定';
+                    
+                    const repairTypeSelect = document.getElementById('repair_type');
+                    let repairTypeText = repairTypeSelect.value;
+                    if (repairTypeSelect.selectedIndex > 0) {
+                        repairTypeText = repairTypeSelect.options[repairTypeSelect.selectedIndex].text;
+                    }
+                    document.getElementById('summary-repair-type').textContent = repairTypeText;
+                    
+                    document.getElementById('summary-repair-materials').textContent = document.getElementById('repair_materials_included').checked ? '是' : '否';
+                }
+                
+                // 法律咨询特定字段摘要
+                else if (subCategory === 'legal') {
+                    document.getElementById('legal-summary').classList.remove('d-none');
+                    
+                    const caseTypeSelect = document.getElementById('legal_case_type');
+                    let caseTypeText = caseTypeSelect.value;
+                    if (caseTypeSelect.selectedIndex > 0) {
+                        caseTypeText = caseTypeSelect.options[caseTypeSelect.selectedIndex].text;
+                    }
+                    document.getElementById('summary-legal-case').textContent = caseTypeText;
+                    
+                    const urgencySelect = document.getElementById('legal_urgency');
+                    let urgencyText = urgencySelect.value;
+                    if (urgencySelect.selectedIndex > 0) {
+                        urgencyText = urgencySelect.options[urgencySelect.selectedIndex].text;
+                    }
+                    document.getElementById('summary-legal-urgency').textContent = urgencyText;
+                    
+                    document.getElementById('summary-legal-documents').textContent = document.getElementById('legal_documents_ready').checked ? '是' : '否';
+                }
+                
+                // 留学咨询特定字段摘要
+                else if (subCategory === 'education') {
+                    document.getElementById('education-summary').classList.remove('d-none');
+                    
+                    const countrySelect = document.getElementById('education_target_country');
+                    let countryText = countrySelect.value;
+                    if (countrySelect.selectedIndex > 0) {
+                        countryText = countrySelect.options[countrySelect.selectedIndex].text;
+                    }
+                    document.getElementById('summary-education-country').textContent = countryText;
+                    
+                    const levelSelect = document.getElementById('education_study_level');
+                    let levelText = levelSelect.value;
+                    if (levelSelect.selectedIndex > 0) {
+                        levelText = levelSelect.options[levelSelect.selectedIndex].text;
+                    }
+                    document.getElementById('summary-education-level').textContent = levelText;
+                    
+                    const fieldSelect = document.getElementById('education_field');
+                    let fieldText = fieldSelect.value;
+                    if (fieldSelect.selectedIndex > 0) {
+                        fieldText = fieldSelect.options[fieldSelect.selectedIndex].text;
+                    }
+                    document.getElementById('summary-education-field').textContent = fieldText;
+                }
+            }
+        }
     }
     
     // 设置最小日期为当前日期

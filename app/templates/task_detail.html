@@ -25,6 +25,245 @@
                     <p><strong>最后更新:</strong> {{ task.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
                 {% endif %}
             </div>
+            
+            <!-- 任务基本信息 -->
+            <div class="task-details mt-4">
+                <h4>任务详情</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>服务类别:</span>
+                                <span class="badge bg-primary rounded-pill">{{ task.service_category }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>服务地点:</span>
+                                <span>{{ task.location }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>截止日期:</span>
+                                <span>{{ task.deadline.strftime('%Y-%m-%d') }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>预算:</span>
+                                <span class="fw-bold">€{{ task.budget }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 服务类别特定信息 -->
+                    <div class="col-md-6">
+                        {% if task.service_sub_category == 'moving' %}
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">搬家服务详情</h5>
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                {% if task.moving_item_size %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>物品大小:</span>
+                                    <span>
+                                        {% if task.moving_item_size == 'small' %}小型物品
+                                        {% elif task.moving_item_size == 'medium' %}中型物品
+                                        {% elif task.moving_item_size == 'large' %}大型物品
+                                        {% else %}{{ task.moving_item_size }}
+                                        {% endif %}
+                                    </span>
+                                </li>
+                                {% endif %}
+                                
+                                {% if task.moving_item_quantity %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>物品数量:</span>
+                                    <span>{{ task.moving_item_quantity }}</span>
+                                </li>
+                                {% endif %}
+                                
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>是否有电梯:</span>
+                                    <span>{{ '是' if task.moving_has_elevator else '否' }}</span>
+                                </li>
+                                
+                                {% if task.moving_floor_number is not none %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>楼层:</span>
+                                    <span>{{ task.moving_floor_number }}</span>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        
+                        {% elif task.service_sub_category == 'pickup' %}
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">接送机服务详情</h5>
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                {% if task.pickup_flight_number %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>航班号:</span>
+                                    <span>{{ task.pickup_flight_number }}</span>
+                                </li>
+                                {% endif %}
+                                
+                                {% if task.pickup_passengers %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>乘客数量:</span>
+                                    <span>{{ task.pickup_passengers }}</span>
+                                </li>
+                                {% endif %}
+                                
+                                {% if task.pickup_luggage_count is not none %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>行李数量:</span>
+                                    <span>{{ task.pickup_luggage_count }}</span>
+                                </li>
+                                {% endif %}
+                                
+                                {% if task.pickup_is_arrival is not none %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>服务类型:</span>
+                                    <span>{{ '接机' if task.pickup_is_arrival else '送机' }}</span>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        
+                        {% elif task.service_sub_category == 'repair' %}
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">装修维修服务详情</h5>
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                {% if task.repair_area %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>面积:</span>
+                                    <span>{{ task.repair_area }} 平方米</span>
+                                </li>
+                                {% endif %}
+                                
+                                {% if task.repair_type %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>维修类型:</span>
+                                    <span>
+                                        {% if task.repair_type == 'water_electricity' %}水电维修
+                                        {% elif task.repair_type == 'wall' %}墙面维修
+                                        {% elif task.repair_type == 'floor' %}地板维修
+                                        {% elif task.repair_type == 'furniture' %}家具维修
+                                        {% elif task.repair_type == 'other' %}其他维修
+                                        {% else %}{{ task.repair_type }}
+                                        {% endif %}
+                                    </span>
+                                </li>
+                                {% endif %}
+                                
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>是否包含材料:</span>
+                                    <span>{{ '是' if task.repair_materials_included else '否' }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        {% elif task.service_sub_category == 'legal' %}
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">法律咨询服务详情</h5>
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                {% if task.legal_case_type %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>案件类型:</span>
+                                    <span>
+                                        {% if task.legal_case_type == 'contract' %}合同纠纷
+                                        {% elif task.legal_case_type == 'immigration' %}移民事务
+                                        {% elif task.legal_case_type == 'business' %}商业法律
+                                        {% elif task.legal_case_type == 'personal' %}个人法律事务
+                                        {% elif task.legal_case_type == 'other' %}其他法律事务
+                                        {% else %}{{ task.legal_case_type }}
+                                        {% endif %}
+                                    </span>
+                                </li>
+                                {% endif %}
+                                
+                                {% if task.legal_urgency %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>紧急程度:</span>
+                                    <span>
+                                        {% if task.legal_urgency == 'low' %}不紧急
+                                        {% elif task.legal_urgency == 'medium' %}一般
+                                        {% elif task.legal_urgency == 'high' %}紧急
+                                        {% else %}{{ task.legal_urgency }}
+                                        {% endif %}
+                                    </span>
+                                </li>
+                                {% endif %}
+                                
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>文件是否准备好:</span>
+                                    <span>{{ '是' if task.legal_documents_ready else '否' }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        {% elif task.service_sub_category == 'education' %}
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">留学咨询服务详情</h5>
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                {% if task.education_target_country %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>目标国家:</span>
+                                    <span>
+                                        {% if task.education_target_country == 'usa' %}美国
+                                        {% elif task.education_target_country == 'uk' %}英国
+                                        {% elif task.education_target_country == 'canada' %}加拿大
+                                        {% elif task.education_target_country == 'australia' %}澳大利亚
+                                        {% elif task.education_target_country == 'germany' %}德国
+                                        {% elif task.education_target_country == 'france' %}法国
+                                        {% elif task.education_target_country == 'other' %}其他国家
+                                        {% else %}{{ task.education_target_country }}
+                                        {% endif %}
+                                    </span>
+                                </li>
+                                {% endif %}
+                                
+                                {% if task.education_study_level %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>学习阶段:</span>
+                                    <span>
+                                        {% if task.education_study_level == 'bachelor' %}本科
+                                        {% elif task.education_study_level == 'master' %}硕士
+                                        {% elif task.education_study_level == 'phd' %}博士
+                                        {% elif task.education_study_level == 'other' %}其他
+                                        {% else %}{{ task.education_study_level }}
+                                        {% endif %}
+                                    </span>
+                                </li>
+                                {% endif %}
+                                
+                                {% if task.education_field %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>学习领域:</span>
+                                    <span>
+                                        {% if task.education_field == 'business' %}商科
+                                        {% elif task.education_field == 'engineering' %}工程
+                                        {% elif task.education_field == 'science' %}理科
+                                        {% elif task.education_field == 'arts' %}文科
+                                        {% elif task.education_field == 'medicine' %}医学
+                                        {% elif task.education_field == 'law' %}法律
+                                        {% elif task.education_field == 'other' %}其他
+                                        {% else %}{{ task.education_field }}
+                                        {% endif %}
+                                    </span>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
 
             <!-- 任务进度条 -->
             <div class="progress-module mt-4">

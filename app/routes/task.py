@@ -6,6 +6,7 @@ from app.forms import TaskForm, ReviewForm
 from sqlalchemy import or_
 from datetime import datetime
 from app.utils.constants import SERVICE_CATEGORIES, SERVICE_CHOICES
+from flask import current_app
 
 task_bp = Blueprint('task', __name__, url_prefix='/task')
 
@@ -50,6 +51,7 @@ def create_task():
     
     if form.validate_on_submit():
         try:
+            # 创建基本任务对象
             task = Task(
                 title=form.title.data,
                 description=form.description.data,
@@ -59,6 +61,49 @@ def create_task():
                 budget=form.budget.data,
                 user_id=current_user.id
             )
+            
+            # 根据服务类别处理特定字段
+            if task.service_category:
+                # 解析服务类别
+                try:
+                    main_cat, sub_cat = task.service_category.split('.')
+                    
+                    # 搬家服务特定字段
+                    if sub_cat == 'moving':
+                        task.moving_item_size = form.moving_item_size.data
+                        task.moving_item_quantity = form.moving_item_quantity.data
+                        task.moving_has_elevator = form.moving_has_elevator.data
+                        task.moving_floor_number = form.moving_floor_number.data
+                    
+                    # 接送机特定字段
+                    elif sub_cat == 'pickup':
+                        task.pickup_flight_number = form.pickup_flight_number.data
+                        task.pickup_passengers = form.pickup_passengers.data
+                        task.pickup_luggage_count = form.pickup_luggage_count.data
+                        task.pickup_is_arrival = form.pickup_is_arrival.data == '1' if form.pickup_is_arrival.data else None
+                    
+                    # 装修维修特定字段
+                    elif sub_cat == 'repair':
+                        task.repair_area = form.repair_area.data
+                        task.repair_type = form.repair_type.data
+                        task.repair_materials_included = form.repair_materials_included.data
+                    
+                    # 法律咨询特定字段
+                    elif sub_cat == 'legal':
+                        task.legal_case_type = form.legal_case_type.data
+                        task.legal_urgency = form.legal_urgency.data
+                        task.legal_documents_ready = form.legal_documents_ready.data
+                    
+                    # 留学咨询特定字段
+                    elif sub_cat == 'education':
+                        task.education_target_country = form.education_target_country.data
+                        task.education_study_level = form.education_study_level.data
+                        task.education_field = form.education_field.data
+                        
+                except ValueError:
+                    # 如果格式不正确，记录日志
+                    current_app.logger.warning(f"Invalid service category format: {task.service_category}")
+            
             db.session.add(task)
             db.session.commit()
             flash('任务发布成功！', 'success')
