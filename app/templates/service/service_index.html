@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}服务分类 - Task Master{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- 搜索栏 -->
+    <div class="search-section mb-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <form class="d-flex gap-2" id="searchForm" action="{{ url_for('service.service_index') }}" method="get">
+                    <input type="text" 
+                           class="form-control form-control-lg" 
+                           id="searchInput"
+                           name="q"
+                           value="{{ search_query }}"
+                           autocomplete="off"
+                           placeholder="搜索服务类别，如：搬家、法律咨询...">
+                    <button class="btn btn-primary px-4" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+                <div id="searchSuggestions" class="position-absolute w-100 mt-1 d-none">
+                    <div class="list-group shadow-sm"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 搜索结果 -->
+    {% if search_query %}
+    <div class="search-results mb-5">
+        <h2 class="mb-4">搜索结果: "{{ search_query }}"</h2>
+        
+        {% if search_results %}
+        <div class="row g-4">
+            {% for service in search_results %}
+            <div class="col-md-4">
+                <a href="{{ url_for('service.service_page', category=service.category_id, service_id=service.id) }}" 
+                   class="text-decoration-none">
+                    <div class="service-card card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas {{ service.icon }} fa-2x me-3 text-primary"></i>
+                                <div>
+                                    <h3 class="h5 mb-1">{{ service.name }}</h3>
+                                    <div class="small text-muted">{{ service.category_name }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            没有找到与 "{{ search_query }}" 相关的服务。请尝试其他关键词。
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- 所有服务类别 -->
+    <h2 class="mb-4">所有服务类别</h2>
+    
+    {% for category_id, category_data in services.items() %}
+    <div class="category-section mb-5">
+        <h3 class="h4 mb-3">
+            <i class="fas fa-folder me-2 text-primary"></i>
+            {{ category_data.name }}
+        </h3>
+        
+        <div class="row g-4">
+            {% for service in category_data.services %}
+            <div class="col-md-3">
+                <a href="{{ url_for('service.service_page', category=category_id, service_id=service.id) }}" 
+                   class="text-decoration-none">
+                    <div class="service-card card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <i class="fas {{ service.icon }} fa-2x me-3 text-primary"></i>
+                                <h3 class="h5 mb-0">{{ service.name }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.service-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 12px;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.category-section h3 {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.search-section {
+    position: relative;
+}
+</style>
+{% endblock %} 

@@ -181,9 +181,43 @@ def debug_route():
 
 @service_bp.route('/')
 def service_index():
-    """服务首页，用于测试服务蓝图是否正确注册"""
+    """服务首页，展示所有服务类别，并支持搜索"""
     services = get_services_from_categories()
-    return render_template('service/service_index.html', services=services)
+    search_query = request.args.get('q', '').strip()
+    search_results = []
+    
+    # 如果有搜索查询，筛选匹配的服务
+    if search_query:
+        query_lower = search_query.lower()
+        for category_id, category_data in services.items():
+            category_name = category_data['name']
+            
+            # 检查类别名称是否匹配
+            category_match = query_lower in category_name.lower()
+            
+            # 筛选匹配的服务
+            matching_services = []
+            for service in category_data['services']:
+                if query_lower in service['name'].lower() or category_match:
+                    # 复制服务信息并添加类别信息
+                    service_info = service.copy()
+                    service_info['category_id'] = category_id
+                    service_info['category_name'] = category_name
+                    matching_services.append(service_info)
+            
+            # 如果有匹配的服务，添加到结果中
+            if matching_services:
+                search_results.extend(matching_services)
+        
+        # 按相关性排序：优先显示以查询开头的结果
+        search_results.sort(key=lambda x: (0 if x['name'].lower().startswith(query_lower) else 1, x['name']))
+    
+    return render_template(
+        'service/service_index.html', 
+        services=services, 
+        search_query=search_query,
+        search_results=search_results
+    )
 
 @service_bp.route('/ajax_tasks/<category>/<service_id>')
 def ajax_tasks(category, service_id):

@@ -15,13 +15,13 @@
                     连接专业人士，解决您的所有需求
                 </p>
                 <div class="search-box-large position-relative">
-                    <form class="d-flex gap-2" id="searchForm" action="{{ url_for('task.tasks') }}" method="get">
+                    <form class="d-flex gap-2" id="searchForm" action="{{ url_for('service.service_index') }}" method="get">
                         <input type="text" 
                                class="form-control form-control-lg" 
                                id="searchInput"
                                name="q"
                                autocomplete="off"
-                               placeholder="您需要什么帮助？">
+                               placeholder="搜索服务类别，如：搬家、法律咨询...">
                         <button class="btn btn-primary px-4" type="submit">
                             <i class="fas fa-search"></i>
                         </button>

@@ -94,24 +94,44 @@ def our_story():
 
 @main_bp.route('/search/suggestions')
 def search_suggestions():
-    query = request.args.get('q', '').strip()
+    query = request.args.get('q', '').strip().lower()
     if not query or len(query) < 1:
         return jsonify([])
     
-    # 从数据库中查询相关任务
-    suggestions = Task.query.filter(
-        or_(
-            Task.title.ilike(f'%{query}%'),
-            Task.description.ilike(f'%{query}%')
-        )
-    ).limit(5).all()
+    # 从服务类别中搜索匹配的服务
+    results = []
     
-    # 格式化建议结果
-    results = [{
-        'id': task.id,
-        'title': task.title,
-        'description': task.description[:100] + '...' if len(task.description) > 100 else task.description,
-        'url': url_for('task.task_detail', task_id=task.id)
-    } for task in suggestions]
+    for category in SERVICE_CATEGORIES:
+        category_name = category['name']
+        category_id = category['id']
+        
+        # 检查主类别是否匹配
+        if query in category_name.lower():
+            # 添加整个类别作为建议
+            results.append({
+                'id': category_id,
+                'title': category_name,
+                'description': f"浏览所有{category_name}服务",
+                'url': url_for('service.service_index', category=category_id),
+                'type': 'category'
+            })
+        
+        # 检查子类别是否匹配
+        for subcategory in category['subcategories']:
+            service_id, service_name = subcategory
+            
+            # 如果查询是服务名称的前缀或包含在服务名称中
+            if service_name.lower().startswith(query) or query in service_name.lower():
+                results.append({
+                    'id': service_id,
+                    'title': service_name,
+                    'description': f"{category_name} > {service_name}",
+                    'url': url_for('service.service_page', category=category_id, service_id=service_id),
+                    'type': 'service'
+                })
     
-    return jsonify(results) 
+    # 按相关性排序：优先显示以查询开头的结果
+    results.sort(key=lambda x: (0 if x['title'].lower().startswith(query) else 1, x['title']))
+    
+    # 限制结果数量
+    return jsonify(results[:8]) 

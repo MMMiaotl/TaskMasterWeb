@@ -217,9 +217,21 @@
                                 const a = document.createElement('a');
                                 a.href = item.url;
                                 a.className = 'list-group-item list-group-item-action';
+                                
+                                // 根据类型添加不同的图标
+                                let icon = 'fa-tag';
+                                if (item.type === 'category') {
+                                    icon = 'fa-folder';
+                                } else if (item.type === 'service') {
+                                    icon = 'fa-cog';
+                                }
+                                
+                                // 高亮匹配的文本
+                                const highlightedTitle = highlightMatch(item.title, query);
+                                
                                 a.innerHTML = `
                                     <div class="d-flex w-100 justify-content-between">
-                                        <h6 class="mb-1">${item.title}</h6>
+                                        <h6 class="mb-1"><i class="fas ${icon} me-2 text-primary"></i>${highlightedTitle}</h6>
                                     </div>
                                     <small class="text-muted">${item.description}</small>
                                 `;
@@ -232,6 +244,27 @@
                     });
             }, 300);
         });
+        
+        // 高亮匹配的文本
+        function highlightMatch(text, query) {
+            if (!query) return text;
+            
+            const lowerText = text.toLowerCase();
+            const lowerQuery = query.toLowerCase();
+            
+            if (lowerText.includes(lowerQuery)) {
+                const startIndex = lowerText.indexOf(lowerQuery);
+                const endIndex = startIndex + query.length;
+                
+                return text.substring(0, startIndex) + 
+                       '<span class="text-primary fw-bold">' + 
+                       text.substring(startIndex, endIndex) + 
+                       '</span>' + 
+                       text.substring(endIndex);
+            }
+            
+            return text;
+        }
 
         // 点击外部关闭建议框
         document.addEventListener('click', function(e) {
@@ -246,6 +279,17 @@
                 suggestionsContainer.classList.remove('d-none');
             }
         });
+        
+        // 处理表单提交
+        const searchForm = document.getElementById('searchForm');
+        if (searchForm) {
+            searchForm.addEventListener('submit', function(e) {
+                const query = searchInput.value.trim();
+                if (query.length < 1) {
+                    e.preventDefault();
+                }
+            });
+        }
     });
     </script>
     {% endblock %}
