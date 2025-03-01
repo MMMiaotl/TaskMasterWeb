@@ -5,7 +5,7 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <!-- 进度指示器 -->
-            {% include 'components/task_form/progress_indicator.html' %}
+            {% include 'task/progress_indicator.html' %}
 
             <!-- 表单卡片 -->
             <div class="card shadow-sm border-0 rounded-3">
@@ -14,31 +14,31 @@
                         {{ form.hidden_tag() }}
                         
                         <!-- 步骤1：服务类别 -->
-                        {% include 'components/task_form/step1_category.html' %}
+                        {% include 'task/step1_category.html' %}
                         
                         <!-- 步骤2：服务详情 -->
-                        {% include 'components/task_form/step2_details.html' %}
+                        {% include 'task/step2_details.html' %}
                         
                         <!-- 步骤3：时间和预算 -->
-                        {% include 'components/task_form/step3_time_budget.html' %}
+                        {% include 'task/step3_time_budget.html' %}
                         
                         <!-- 步骤4：任务描述 -->
-                        {% include 'components/task_form/step4_description.html' %}
+                        {% include 'task/step4_description.html' %}
                         
                         <!-- 步骤5：确认发布 -->
-                        {% include 'components/task_form/step5_confirmation.html' %}
+                        {% include 'task/step5_confirmation.html' %}
                     </form>
                 </div>
             </div>
             
             <!-- 帮助提示 -->
-            {% include 'components/task_form/help_tips.html' %}
+            {% include 'task/help_tips.html' %}
         </div>
     </div>
 </div>
 
 {% block styles %}
-{% include 'components/task_form/form_styles.html' %}
+{% include 'task/form_styles.html' %}
 {% endblock %}
 
 {% block scripts %}
