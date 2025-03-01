@@ -51,7 +51,7 @@
 
 <script>
     // 全局变量
-    let currentStep = 0;
+    let currentStep = 1;
     const steps = document.querySelectorAll('.form-step');
     
     // 更新进度条
@@ -60,13 +60,13 @@
         const progressLabels = document.querySelectorAll('.progress-label');
         
         // 更新进度条宽度
-        const progressPercentage = (currentStep + 1) * (100 / steps.length);
+        const progressPercentage = currentStep * (100 / steps.length);
         progressBar.style.width = `${progressPercentage}%`;
         progressBar.setAttribute('aria-valuenow', progressPercentage);
         
         // 更新标签状态
         progressLabels.forEach((label, index) => {
-            if (index <= currentStep) {
+            if (index < currentStep) {
                 label.classList.add('active');
             } else {
                 label.classList.remove('active');
@@ -76,10 +76,14 @@
     
     // 初始化
     document.addEventListener('DOMContentLoaded', function() {
+        // 隐藏所有步骤
+        steps.forEach(step => step.classList.add('d-none'));
+        
         // 显示第一步
-        steps[0].classList.remove('d-none');
+        document.getElementById('step-1').classList.remove('d-none');
         
         // 绑定下一步按钮事件
+        /*
         document.querySelectorAll('.next-step').forEach(button => {
             button.addEventListener('click', function() {
                 // 验证当前步骤
@@ -88,6 +92,7 @@
                 }
             });
         });
+        */
         
         // 绑定上一步按钮事件
         document.querySelectorAll('.prev-step').forEach(button => {

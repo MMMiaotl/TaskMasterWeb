@@ -424,6 +424,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 验证当前步骤
     function validateStep(stepElement) {
+        console.log('验证步骤元素:', stepElement);
         let isValid = true;
         const requiredInputs = stepElement.querySelectorAll('input[required]:not([type="radio"]), select[required], textarea[required]');
         const radioGroups = {};
@@ -509,32 +510,68 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
+        console.log('步骤验证结果:', isValid);
         return isValid;
     }
     
     // 修改原有的validateStep函数
     const originalValidateStep = window.validateStep;
     window.validateStep = function(stepNumber) {
+        console.log('验证步骤:', stepNumber);
+        
+        // 获取当前步骤元素
+        const stepElement = document.getElementById(`step-${stepNumber}`);
+        console.log('步骤元素:', stepElement);
+        
+        if (!stepElement) {
+            console.error('找不到步骤元素:', `step-${stepNumber}`);
+            return false;
+        }
+        
         // 如果原始验证函数存在，调用它
         if (originalValidateStep) {
-            return originalValidateStep(stepNumber);
+            // 调用原始验证函数，但传入步骤元素而不是步骤编号
+            const result = validateStep(stepElement);
+            console.log('验证结果:', result);
+            
+            // 特殊处理第三步的日期范围验证
+            if (stepNumber === 3 && result) {
+                console.log('特殊处理第三步的日期范围验证');
+                const timePreference = stepElement.querySelector('input[name="time_preference"]:checked');
+                console.log('时间偏好:', timePreference ? timePreference.value : 'none');
+                
+                if (timePreference && timePreference.value === 'date_range') {
+                    const startDate = stepElement.querySelector('#start_date');
+                    const endDate = stepElement.querySelector('#end_date');
+                    console.log('开始日期:', startDate ? startDate.value : 'none');
+                    console.log('结束日期:', endDate ? endDate.value : 'none');
+                    
+                    // 确保开始日期和结束日期都已填写
+                    if (startDate && endDate && startDate.value && endDate.value) {
+                        // 确保结束日期不早于开始日期
+                        const startDateObj = new Date(startDate.value);
+                        const endDateObj = new Date(endDate.value);
+                        console.log('开始日期对象:', startDateObj);
+                        console.log('结束日期对象:', endDateObj);
+                        console.log('结束日期 >= 开始日期:', endDateObj >= startDateObj);
+                        
+                        if (endDateObj >= startDateObj) {
+                            console.log('日期范围验证通过');
+                            return true; // 验证通过
+                        } else {
+                            console.log('结束日期早于开始日期，验证失败');
+                        }
+                    } else {
+                        console.log('开始日期或结束日期未填写，验证失败');
+                    }
+                }
+            }
+            
+            return result;
         }
         
         // 否则使用默认验证逻辑
-        let isValid = true;
-        const currentStep = document.getElementById(`step-${stepNumber}`);
-        const requiredInputs = currentStep.querySelectorAll('input[required], select[required], textarea[required]');
-        
-        requiredInputs.forEach(input => {
-            if (!input.value.trim()) {
-                input.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                input.classList.remove('is-invalid');
-            }
-        });
-        
-        return isValid;
+        return validateStep(stepElement);
     };
     
     // 处理时间偏好选择
@@ -582,6 +619,33 @@ function handleTimePreferenceSelection() {
                     setTimeout(() => {
                         dateRangeQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }, 300);
+                    
+                    // 为日期范围输入字段添加事件监听
+                    const startDate = dateRangeQuestion.querySelector('#start_date');
+                    const endDate = dateRangeQuestion.querySelector('#end_date');
+                    
+                    if (startDate && endDate) {
+                        // 监听日期变化
+                        const updateNextButton = function() {
+                            if (startDate.value && endDate.value) {
+                                if (new Date(endDate.value) >= new Date(startDate.value)) {
+                                    // 日期有效，启用下一步按钮
+                                    nextStepBtn.classList.remove('hidden');
+                                    nextStepBtn.disabled = false;
+                                } else {
+                                    // 结束日期早于开始日期，禁用下一步按钮
+                                    nextStepBtn.disabled = true;
+                                }
+                            }
+                        };
+                        
+                        // 添加事件监听器
+                        startDate.addEventListener('change', updateNextButton);
+                        endDate.addEventListener('change', updateNextButton);
+                        
+                        // 初始检查
+                        updateNextButton();
+                    }
                 }
                 
                 // 平滑滚动到下一步按钮
@@ -602,77 +666,4 @@ function handleTimePreferenceSelection() {
             radio.addEventListener('change', checkTimePreference);
         });
     }
-}
-
-// 跳转到指定步骤
-function goToStep(stepIndex) {
-    // 隐藏所有步骤
-    steps.forEach(step => step.classList.add('d-none'));
-    
-    // 显示目标步骤
-    steps[stepIndex].classList.remove('d-none');
-    
-    // 更新当前步骤索引
-    currentStep = stepIndex;
-    
-    // 更新进度条
-    updateProgressBar();
-    
-    // 如果是第一步，隐藏上一步按钮
-    if (currentStep === 0) {
-        document.querySelectorAll('.prev-step').forEach(btn => btn.classList.add('d-none'));
-    } else {
-        document.querySelectorAll('.prev-step').forEach(btn => btn.classList.remove('d-none'));
-    }
-    
-    // 如果是最后一步，显示提交按钮，隐藏下一步按钮
-    if (currentStep === steps.length - 1) {
-        document.querySelectorAll('.next-step').forEach(btn => btn.classList.add('d-none'));
-        document.querySelectorAll('.submit-form').forEach(btn => btn.classList.remove('d-none'));
-    } else {
-        document.querySelectorAll('.submit-form').forEach(btn => btn.classList.add('d-none'));
-        
-        // 特殊处理第一步的服务类别问题
-        if (currentStep === 0) {
-            const serviceSelect = document.querySelector('#service_category');
-            if (serviceSelect && serviceSelect.value) {
-                document.querySelectorAll('.next-step').forEach(btn => btn.classList.remove('hidden'));
-            } else {
-                document.querySelectorAll('.next-step').forEach(btn => btn.classList.add('hidden'));
-            }
-        } 
-        // 特殊处理第三步的时间偏好问题
-        else if (currentStep === 2) {
-            const timePreference = document.querySelector('input[name="time_preference"]:checked');
-            if (timePreference) {
-                document.querySelectorAll('.next-step').forEach(btn => btn.classList.remove('hidden'));
-                
-                // 根据时间偏好显示相应的日期问题
-                const specificDateQuestion = document.getElementById('specific-date-question');
-                const dateRangeQuestion = document.getElementById('date-range-question');
-                
-                // 隐藏所有日期问题
-                if (specificDateQuestion) specificDateQuestion.classList.add('hidden');
-                if (dateRangeQuestion) dateRangeQuestion.classList.add('hidden');
-                
-                // 显示相应的日期问题
-                if (timePreference.value === 'specific_date' && specificDateQuestion) {
-                    specificDateQuestion.classList.remove('hidden');
-                    specificDateQuestion.classList.add('fade-in');
-                } 
-                else if (timePreference.value === 'date_range' && dateRangeQuestion) {
-                    dateRangeQuestion.classList.remove('hidden');
-                    dateRangeQuestion.classList.add('fade-in');
-                }
-            } else {
-                document.querySelectorAll('.next-step').forEach(btn => btn.classList.add('hidden'));
-            }
-        }
-        else {
-            document.querySelectorAll('.next-step').forEach(btn => btn.classList.remove('hidden'));
-        }
-    }
-    
-    // 滚动到顶部
-    window.scrollTo(0, 0);
 } 
