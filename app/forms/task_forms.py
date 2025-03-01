@@ -52,6 +52,16 @@ class TaskForm(FlaskForm):
     )
     
     # 搬家服务特定字段
+    moving_out_address = StringField('搬出地的邮编', validators=[
+        Optional(),
+        Length(min=6, max=6, message='例如: 1234AB')
+    ])
+
+    moving_in_address = StringField('搬入地的邮编', validators=[
+        Optional(),
+        Length(min=6, max=6, message='例如: 1234AB')
+    ])
+
     moving_item_size = SelectField('物品大小', 
         choices=[('', '请选择物品大小'), ('small', '小型物品'), ('medium', '中型物品'), ('large', '大型物品')],
         validators=[Optional()]

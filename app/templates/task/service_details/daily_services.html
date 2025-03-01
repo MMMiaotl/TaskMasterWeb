@@ -4,8 +4,27 @@
 <div class="service-fields d-none" id="moving-fields">
     <h4 class="h5 mb-3">搬家服务详情</h4>
     
+    <!-- 搬家地址问题 -->
+    <div class="question-item active" id="moving-out-address-question">
+        <h4 class="question-title">填入需要搬出的地址</h4>
+        <p class="question-description">当前居住地址的邮编,例如:1234AB</p>
+        
+        <div class="mb-3">
+            {{ form.moving_out_address(class="form-control form-control-lg") }}
+        </div>
+    </div>
+
+    <div class="question-item active" id="moving-in-address-question">
+        <h4 class="question-title">填入需要搬入的地址</h4>
+        <p class="question-description">要搬入地址的邮编,例如:1234AB</p>
+        
+        <div class="mb-3">
+            {{ form.moving_in_address(class="form-control form-control-lg") }}
+        </div>
+    </div>
+
     <!-- 物品大小问题 -->
-    <div class="question-item active" id="moving-size-question">
+    <div class="question-item hidden" id="moving-size-question">
         <h4 class="question-title">您需要搬运什么大小的物品？</h4>
         <p class="question-description">请选择最符合您物品大小的选项，这将帮助我们安排合适的搬运服务。</p>
         
