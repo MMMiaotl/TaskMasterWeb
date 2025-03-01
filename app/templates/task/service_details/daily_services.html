@@ -4,69 +4,124 @@
 <div class="service-fields d-none" id="moving-fields">
     <h4 class="h5 mb-3">搬家服务详情</h4>
     
-    <!-- 搬家地址问题 -->
-    <div class="question-item active" id="moving-out-address-question">
-        <h4 class="question-title">填入需要搬出的地址</h4>
-        <p class="question-description">当前居住地址的邮编,例如:1234AB</p>
+    <!-- 搬家地址问题 - 合并搬入搬出地址为一个问题 -->
+    <div class="question-item active" id="moving-address-question">
+        <h4 class="question-title">请填写搬家地址信息</h4>
+        <p class="question-description">请输入搬出和搬入地址的邮编（格式：4位数字+2位字母，例如：1234AB）</p>
         
-        <div class="mb-3">
-            {{ form.moving_out_address(class="form-control form-control-lg") }}
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="moving_out_address" class="form-label">搬出地址邮编</label>
+                {{ form.moving_out_address(class="form-control form-control-lg", placeholder="例如：1234AB", pattern="[0-9]{4}[A-Za-z]{2}", title="请输入4位数字+2位字母的邮编格式") }}
+                <div class="invalid-feedback">请输入正确的邮编格式：4位数字+2位字母</div>
+            </div>
+            <div class="col-md-6">
+                <label for="moving_in_address" class="form-label">搬入地址邮编</label>
+                {{ form.moving_in_address(class="form-control form-control-lg", placeholder="例如：1234AB", pattern="[0-9]{4}[A-Za-z]{2}", title="请输入4位数字+2位字母的邮编格式") }}
+                <div class="invalid-feedback">请输入正确的邮编格式：4位数字+2位字母</div>
+            </div>
         </div>
     </div>
 
-    <div class="question-item active" id="moving-in-address-question">
-        <h4 class="question-title">填入需要搬入的地址</h4>
-        <p class="question-description">要搬入地址的邮编,例如:1234AB</p>
+    <!-- 房屋类型问题 -->
+    <div class="question-item hidden" id="moving-house-type-question">
+        <h4 class="question-title">您的房屋类型是什么？</h4>
+        <p class="question-description">请选择搬出和搬入地点的房屋类型，这将帮助我们评估搬运难度。</p>
         
-        <div class="mb-3">
-            {{ form.moving_in_address(class="form-control form-control-lg") }}
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="moving_out_house_type" class="form-label">搬出地点房屋类型</label>
+                {{ form.moving_out_house_type(class="form-control form-control-lg") }}
+                <div class="invalid-feedback">请选择搬出地点的房屋类型</div>
+            </div>
+            <div class="col-md-6">
+                <label for="moving_in_house_type" class="form-label">搬入地点房屋类型</label>
+                {{ form.moving_in_house_type(class="form-control form-control-lg") }}
+                <div class="invalid-feedback">请选择搬入地点的房屋类型</div>
+            </div>
         </div>
     </div>
-
-    <!-- 物品大小问题 -->
-    <div class="question-item hidden" id="moving-size-question">
-        <h4 class="question-title">您需要搬运什么大小的物品？</h4>
-        <p class="question-description">请选择最符合您物品大小的选项，这将帮助我们安排合适的搬运服务。</p>
+    
+    <!-- 电梯问题 - 仅当房屋类型为公寓时显示 -->
+    <div class="question-item hidden" id="moving-elevator-question">
+        <h4 class="question-title">搬运地点是否有电梯？</h4>
+        <p class="question-description">这将帮助我们评估搬运难度和所需时间。</p>
         
-        <div class="mb-3">
-            {{ form.moving_item_size(class="form-control form-control-lg") }}
-            <div class="form-text">选择您需要搬运的物品大小类型</div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">搬出地点是否有电梯</label>
+                <div class="form-check form-switch form-check-lg">
+                    {{ form.moving_out_has_elevator(class="form-check-input") }}
+                    <label class="form-check-label" for="moving_out_has_elevator">有电梯</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">搬入地点是否有电梯</label>
+                <div class="form-check form-switch form-check-lg">
+                    {{ form.moving_in_has_elevator(class="form-check-input") }}
+                    <label class="form-check-label" for="moving_in_has_elevator">有电梯</label>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 楼层输入 -->
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label for="moving_out_floor_number" class="form-label">搬出地点楼层</label>
+                {{ form.moving_out_floor_number(class="form-control form-control-lg", type="number", min="0") }}
+                <div class="form-text">输入搬出地点的楼层数</div>
+            </div>
+            <div class="col-md-6">
+                <label for="moving_in_floor_number" class="form-label">搬入地点楼层</label>
+                {{ form.moving_in_floor_number(class="form-control form-control-lg", type="number", min="0") }}
+                <div class="form-text">输入搬入地点的楼层数</div>
+            </div>
         </div>
     </div>
     
     <!-- 物品数量问题 -->
     <div class="question-item hidden" id="moving-quantity-question">
-        <h4 class="question-title">您有多少件物品需要搬运？</h4>
-        <p class="question-description">请输入需要搬运的物品数量，这将帮助我们评估所需的人力和时间。</p>
+        <h4 class="question-title">您有多少物品需要搬运？</h4>
+        <p class="question-description">请选择最符合您物品数量的选项，这将帮助我们评估所需的人力和时间。</p>
         
         <div class="mb-3">
-            {{ form.moving_item_quantity(class="form-control form-control-lg", type="number", min="1") }}
-            <div class="form-text">输入需要搬运的物品数量</div>
+            {{ form.moving_item_quantity_range(class="form-control form-control-lg") }}
+            <div class="form-text">选择最接近您需要搬运的物品数量范围</div>
         </div>
     </div>
     
-    <!-- 电梯问题 -->
-    <div class="question-item hidden" id="moving-elevator-question">
-        <h4 class="question-title">搬运地点是否有电梯？</h4>
-        <p class="question-description">这将帮助我们评估搬运难度和所需时间。</p>
+    <!-- 特殊物品问题 -->
+    <div class="question-item hidden" id="moving-special-items-question">
+        <h4 class="question-title">您是否有特殊物品需要搬运？</h4>
+        <p class="question-description">特殊物品可能需要额外的人力或设备，请选择所有适用的选项。</p>
         
         <div class="mb-3">
-            <div class="form-check form-switch form-check-lg">
-                {{ form.moving_has_elevator(class="form-check-input") }}
-                <label class="form-check-label" for="moving_has_elevator">有电梯</label>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-check mb-2">
+                        {{ form.moving_has_large_furniture(class="form-check-input") }}
+                        <label class="form-check-label" for="moving_has_large_furniture">大型家具（沙发、床、衣柜等）</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        {{ form.moving_has_appliances(class="form-check-input") }}
+                        <label class="form-check-label" for="moving_has_appliances">家用电器（冰箱、洗衣机等）</label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check mb-2">
+                        {{ form.moving_has_fragile_items(class="form-check-input") }}
+                        <label class="form-check-label" for="moving_has_fragile_items">易碎物品（玻璃制品、艺术品等）</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        {{ form.moving_has_piano(class="form-check-input") }}
+                        <label class="form-check-label" for="moving_has_piano">钢琴或其他乐器</label>
+                    </div>
+                </div>
             </div>
-            <div class="form-text">勾选表示搬运地点有电梯</div>
-        </div>
-    </div>
-    
-    <!-- 楼层问题 -->
-    <div class="question-item hidden" id="moving-floor-question">
-        <h4 class="question-title">搬运地点在几楼？</h4>
-        <p class="question-description">请输入搬运地点的楼层数，这将帮助我们评估搬运难度。</p>
-        
-        <div class="mb-3">
-            {{ form.moving_floor_number(class="form-control form-control-lg", type="number", min="0") }}
-            <div class="form-text">输入搬运地点的楼层数</div>
+            <div class="mt-3">
+                <label for="moving_other_special_items" class="form-label">其他特殊物品（请说明）</label>
+                {{ form.moving_other_special_items(class="form-control") }}
+            </div>
         </div>
     </div>
 </div>

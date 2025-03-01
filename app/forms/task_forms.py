@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, TextAreaField, SelectField, DateField, DecimalField, SubmitField, IntegerField, BooleanField, FloatField, RadioField
-from wtforms.validators import DataRequired, Length, NumberRange, Optional
+from wtforms.validators import DataRequired, Length, NumberRange, Optional, Regexp
 from app.utils.constants import SERVICE_CHOICES
 
 class TaskForm(FlaskForm):
@@ -54,14 +54,97 @@ class TaskForm(FlaskForm):
     # 搬家服务特定字段
     moving_out_address = StringField('搬出地的邮编', validators=[
         Optional(),
-        Length(min=6, max=6, message='例如: 1234AB')
+        Length(min=6, max=6, message='邮编必须是6位字符'),
+        Regexp(r'^[0-9]{4}[A-Za-z]{2}$', message='邮编格式必须是4位数字+2位字母，例如: 1234AB')
     ])
 
     moving_in_address = StringField('搬入地的邮编', validators=[
         Optional(),
-        Length(min=6, max=6, message='例如: 1234AB')
+        Length(min=6, max=6, message='邮编必须是6位字符'),
+        Regexp(r'^[0-9]{4}[A-Za-z]{2}$', message='邮编格式必须是4位数字+2位字母，例如: 1234AB')
     ])
 
+    # 新增房屋类型字段
+    moving_out_house_type = SelectField('搬出地点房屋类型', 
+        choices=[
+            ('', '请选择房屋类型'), 
+            ('apartment', '公寓'), 
+            ('house', '联排别墅'), 
+            ('commercial', '商铺'),
+            ('warehouse', '仓库'),
+            ('other', '其他')
+        ],
+        validators=[Optional()]
+    )
+    
+    moving_in_house_type = SelectField('搬入地点房屋类型', 
+        choices=[
+            ('', '请选择房屋类型'), 
+            ('apartment', '公寓'), 
+            ('house', '联排别墅'), 
+            ('commercial', '商铺'),
+            ('warehouse', '仓库'),
+            ('other', '其他')
+        ],
+        validators=[Optional()]
+    )
+    
+    # 修改电梯和楼层字段
+    moving_out_has_elevator = BooleanField('搬出地点是否有电梯', default=False)
+    moving_in_has_elevator = BooleanField('搬入地点是否有电梯', default=False)
+    
+    moving_out_floor_number = IntegerField('搬出地点楼层', 
+        validators=[Optional(), NumberRange(min=0, message='楼层必须大于等于0')]
+    )
+    
+    moving_in_floor_number = IntegerField('搬入地点楼层', 
+        validators=[Optional(), NumberRange(min=0, message='楼层必须大于等于0')]
+    )
+    
+    # 修改物品数量为范围选择
+    moving_item_quantity_range = SelectField('物品数量范围', 
+        choices=[
+            ('', '请选择物品数量范围'), 
+            ('1-5', '1-5箱'), 
+            ('6-15', '6-15箱'), 
+            ('16-30', '16-30箱'),
+            ('30+', '30箱以上')
+        ],
+        validators=[Optional()]
+    )
+    
+    # 特殊物品字段
+    moving_has_large_furniture = BooleanField('有大型家具', default=False)
+    moving_has_appliances = BooleanField('有家用电器', default=False)
+    moving_has_fragile_items = BooleanField('有易碎物品', default=False)
+    moving_has_piano = BooleanField('有钢琴或其他乐器', default=False)
+    moving_other_special_items = StringField('其他特殊物品', validators=[Optional(), Length(max=200)])
+    
+    # 搬家时间字段
+    moving_preferred_date = DateField('首选日期', 
+        format='%Y-%m-%d',
+        validators=[Optional()]
+    )
+    
+    moving_preferred_time = SelectField('首选时间段', 
+        choices=[
+            ('', '请选择时间段'), 
+            ('morning', '上午 (8:00-12:00)'), 
+            ('afternoon', '下午 (12:00-17:00)'), 
+            ('evening', '晚上 (17:00-21:00)')
+        ],
+        validators=[Optional()]
+    )
+    
+    moving_is_flexible = BooleanField('时间灵活', default=True)
+    
+    # 额外服务字段
+    moving_need_packing = BooleanField('需要打包服务', default=False)
+    moving_need_unpacking = BooleanField('需要拆包服务', default=False)
+    moving_need_disposal = BooleanField('需要废物处理', default=False)
+    moving_need_storage = BooleanField('需要临时存储', default=False)
+    
+    # 保留原有字段但不再使用
     moving_item_size = SelectField('物品大小', 
         choices=[('', '请选择物品大小'), ('small', '小型物品'), ('medium', '中型物品'), ('large', '大型物品')],
         validators=[Optional()]

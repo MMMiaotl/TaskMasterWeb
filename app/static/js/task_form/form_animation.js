@@ -190,6 +190,128 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
+        // 特殊处理：如果是搬家地址问题
+        if (questionElement.id === 'moving-address-question') {
+            const outAddressInput = document.getElementById('moving_out_address');
+            const inAddressInput = document.getElementById('moving_in_address');
+            
+            // 验证搬出地址格式
+            if (outAddressInput && outAddressInput.value.trim()) {
+                const outAddressPattern = /^[0-9]{4}[A-Za-z]{2}$/;
+                if (!outAddressPattern.test(outAddressInput.value.trim())) {
+                    outAddressInput.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    outAddressInput.classList.remove('is-invalid');
+                }
+            }
+            
+            // 验证搬入地址格式
+            if (inAddressInput && inAddressInput.value.trim()) {
+                const inAddressPattern = /^[0-9]{4}[A-Za-z]{2}$/;
+                if (!inAddressPattern.test(inAddressInput.value.trim())) {
+                    inAddressInput.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    inAddressInput.classList.remove('is-invalid');
+                }
+            }
+            
+            // 确保两个地址都已填写
+            if ((!outAddressInput || !outAddressInput.value.trim()) || 
+                (!inAddressInput || !inAddressInput.value.trim())) {
+                isValid = false;
+                if (outAddressInput && !outAddressInput.value.trim()) {
+                    outAddressInput.classList.add('is-invalid');
+                }
+                if (inAddressInput && !inAddressInput.value.trim()) {
+                    inAddressInput.classList.add('is-invalid');
+                }
+            }
+        }
+        
+        // 特殊处理：如果是房屋类型问题
+        if (questionElement.id === 'moving-house-type-question') {
+            const outHouseTypeSelect = document.getElementById('moving_out_house_type');
+            const inHouseTypeSelect = document.getElementById('moving_in_house_type');
+            
+            // 确保两个房屋类型都已选择
+            if ((!outHouseTypeSelect || !outHouseTypeSelect.value) || 
+                (!inHouseTypeSelect || !inHouseTypeSelect.value)) {
+                isValid = false;
+                if (outHouseTypeSelect && !outHouseTypeSelect.value) {
+                    outHouseTypeSelect.classList.add('is-invalid');
+                }
+                if (inHouseTypeSelect && !inHouseTypeSelect.value) {
+                    inHouseTypeSelect.classList.add('is-invalid');
+                }
+            } else {
+                // 如果两个房屋类型都已选择，检查是否有公寓
+                const hasApartment = outHouseTypeSelect.value === 'apartment' || inHouseTypeSelect.value === 'apartment';
+                
+                // 获取电梯问题元素
+                const elevatorQuestion = document.getElementById('moving-elevator-question');
+                const nextQuestion = document.getElementById('moving-quantity-question');
+                
+                // 如果有公寓，显示电梯问题，否则跳过电梯问题
+                if (hasApartment) {
+                    // 确保电梯问题可见
+                    if (elevatorQuestion) {
+                        elevatorQuestion.classList.remove('hidden');
+                        elevatorQuestion.classList.add('fade-in');
+                        
+                        // 隐藏下一个问题（物品数量问题）
+                        if (nextQuestion) {
+                            nextQuestion.classList.add('hidden');
+                        }
+                    }
+                } else {
+                    // 如果没有公寓，跳过电梯问题，直接显示物品数量问题
+                    if (elevatorQuestion) {
+                        elevatorQuestion.classList.add('hidden');
+                    }
+                    
+                    if (nextQuestion) {
+                        nextQuestion.classList.remove('hidden');
+                        nextQuestion.classList.add('fade-in');
+                        
+                        // 滚动到物品数量问题
+                        setTimeout(() => {
+                            nextQuestion.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'start',
+                                inline: 'nearest'
+                            });
+                        }, 100);
+                        
+                        // 为物品数量问题添加输入字段事件监听
+                        addInputEventListeners(nextQuestion);
+                    }
+                }
+            }
+        }
+        
+        // 特殊处理：如果是特殊物品问题，直接显示下一步按钮
+        if (questionElement.id === 'moving-special-items-question') {
+            console.log('特殊物品问题已完成，直接显示下一步按钮');
+            
+            // 显示下一步按钮
+            const stepButtons = questionElement.closest('.form-step').querySelector('.step-buttons');
+            if (stepButtons) {
+                stepButtons.classList.remove('hidden');
+                stepButtons.classList.add('fade-in');
+                
+                // 滚动到按钮位置
+                setTimeout(() => {
+                    stepButtons.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start',
+                        inline: 'nearest'
+                    });
+                }, 100);
+            }
+        }
+        
         return isValid;
     }
     

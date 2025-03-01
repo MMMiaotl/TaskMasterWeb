@@ -45,21 +45,63 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // 根据子类别验证特定字段
                     if (subCategory === 'moving') {
-                        const itemSize = document.getElementById('moving_item_size');
-                        const itemQuantity = document.getElementById('moving_item_quantity');
+                        // 验证搬家地址
+                        const outAddress = document.getElementById('moving_out_address');
+                        const inAddress = document.getElementById('moving_in_address');
                         
-                        if (!itemSize.value) {
-                            itemSize.classList.add('is-invalid');
+                        // 验证搬出地址格式
+                        if (outAddress && outAddress.value.trim()) {
+                            const outAddressPattern = /^[0-9]{4}[A-Za-z]{2}$/;
+                            if (!outAddressPattern.test(outAddress.value.trim())) {
+                                outAddress.classList.add('is-invalid');
+                                isValid = false;
+                            } else {
+                                outAddress.classList.remove('is-invalid');
+                            }
+                        } else if (outAddress) {
+                            outAddress.classList.add('is-invalid');
                             isValid = false;
-                        } else {
-                            itemSize.classList.remove('is-invalid');
                         }
                         
-                        if (!itemQuantity.value || parseInt(itemQuantity.value) < 1) {
-                            itemQuantity.classList.add('is-invalid');
+                        // 验证搬入地址格式
+                        if (inAddress && inAddress.value.trim()) {
+                            const inAddressPattern = /^[0-9]{4}[A-Za-z]{2}$/;
+                            if (!inAddressPattern.test(inAddress.value.trim())) {
+                                inAddress.classList.add('is-invalid');
+                                isValid = false;
+                            } else {
+                                inAddress.classList.remove('is-invalid');
+                            }
+                        } else if (inAddress) {
+                            inAddress.classList.add('is-invalid');
                             isValid = false;
-                        } else {
-                            itemQuantity.classList.remove('is-invalid');
+                        }
+                        
+                        // 验证房屋类型
+                        const outHouseType = document.getElementById('moving_out_house_type');
+                        const inHouseType = document.getElementById('moving_in_house_type');
+                        
+                        if (outHouseType && !outHouseType.value) {
+                            outHouseType.classList.add('is-invalid');
+                            isValid = false;
+                        } else if (outHouseType) {
+                            outHouseType.classList.remove('is-invalid');
+                        }
+                        
+                        if (inHouseType && !inHouseType.value) {
+                            inHouseType.classList.add('is-invalid');
+                            isValid = false;
+                        } else if (inHouseType) {
+                            inHouseType.classList.remove('is-invalid');
+                        }
+                        
+                        // 验证物品数量范围
+                        const itemQuantityRange = document.getElementById('moving_item_quantity_range');
+                        if (itemQuantityRange && !itemQuantityRange.value) {
+                            itemQuantityRange.classList.add('is-invalid');
+                            isValid = false;
+                        } else if (itemQuantityRange) {
+                            itemQuantityRange.classList.remove('is-invalid');
                         }
                     } else if (subCategory === 'pickup') {
                         const passengers = document.getElementById('pickup_passengers');
