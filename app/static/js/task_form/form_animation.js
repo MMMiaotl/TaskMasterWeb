@@ -17,7 +17,45 @@ document.addEventListener('DOMContentLoaded', function() {
                 question.classList.add('hidden');
             }
         });
+        
+        // 初始化：隐藏下一步按钮
+        const nextButton = step.querySelector('.next-step');
+        if (nextButton) {
+            nextButton.classList.add('hidden');
+        }
     });
+    
+    // 为服务类别选择添加特殊处理
+    const categorySelect = document.getElementById('service_category');
+    if (categorySelect) {
+        categorySelect.addEventListener('change', function() {
+            if (this.value) {
+                // 如果选择了服务类别，显示下一步按钮
+                const nextButton = document.querySelector('#step-1 .next-step');
+                if (nextButton) {
+                    nextButton.classList.remove('hidden');
+                    nextButton.classList.add('fade-in');
+                    
+                    // 滚动到按钮位置
+                    setTimeout(() => {
+                        nextButton.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start',
+                            inline: 'nearest'
+                        });
+                    }, 100);
+                }
+            }
+        });
+        
+        // 如果已经选择了服务类别，显示下一步按钮
+        if (categorySelect.value) {
+            const nextButton = document.querySelector('#step-1 .next-step');
+            if (nextButton) {
+                nextButton.classList.remove('hidden');
+            }
+        }
+    }
     
     // 修改原有的goToStep函数
     const originalGoToStep = window.goToStep;
@@ -40,6 +78,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
+        // 隐藏下一步按钮，除非是第一步且已选择服务类别
+        const nextButton = currentStep.querySelector('.next-step');
+        if (nextButton) {
+            if (stepNumber === 1 && categorySelect && categorySelect.value) {
+                nextButton.classList.remove('hidden');
+            } else {
+                nextButton.classList.add('hidden');
+            }
+        }
+        
         // 为当前步骤的第一个问题中的输入字段添加事件监听
         addInputEventListeners(questions[0]);
     };
@@ -54,35 +102,59 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 为问题中的输入字段添加事件监听
     function addInputEventListeners(questionElement) {
-        // 获取问题中的所有输入字段
-        const inputs = questionElement.querySelectorAll('input, select, textarea');
+        if (!questionElement) return;
         
-        inputs.forEach(input => {
-            // 根据输入类型添加不同的事件监听
-            if (input.type === 'text' || input.type === 'number' || input.type === 'date' || input.tagName.toLowerCase() === 'textarea') {
-                // 为文本、数字、日期输入和文本区域添加输入和失焦事件
-                input.addEventListener('blur', function() {
-                    handleInputChange(questionElement);
-                });
-                
-                // 添加延迟输入事件（用户停止输入后）
-                let typingTimer;
-                input.addEventListener('input', function() {
-                    clearTimeout(typingTimer);
-                    typingTimer = setTimeout(function() {
-                        handleInputChange(questionElement);
-                    }, 1000); // 1秒后触发
-                });
-            } else if (input.type === 'checkbox' || input.type === 'radio') {
-                // 为复选框和单选按钮添加变化事件
-                input.addEventListener('change', function() {
-                    handleInputChange(questionElement);
-                });
-            } else if (input.tagName.toLowerCase() === 'select') {
-                // 为下拉菜单添加变化事件
-                input.addEventListener('change', function() {
-                    handleInputChange(questionElement);
-                });
+        // 获取问题中的所有输入字段
+        const textInputs = questionElement.querySelectorAll('input[type="text"], input[type="number"], input[type="date"], textarea');
+        const checkboxes = questionElement.querySelectorAll('input[type="checkbox"]');
+        const radios = questionElement.querySelectorAll('input[type="radio"]');
+        const selects = questionElement.querySelectorAll('select');
+        
+        // 为文本、数字和日期输入添加事件监听
+        textInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                handleInputChange(questionElement);
+            });
+            
+            // 如果已有值，立即触发验证
+            if (input.value.trim()) {
+                handleInputChange(questionElement);
+            }
+        });
+        
+        // 为复选框添加事件监听
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                handleInputChange(questionElement);
+            });
+            
+            // 如果已选中，立即触发验证
+            if (checkbox.checked) {
+                handleInputChange(questionElement);
+            }
+        });
+        
+        // 为单选按钮添加事件监听
+        radios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                handleInputChange(questionElement);
+            });
+            
+            // 如果已选中，立即触发验证
+            if (radio.checked) {
+                handleInputChange(questionElement);
+            }
+        });
+        
+        // 为下拉选择添加事件监听
+        selects.forEach(select => {
+            select.addEventListener('change', function() {
+                handleInputChange(questionElement);
+            });
+            
+            // 如果已有选择，立即触发验证
+            if (select.value) {
+                handleInputChange(questionElement);
             }
         });
     }
@@ -120,35 +192,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // 如果是最后一个问题，显示下一步按钮
                 if (!nextQuestion.nextElementSibling || !nextQuestion.nextElementSibling.classList.contains('question-item')) {
-                    const stepButtons = questionElement.closest('.form-step').querySelector('.step-buttons');
-                    if (stepButtons) {
-                        stepButtons.classList.remove('hidden');
-                        stepButtons.classList.add('fade-in');
+                    const nextButton = questionElement.closest('.form-step').querySelector('.next-step');
+                    if (nextButton) {
+                        nextButton.classList.remove('hidden');
+                        nextButton.classList.add('fade-in');
+                        
+                        // 滚动到按钮位置
+                        setTimeout(() => {
+                            nextButton.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'start',
+                                inline: 'nearest'
+                            });
+                        }, 100);
                     }
                 }
             } else {
-                console.log('没有下一个问题项，直接显示步骤按钮');
-                // 如果没有下一个问题项，直接显示步骤按钮
-                const stepButtons = questionElement.closest('.form-step').querySelector('.step-buttons');
-                console.log('步骤按钮元素:', stepButtons);
-                if (stepButtons) {
-                    // 确保按钮可见
-                    stepButtons.style.display = 'flex';
-                    stepButtons.style.opacity = '1';
-                    stepButtons.style.height = 'auto';
-                    stepButtons.style.margin = '2rem 0 0 0';
-                    stepButtons.style.padding = '0';
-                    stepButtons.style.overflow = 'visible';
-                    stepButtons.style.pointerEvents = 'auto';
-                    
+                console.log('没有下一个问题项，直接显示下一步按钮');
+                // 如果没有下一个问题项，直接显示下一步按钮
+                const nextButton = questionElement.closest('.form-step').querySelector('.next-step');
+                console.log('下一步按钮元素:', nextButton);
+                if (nextButton) {
                     // 移除隐藏类
-                    stepButtons.classList.remove('hidden');
+                    nextButton.classList.remove('hidden');
                     // 添加动画类
-                    stepButtons.classList.add('fade-in');
+                    nextButton.classList.add('fade-in');
                     
                     // 滚动到按钮位置，时间与动画时间匹配
                     setTimeout(() => {
-                        stepButtons.scrollIntoView({ 
+                        nextButton.scrollIntoView({ 
                             behavior: 'smooth', 
                             block: 'start',
                             inline: 'nearest'
@@ -186,6 +258,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 如果选择了服务类别，显示对应的特定字段
                 if (typeof window.showServiceSpecificFields === 'function') {
                     window.showServiceSpecificFields(categorySelect.value);
+                }
+                
+                // 显示下一步按钮
+                const nextButton = questionElement.closest('.form-step').querySelector('.next-step');
+                if (nextButton) {
+                    nextButton.classList.remove('hidden');
+                    nextButton.classList.add('fade-in');
+                    
+                    // 滚动到按钮位置
+                    setTimeout(() => {
+                        nextButton.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start',
+                            inline: 'nearest'
+                        });
+                    }, 100);
                 }
             }
         }
@@ -296,14 +384,14 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('特殊物品问题已完成，直接显示下一步按钮');
             
             // 显示下一步按钮
-            const stepButtons = questionElement.closest('.form-step').querySelector('.step-buttons');
-            if (stepButtons) {
-                stepButtons.classList.remove('hidden');
-                stepButtons.classList.add('fade-in');
+            const nextButton = questionElement.closest('.form-step').querySelector('.next-step');
+            if (nextButton) {
+                nextButton.classList.remove('hidden');
+                nextButton.classList.add('fade-in');
                 
                 // 滚动到按钮位置
                 setTimeout(() => {
-                    stepButtons.scrollIntoView({ 
+                    nextButton.scrollIntoView({ 
                         behavior: 'smooth', 
                         block: 'start',
                         inline: 'nearest'
