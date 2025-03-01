@@ -96,7 +96,6 @@
 /* 问题项悬停效果 */
 .question-item.active:hover {
     box-shadow: 0 0.35rem 0.65rem rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
 }
 
 /* 步骤按钮容器 */
