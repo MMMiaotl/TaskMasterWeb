@@ -28,10 +28,6 @@
                 {% endif %}
             </div>
         </div>
-        
-        <button type="button" class="btn btn-primary next-question">
-            <i class="fas fa-arrow-right me-2"></i>继续
-        </button>
     </div>
     
     <!-- 详细描述问题 -->
@@ -55,10 +51,6 @@
                 {% endif %}
             </div>
         </div>
-        
-        <button type="button" class="btn btn-primary next-question">
-            <i class="fas fa-arrow-right me-2"></i>继续
-        </button>
     </div>
     
     <!-- 补充信息问题 -->
@@ -70,10 +62,6 @@
             {{ form.additional_info(class="form-control", rows=3, placeholder="添加任何其他您认为重要的信息") }}
             <div class="form-text">您可以在这里添加任何其他重要信息</div>
         </div>
-        
-        <button type="button" class="btn btn-primary next-question">
-            <i class="fas fa-arrow-right me-2"></i>继续
-        </button>
     </div>
     
     <!-- 上传图片问题 -->
@@ -85,10 +73,6 @@
             {{ form.task_images(class="form-control") }}
             <div class="form-text">上传相关图片可以帮助服务提供者更好地理解您的需求 (支持jpg, jpeg, png, gif格式)</div>
         </div>
-        
-        <button type="button" class="btn btn-primary next-question">
-            <i class="fas fa-check me-2"></i>完成
-        </button>
     </div>
     
     <div class="step-buttons hidden">

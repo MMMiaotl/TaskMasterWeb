@@ -13,10 +13,6 @@
             {{ form.moving_item_size(class="form-control form-control-lg") }}
             <div class="form-text">选择您需要搬运的物品大小类型</div>
         </div>
-        
-        <button type="button" class="btn btn-primary next-question">
-            <i class="fas fa-arrow-right me-2"></i>继续
-        </button>
     </div>
     
     <!-- 物品数量问题 -->
@@ -28,10 +24,6 @@
             {{ form.moving_item_quantity(class="form-control form-control-lg", type="number", min="1") }}
             <div class="form-text">输入需要搬运的物品数量</div>
         </div>
-        
-        <button type="button" class="btn btn-primary next-question">
-            <i class="fas fa-arrow-right me-2"></i>继续
-        </button>
     </div>
     
     <!-- 电梯问题 -->
@@ -46,10 +38,6 @@
             </div>
             <div class="form-text">勾选表示搬运地点有电梯</div>
         </div>
-        
-        <button type="button" class="btn btn-primary next-question">
-            <i class="fas fa-arrow-right me-2"></i>继续
-        </button>
     </div>
     
     <!-- 楼层问题 -->
@@ -61,10 +49,6 @@
             {{ form.moving_floor_number(class="form-control form-control-lg", type="number", min="0") }}
             <div class="form-text">输入搬运地点的楼层数</div>
         </div>
-        
-        <button type="button" class="btn btn-primary next-question">
-            <i class="fas fa-check me-2"></i>完成
-        </button>
     </div>
 </div>
 
@@ -90,10 +74,6 @@
             </div>
             <div class="form-text">选择您需要的服务类型</div>
         </div>
-        
-        <button type="button" class="btn btn-primary next-question">
-            <i class="fas fa-arrow-right me-2"></i>继续
-        </button>
     </div>
     
     <!-- 航班号问题 -->
@@ -105,10 +85,6 @@
             {{ form.pickup_flight_number(class="form-control form-control-lg") }}
             <div class="form-text">输入您的航班号，例如：CA1234</div>
         </div>
-        
-        <button type="button" class="btn btn-primary next-question">
-            <i class="fas fa-arrow-right me-2"></i>继续
-        </button>
     </div>
     
     <!-- 乘客数量问题 -->
@@ -120,10 +96,6 @@
             {{ form.pickup_passengers(class="form-control form-control-lg", type="number", min="1") }}
             <div class="form-text">输入需要接送的乘客数量</div>
         </div>
-        
-        <button type="button" class="btn btn-primary next-question">
-            <i class="fas fa-arrow-right me-2"></i>继续
-        </button>
     </div>
     
     <!-- 行李数量问题 -->
@@ -135,9 +107,5 @@
             {{ form.pickup_luggage_count(class="form-control form-control-lg", type="number", min="0") }}
             <div class="form-text">输入需要搬运的行李数量</div>
         </div>
-        
-        <button type="button" class="btn btn-primary next-question">
-            <i class="fas fa-check me-2"></i>完成
-        </button>
     </div>
 </div> 

@@ -64,20 +64,10 @@
     margin-bottom: 1.5rem;
 }
 
-/* 下一个问题按钮 */
-.next-question {
-    margin-top: 1rem;
-    padding: 0.5rem 1.5rem;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 0.25rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.next-question:hover {
-    background-color: #0069d9;
+/* 输入字段焦点样式 */
+.form-control:focus, .form-select:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
 }
 
 /* 步骤按钮容器 */
