@@ -102,6 +102,18 @@ def create_task():
                         task.repair_area = form.repair_area.data
                         task.repair_type = form.repair_type.data
                         task.repair_materials_included = form.repair_materials_included.data
+                        # 添加新的装修翻新字段
+                        task.repair_address = form.repair_address.data
+                        task.repair_work_painting = form.repair_work_painting.data
+                        task.repair_work_plastering = form.repair_work_plastering.data
+                        task.repair_work_flooring = form.repair_work_flooring.data
+                        task.repair_work_plumbing = form.repair_work_plumbing.data
+                        task.repair_work_bathroom = form.repair_work_bathroom.data
+                        task.repair_work_toilet = form.repair_work_toilet.data
+                        task.repair_work_kitchen = form.repair_work_kitchen.data
+                        task.repair_work_garden = form.repair_work_garden.data
+                        task.repair_work_extension = form.repair_work_extension.data
+                        task.repair_work_other = form.repair_work_other.data
                     
                     # 法律咨询特定字段
                     elif sub_cat == 'legal':

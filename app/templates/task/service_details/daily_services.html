@@ -182,4 +182,134 @@
             <div class="form-text">输入需要搬运的行李数量</div>
         </div>
     </div>
+</div>
+
+<!-- 装修翻新特定字段 -->
+<div class="service-fields d-none" id="repair-fields">
+    <h4 class="h5 mb-3">装修翻新服务详情</h4>
+    
+    <!-- 工作内容多选问题 -->
+    <div class="question-item active" id="repair-work-question">
+        <h4 class="question-title">您需要哪些装修翻新工作？</h4>
+        <p class="question-description">请选择您需要的工作内容（可多选）</p>
+        
+        <div class="mb-3">
+            <div class="row g-3">
+                <div class="col-6 col-md-4">
+                    <div class="form-check work-option">
+                        <input class="form-check-input" type="checkbox" id="repair_work_painting" name="repair_work_painting" {% if form.repair_work_painting.data %}checked{% endif %}>
+                        <label class="form-check-label d-flex align-items-center" for="repair_work_painting">
+                            <i class="fas fa-paint-roller me-2"></i> 刷漆
+                        </label>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="form-check work-option">
+                        <input class="form-check-input" type="checkbox" id="repair_work_plastering" name="repair_work_plastering" {% if form.repair_work_plastering.data %}checked{% endif %}>
+                        <label class="form-check-label d-flex align-items-center" for="repair_work_plastering">
+                            <i class="fas fa-trowel me-2"></i> 批灰
+                        </label>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="form-check work-option">
+                        <input class="form-check-input" type="checkbox" id="repair_work_flooring" name="repair_work_flooring" {% if form.repair_work_flooring.data %}checked{% endif %}>
+                        <label class="form-check-label d-flex align-items-center" for="repair_work_flooring">
+                            <i class="fas fa-border-all me-2"></i> 铺地板
+                        </label>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="form-check work-option">
+                        <input class="form-check-input" type="checkbox" id="repair_work_plumbing" name="repair_work_plumbing" {% if form.repair_work_plumbing.data %}checked{% endif %}>
+                        <label class="form-check-label d-flex align-items-center" for="repair_work_plumbing">
+                            <i class="fas fa-faucet me-2"></i> 改水电
+                        </label>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="form-check work-option">
+                        <input class="form-check-input" type="checkbox" id="repair_work_bathroom" name="repair_work_bathroom" {% if form.repair_work_bathroom.data %}checked{% endif %}>
+                        <label class="form-check-label d-flex align-items-center" for="repair_work_bathroom">
+                            <i class="fas fa-bath me-2"></i> 浴室
+                        </label>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="form-check work-option">
+                        <input class="form-check-input" type="checkbox" id="repair_work_toilet" name="repair_work_toilet" {% if form.repair_work_toilet.data %}checked{% endif %}>
+                        <label class="form-check-label d-flex align-items-center" for="repair_work_toilet">
+                            <i class="fas fa-toilet me-2"></i> 厕所
+                        </label>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="form-check work-option">
+                        <input class="form-check-input" type="checkbox" id="repair_work_kitchen" name="repair_work_kitchen" {% if form.repair_work_kitchen.data %}checked{% endif %}>
+                        <label class="form-check-label d-flex align-items-center" for="repair_work_kitchen">
+                            <i class="fas fa-utensils me-2"></i> 厨房
+                        </label>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="form-check work-option">
+                        <input class="form-check-input" type="checkbox" id="repair_work_garden" name="repair_work_garden" {% if form.repair_work_garden.data %}checked{% endif %}>
+                        <label class="form-check-label d-flex align-items-center" for="repair_work_garden">
+                            <i class="fas fa-leaf me-2"></i> 花园
+                        </label>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="form-check work-option">
+                        <input class="form-check-input" type="checkbox" id="repair_work_extension" name="repair_work_extension" {% if form.repair_work_extension.data %}checked{% endif %}>
+                        <label class="form-check-label d-flex align-items-center" for="repair_work_extension">
+                            <i class="fas fa-expand-alt me-2"></i> 扩建
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-3">
+                <label for="repair_work_other" class="form-label">其他工作（请说明）</label>
+                {{ form.repair_work_other(class="form-control") }}
+            </div>
+            
+            <div class="text-end mt-3">
+                <button type="button" class="btn btn-primary" onclick="goToNextQuestion('repair-work-question', 'repair-area-question')">继续</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 翻新面积问题 -->
+    <div class="question-item hidden" id="repair-area-question">
+        <h4 class="question-title">需要翻新的面积是多少？</h4>
+        <p class="question-description">请输入需要翻新的面积（平方米）</p>
+        
+        <div class="mb-3">
+            <div class="input-group">
+                {{ form.repair_area(class="form-control form-control-lg", type="number", min="0.1", step="0.1") }}
+                <span class="input-group-text">平方米</span>
+            </div>
+            <div class="invalid-feedback">请输入有效的面积（大于0）</div>
+            <div class="form-text">输入需要翻新的总面积</div>
+            
+            <div class="text-end mt-3">
+                <button type="button" class="btn btn-primary" onclick="goToNextQuestion('repair-area-question', 'repair-address-question')">继续</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 地址邮编问题 -->
+    <div class="question-item hidden" id="repair-address-question">
+        <h4 class="question-title">翻新地点的邮编是多少？</h4>
+        <p class="question-description">请输入装修翻新地点的邮编（格式：4位数字+2位字母，例如：1234AB）</p>
+        
+        <div class="mb-3">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                {{ form.repair_address(class="form-control form-control-lg", placeholder="例如：1234AB", pattern="[0-9]{4}[A-Za-z]{2}", title="请输入4位数字+2位字母的邮编格式") }}
+            </div>
+            <div class="invalid-feedback">请输入正确的邮编格式：4位数字+2位字母</div>
+        </div>
+    </div>
 </div> 

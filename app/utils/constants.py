@@ -8,7 +8,7 @@ SERVICE_CATEGORIES = [
             ('moving', '搬家服务'),
             ('pickup', '接送机'),
             ('driving', '代驾服务'),
-            ('repair', '装修维修')
+            ('repair', '装修翻新')
         ]
     },
     {

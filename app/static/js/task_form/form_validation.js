@@ -109,7 +109,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else if (subCategory === 'repair') {
                         const area = document.getElementById('repair_area');
                         const repairType = document.getElementById('repair_type');
+                        const repairAddress = document.getElementById('repair_address');
                         
+                        // 验证面积
                         if (!area.value || parseFloat(area.value) <= 0) {
                             area.classList.add('is-invalid');
                             isValid = false;
@@ -117,11 +119,61 @@ document.addEventListener('DOMContentLoaded', function() {
                             area.classList.remove('is-invalid');
                         }
                         
+                        // 验证类型
                         if (!repairType.value) {
                             repairType.classList.add('is-invalid');
                             isValid = false;
                         } else {
                             repairType.classList.remove('is-invalid');
+                        }
+                        
+                        // 验证邮编格式
+                        if (repairAddress && repairAddress.value.trim()) {
+                            const addressPattern = /^[0-9]{4}[A-Za-z]{2}$/;
+                            if (!addressPattern.test(repairAddress.value.trim())) {
+                                repairAddress.classList.add('is-invalid');
+                                isValid = false;
+                            } else {
+                                repairAddress.classList.remove('is-invalid');
+                            }
+                        }
+                        
+                        // 验证至少选择了一项工作内容
+                        const workSelections = [
+                            document.getElementById('repair_work_painting'),
+                            document.getElementById('repair_work_plastering'),
+                            document.getElementById('repair_work_flooring'),
+                            document.getElementById('repair_work_plumbing'),
+                            document.getElementById('repair_work_bathroom'),
+                            document.getElementById('repair_work_toilet'),
+                            document.getElementById('repair_work_kitchen'),
+                            document.getElementById('repair_work_garden'),
+                            document.getElementById('repair_work_extension')
+                        ];
+                        
+                        const hasWorkSelection = workSelections.some(checkbox => checkbox && checkbox.checked);
+                        const otherWork = document.getElementById('repair_work_other');
+                        const hasOtherWorkText = otherWork && otherWork.value.trim().length > 0;
+                        
+                        if (!hasWorkSelection && !hasOtherWorkText) {
+                            workSelections.forEach(checkbox => {
+                                if (checkbox) {
+                                    checkbox.closest('.form-check').classList.add('is-invalid');
+                                }
+                            });
+                            if (otherWork) {
+                                otherWork.classList.add('is-invalid');
+                            }
+                            isValid = false;
+                        } else {
+                            workSelections.forEach(checkbox => {
+                                if (checkbox) {
+                                    checkbox.closest('.form-check').classList.remove('is-invalid');
+                                }
+                            });
+                            if (otherWork) {
+                                otherWork.classList.remove('is-invalid');
+                            }
                         }
                     } else if (subCategory === 'legal') {
                         const caseType = document.getElementById('legal_case_type');
@@ -318,6 +370,9 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (serviceType === 'pickup') {
             // 接送机服务字段事件监听
             setupPickupFieldEvents();
+        } else if (serviceType === 'repair') {
+            // 装修翻新服务字段事件监听
+            setupRepairFieldEvents();
         }
     }
     
@@ -437,6 +492,83 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // 装修翻新服务字段事件监听
+    function setupRepairFieldEvents() {
+        // 监听工作内容选择
+        const workCheckboxes = document.querySelectorAll('#repair-work-question input[type="checkbox"]');
+        const otherWorkInput = document.getElementById('repair_work_other');
+        const continueButton = document.querySelector('#repair-work-question .btn-primary');
+        
+        // 监听复选框和其他工作文本框变化
+        function checkWorkSelections() {
+            // 检查是否有选择任何工作内容
+            let hasSelection = false;
+            
+            workCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    hasSelection = true;
+                }
+            });
+            
+            // 检查其他工作是否有填写
+            if (otherWorkInput && otherWorkInput.value.trim()) {
+                hasSelection = true;
+            }
+            
+            // 如果有任何选择，启用继续按钮
+            if (continueButton) {
+                continueButton.disabled = !hasSelection;
+            }
+        }
+        
+        // 为每个复选框添加事件监听
+        workCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', checkWorkSelections);
+        });
+        
+        // 为其他工作文本框添加事件监听
+        if (otherWorkInput) {
+            otherWorkInput.addEventListener('input', checkWorkSelections);
+        }
+        
+        // 为第一个问题的继续按钮添加点击事件
+        if (continueButton) {
+            continueButton.addEventListener('click', function() {
+                goToNextQuestion('repair-work-question', 'repair-area-question');
+            });
+        }
+        
+        // 监听面积输入
+        const areaInput = document.getElementById('repair_area');
+        const areaButton = document.querySelector('#repair-area-question .btn-primary');
+        
+        if (areaInput && areaButton) {
+            areaInput.addEventListener('input', function() {
+                if (areaInput.value && parseFloat(areaInput.value) > 0) {
+                    areaButton.disabled = false;
+                } else {
+                    areaButton.disabled = true;
+                }
+            });
+            
+            // 初始时禁用按钮
+            areaButton.disabled = !(areaInput.value && parseFloat(areaInput.value) > 0);
+        }
+        
+        // 监听地址邮编输入
+        const addressInput = document.getElementById('repair_address');
+        
+        if (addressInput) {
+            addressInput.addEventListener('input', function() {
+                const pattern = /^[0-9]{4}[A-Za-z]{2}$/;
+                if (pattern.test(addressInput.value)) {
+                    // 如果邮编格式正确，自动进入下一步
+                    // 这是最后一个问题，不需要继续
+                }
+            });
+        }
+    }
+    
     // 切换到下一个问题
     function goToNextQuestion(currentId, nextId) {
         const currentQuestion = document.getElementById(currentId);
@@ -447,12 +579,13 @@ document.addEventListener('DOMContentLoaded', function() {
             currentQuestion.classList.add('answered');
             currentQuestion.classList.remove('active');
             
-            // 检查当前问题是否属于接送机服务
+            // 检查当前问题是否属于接送机服务或装修翻新服务
             const isPickupService = currentId.includes('pickup-');
+            const isRepairService = currentId.includes('repair-');
             
-            // 如果不是接送机服务，则添加hidden类隐藏
-            // 接送机服务的问题回答后保持显示
-            if (!isPickupService) {
+            // 如果不是接送机服务或装修翻新服务，则添加hidden类隐藏
+            // 接送机服务和装修翻新服务的问题回答后保持显示
+            if (!isPickupService && !isRepairService) {
                 currentQuestion.classList.add('hidden');
             }
             

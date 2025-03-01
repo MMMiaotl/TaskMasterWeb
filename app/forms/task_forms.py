@@ -219,6 +219,25 @@ class TaskForm(FlaskForm):
     
     repair_materials_included = BooleanField('是否包含材料', default=False)
     
+    # 新增装修翻新工作内容多选字段
+    repair_work_painting = BooleanField('刷漆', default=False)
+    repair_work_plastering = BooleanField('批灰', default=False)
+    repair_work_flooring = BooleanField('铺地板', default=False)
+    repair_work_plumbing = BooleanField('改水电', default=False)
+    repair_work_bathroom = BooleanField('浴室', default=False)
+    repair_work_toilet = BooleanField('厕所', default=False)
+    repair_work_kitchen = BooleanField('厨房', default=False)
+    repair_work_garden = BooleanField('花园', default=False)
+    repair_work_extension = BooleanField('扩建', default=False)
+    repair_work_other = StringField('其他工作', validators=[Optional(), Length(max=200)])
+    
+    # 新增装修翻新地址邮编字段
+    repair_address = StringField('地址邮编', validators=[
+        Optional(),
+        Length(min=6, max=6, message='邮编必须是6位字符'),
+        Regexp(r'^[0-9]{4}[A-Za-z]{2}$', message='邮编格式必须是4位数字+2位字母，例如: 1234AB')
+    ])
+    
     # 法律咨询特定字段
     legal_case_type = SelectField('案件类型', 
         choices=[

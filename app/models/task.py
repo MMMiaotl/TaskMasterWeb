@@ -18,7 +18,7 @@ class Task(db.Model):
     service_main_category = db.Column(db.String(30))  # 主类别，用于快速筛选
     service_sub_category = db.Column(db.String(30))  # 子类别
     location = db.Column(db.String(100), nullable=True)
-    deadline = db.Column(db.DateTime, nullable=False)
+    deadline = db.Column(db.DateTime, nullable=True)
     budget = db.Column(db.Float, nullable=True)
     status = db.Column(db.Integer, default=0)  # 0: 等待接单, 1: 已接单, 2: 进行中, 3: 已完成
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -46,6 +46,17 @@ class Task(db.Model):
     repair_area = db.Column(db.Float)  # 面积（平方米）
     repair_type = db.Column(db.String(50))  # 维修类型：水电/墙面/地板等
     repair_materials_included = db.Column(db.Boolean)  # 是否包含材料
+    repair_address = db.Column(db.String(10))  # 地址邮编
+    repair_work_painting = db.Column(db.Boolean, default=False)  # 刷漆
+    repair_work_plastering = db.Column(db.Boolean, default=False)  # 批灰
+    repair_work_flooring = db.Column(db.Boolean, default=False)  # 铺地板
+    repair_work_plumbing = db.Column(db.Boolean, default=False)  # 改水电
+    repair_work_bathroom = db.Column(db.Boolean, default=False)  # 浴室
+    repair_work_toilet = db.Column(db.Boolean, default=False)  # 厕所
+    repair_work_kitchen = db.Column(db.Boolean, default=False)  # 厨房
+    repair_work_garden = db.Column(db.Boolean, default=False)  # 花园
+    repair_work_extension = db.Column(db.Boolean, default=False)  # 扩建
+    repair_work_other = db.Column(db.String(200))  # 其他工作
     
     # 法律咨询特定字段
     legal_case_type = db.Column(db.String(50))  # 案件类型

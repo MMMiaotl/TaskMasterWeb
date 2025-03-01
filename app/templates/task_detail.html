@@ -161,6 +161,114 @@
                                     <span>是否包含材料:</span>
                                     <span>{{ '是' if task.repair_materials_included else '否' }}</span>
                                 </li>
+                                
+                                {% if task.repair_address %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>地址邮编:</span>
+                                    <span>{{ task.repair_address }}</span>
+                                </li>
+                                {% endif %}
+                                
+                                <!-- 装修工作内容 -->
+                                <li class="list-group-item">
+                                    <div class="mb-2">工作内容:</div>
+                                    <div class="repair-works">
+                                        {% set has_work_items = false %}
+                                        <div class="row g-2">
+                                            {% if task.repair_work_painting %}
+                                            <div class="col-auto">
+                                                <span class="badge rounded-pill bg-primary text-white">
+                                                    <i class="fas fa-paint-roller me-1"></i> 刷漆
+                                                </span>
+                                            </div>
+                                            {% set has_work_items = true %}
+                                            {% endif %}
+                                            
+                                            {% if task.repair_work_plastering %}
+                                            <div class="col-auto">
+                                                <span class="badge rounded-pill bg-primary text-white">
+                                                    <i class="fas fa-trowel me-1"></i> 批灰
+                                                </span>
+                                            </div>
+                                            {% set has_work_items = true %}
+                                            {% endif %}
+                                            
+                                            {% if task.repair_work_flooring %}
+                                            <div class="col-auto">
+                                                <span class="badge rounded-pill bg-primary text-white">
+                                                    <i class="fas fa-border-all me-1"></i> 铺地板
+                                                </span>
+                                            </div>
+                                            {% set has_work_items = true %}
+                                            {% endif %}
+                                            
+                                            {% if task.repair_work_plumbing %}
+                                            <div class="col-auto">
+                                                <span class="badge rounded-pill bg-primary text-white">
+                                                    <i class="fas fa-faucet me-1"></i> 改水电
+                                                </span>
+                                            </div>
+                                            {% set has_work_items = true %}
+                                            {% endif %}
+                                            
+                                            {% if task.repair_work_bathroom %}
+                                            <div class="col-auto">
+                                                <span class="badge rounded-pill bg-primary text-white">
+                                                    <i class="fas fa-bath me-1"></i> 浴室
+                                                </span>
+                                            </div>
+                                            {% set has_work_items = true %}
+                                            {% endif %}
+                                            
+                                            {% if task.repair_work_toilet %}
+                                            <div class="col-auto">
+                                                <span class="badge rounded-pill bg-primary text-white">
+                                                    <i class="fas fa-toilet me-1"></i> 厕所
+                                                </span>
+                                            </div>
+                                            {% set has_work_items = true %}
+                                            {% endif %}
+                                            
+                                            {% if task.repair_work_kitchen %}
+                                            <div class="col-auto">
+                                                <span class="badge rounded-pill bg-primary text-white">
+                                                    <i class="fas fa-utensils me-1"></i> 厨房
+                                                </span>
+                                            </div>
+                                            {% set has_work_items = true %}
+                                            {% endif %}
+                                            
+                                            {% if task.repair_work_garden %}
+                                            <div class="col-auto">
+                                                <span class="badge rounded-pill bg-primary text-white">
+                                                    <i class="fas fa-leaf me-1"></i> 花园
+                                                </span>
+                                            </div>
+                                            {% set has_work_items = true %}
+                                            {% endif %}
+                                            
+                                            {% if task.repair_work_extension %}
+                                            <div class="col-auto">
+                                                <span class="badge rounded-pill bg-primary text-white">
+                                                    <i class="fas fa-expand-alt me-1"></i> 扩建
+                                                </span>
+                                            </div>
+                                            {% set has_work_items = true %}
+                                            {% endif %}
+                                        </div>
+                                        
+                                        {% if task.repair_work_other %}
+                                        <div class="mt-2">
+                                            <div class="text-secondary">其他: {{ task.repair_work_other }}</div>
+                                        </div>
+                                        {% set has_work_items = true %}
+                                        {% endif %}
+                                        
+                                        {% if not has_work_items %}
+                                        <div class="text-muted">未指定工作内容</div>
+                                        {% endif %}
+                                    </div>
+                                </li>
                             </ul>
                         </div>
                         
