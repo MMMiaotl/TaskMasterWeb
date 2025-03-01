@@ -26,9 +26,31 @@ class TaskForm(FlaskForm):
         Length(max=100)
     ])
     
+    # 时间类型选择
+    time_preference = RadioField('时间偏好',
+        choices=[
+            ('specific_date', '我有个明确的日期'),
+            ('date_range', '我有个期望的日期范围'),
+            ('anytime', '任何时间都可以'),
+            ('not_sure', '不确定')
+        ],
+        validators=[DataRequired(message='请选择时间偏好')]
+    )
+    
     deadline = DateField('截止日期', 
         format='%Y-%m-%d',
-        validators=[DataRequired(message='请选择截止日期')]
+        validators=[Optional()]
+    )
+    
+    # 日期范围字段
+    start_date = DateField('开始日期',
+        format='%Y-%m-%d',
+        validators=[Optional()]
+    )
+    
+    end_date = DateField('结束日期',
+        format='%Y-%m-%d',
+        validators=[Optional()]
     )
     
     budget = DecimalField('预算 (欧元)', 

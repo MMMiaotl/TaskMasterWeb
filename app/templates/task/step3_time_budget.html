@@ -2,20 +2,94 @@
 <div class="form-step d-none" id="step-3">
     <h3 class="card-title mb-4">设置服务时间</h3>
     
-    <!-- 截止日期问题 -->
-    <div class="question-item active" id="deadline-question">
-        <h4 class="question-title">您希望何时完成这项服务？</h4>
-        <p class="question-description">请选择您期望服务完成的最晚日期，这将帮助我们安排合适的服务提供者。</p>
+    <!-- 时间偏好问题 -->
+    <div class="question-item active" id="time-preference-question">
+        <h4 class="question-title">您需要什么时间来完成此任务？</h4>
+        <p class="question-description">请选择您对任务完成时间的偏好，这将帮助我们安排合适的服务提供者。</p>
+        
+        <div class="mb-4">
+            <div class="time-preference-options">
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="radio" name="time_preference" id="specific_date" value="specific_date" {% if form.time_preference.data == 'specific_date' %}checked{% endif %} required>
+                    <label class="form-check-label" for="specific_date">
+                        我有个明确的日期
+                    </label>
+                </div>
+                
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="radio" name="time_preference" id="date_range" value="date_range" {% if form.time_preference.data == 'date_range' %}checked{% endif %} required>
+                    <label class="form-check-label" for="date_range">
+                        我有个期望的日期范围
+                    </label>
+                </div>
+                
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="radio" name="time_preference" id="anytime" value="anytime" {% if form.time_preference.data == 'anytime' %}checked{% endif %} required>
+                    <label class="form-check-label" for="anytime">
+                        任何时间都可以
+                    </label>
+                </div>
+                
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="radio" name="time_preference" id="not_sure" value="not_sure" {% if form.time_preference.data == 'not_sure' %}checked{% endif %} required>
+                    <label class="form-check-label" for="not_sure">
+                        不确定
+                    </label>
+                </div>
+            </div>
+            <div class="invalid-feedback">
+                请选择时间偏好
+            </div>
+        </div>
+    </div>
+    
+    <!-- 明确日期选择 -->
+    <div class="question-item hidden" id="specific-date-question">
+        <h4 class="question-title">请选择您期望的具体日期</h4>
+        <p class="question-description">选择您希望服务完成的具体日期。</p>
         
         <div class="mb-3">
             {{ form.deadline(class="form-control form-control-lg", type="date") }}
-            <div class="form-text">选择您期望服务完成的最晚日期</div>
+            <div class="form-text">选择您期望服务完成的日期</div>
             <div class="invalid-feedback">
                 {% if form.deadline.errors %}
                     {{ form.deadline.errors[0] }}
                 {% else %}
-                    请选择截止日期
+                    请选择日期
                 {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- 日期范围选择 -->
+    <div class="question-item hidden" id="date-range-question">
+        <h4 class="question-title">请选择您期望的日期范围</h4>
+        <p class="question-description">选择您希望服务完成的日期范围。</p>
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="start_date" class="form-label">开始日期</label>
+                {{ form.start_date(class="form-control form-control-lg", type="date") }}
+                <div class="form-text">选择范围的开始日期</div>
+                <div class="invalid-feedback">
+                    {% if form.start_date.errors %}
+                        {{ form.start_date.errors[0] }}
+                    {% else %}
+                        请选择开始日期
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="end_date" class="form-label">结束日期</label>
+                {{ form.end_date(class="form-control form-control-lg", type="date") }}
+                <div class="form-text">选择范围的结束日期</div>
+                <div class="invalid-feedback">
+                    {% if form.end_date.errors %}
+                        {{ form.end_date.errors[0] }}
+                    {% else %}
+                        请选择结束日期
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
