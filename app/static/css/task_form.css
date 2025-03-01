@@ -1,0 +1,127 @@
+/* 任务表单样式 */
+
+/* 问题项样式 */
+.question-item {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    background-color: #fff;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.5s ease;
+    position: relative;
+}
+
+/* 隐藏的问题 */
+.question-item.hidden {
+    opacity: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+/* 活跃的问题 */
+.question-item.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 已回答的问题 */
+.question-item.answered {
+    background-color: #f8f9fa;
+    box-shadow: none;
+}
+
+/* 淡入动画 */
+.fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 问题标题 */
+.question-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #343a40;
+}
+
+/* 问题描述 */
+.question-description {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+}
+
+/* 下一个问题按钮 */
+.next-question {
+    margin-top: 1rem;
+    padding: 0.5rem 1.5rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.next-question:hover {
+    background-color: #0069d9;
+}
+
+/* 步骤按钮容器 */
+.step-buttons {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+    transition: all 0.5s ease;
+}
+
+.step-buttons.hidden {
+    opacity: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+/* 进度指示器样式优化 */
+.form-progress {
+    margin-bottom: 2rem;
+}
+
+.form-progress .step {
+    transition: all 0.3s ease;
+}
+
+.form-progress .step.completed {
+    background-color: #28a745;
+}
+
+.form-progress .step.active {
+    background-color: #007bff;
+    transform: scale(1.1);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .question-item {
+        padding: 1rem;
+    }
+    
+    .question-title {
+        font-size: 1.1rem;
+    }
+} 

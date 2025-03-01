@@ -4,30 +4,67 @@
 <div class="service-fields d-none" id="moving-fields">
     <h4 class="h5 mb-3">搬家服务详情</h4>
     
-    <div class="mb-3">
-        <label for="moving_item_size" class="form-label">物品大小</label>
-        {{ form.moving_item_size(class="form-control") }}
-        <div class="form-text">选择您需要搬运的物品大小类型</div>
-    </div>
-    
-    <div class="mb-3">
-        <label for="moving_item_quantity" class="form-label">物品数量</label>
-        {{ form.moving_item_quantity(class="form-control", type="number", min="1") }}
-        <div class="form-text">输入需要搬运的物品数量</div>
-    </div>
-    
-    <div class="mb-3">
-        <div class="form-check">
-            {{ form.moving_has_elevator(class="form-check-input") }}
-            <label class="form-check-label" for="moving_has_elevator">有电梯</label>
+    <!-- 物品大小问题 -->
+    <div class="question-item active" id="moving-size-question">
+        <h4 class="question-title">您需要搬运什么大小的物品？</h4>
+        <p class="question-description">请选择最符合您物品大小的选项，这将帮助我们安排合适的搬运服务。</p>
+        
+        <div class="mb-3">
+            {{ form.moving_item_size(class="form-control form-control-lg") }}
+            <div class="form-text">选择您需要搬运的物品大小类型</div>
         </div>
-        <div class="form-text">勾选表示搬运地点有电梯</div>
+        
+        <button type="button" class="btn btn-primary next-question">
+            <i class="fas fa-arrow-right me-2"></i>继续
+        </button>
     </div>
     
-    <div class="mb-3">
-        <label for="moving_floor_number" class="form-label">楼层</label>
-        {{ form.moving_floor_number(class="form-control", type="number", min="0") }}
-        <div class="form-text">输入搬运地点的楼层数</div>
+    <!-- 物品数量问题 -->
+    <div class="question-item hidden" id="moving-quantity-question">
+        <h4 class="question-title">您有多少件物品需要搬运？</h4>
+        <p class="question-description">请输入需要搬运的物品数量，这将帮助我们评估所需的人力和时间。</p>
+        
+        <div class="mb-3">
+            {{ form.moving_item_quantity(class="form-control form-control-lg", type="number", min="1") }}
+            <div class="form-text">输入需要搬运的物品数量</div>
+        </div>
+        
+        <button type="button" class="btn btn-primary next-question">
+            <i class="fas fa-arrow-right me-2"></i>继续
+        </button>
+    </div>
+    
+    <!-- 电梯问题 -->
+    <div class="question-item hidden" id="moving-elevator-question">
+        <h4 class="question-title">搬运地点是否有电梯？</h4>
+        <p class="question-description">这将帮助我们评估搬运难度和所需时间。</p>
+        
+        <div class="mb-3">
+            <div class="form-check form-switch form-check-lg">
+                {{ form.moving_has_elevator(class="form-check-input") }}
+                <label class="form-check-label" for="moving_has_elevator">有电梯</label>
+            </div>
+            <div class="form-text">勾选表示搬运地点有电梯</div>
+        </div>
+        
+        <button type="button" class="btn btn-primary next-question">
+            <i class="fas fa-arrow-right me-2"></i>继续
+        </button>
+    </div>
+    
+    <!-- 楼层问题 -->
+    <div class="question-item hidden" id="moving-floor-question">
+        <h4 class="question-title">搬运地点在几楼？</h4>
+        <p class="question-description">请输入搬运地点的楼层数，这将帮助我们评估搬运难度。</p>
+        
+        <div class="mb-3">
+            {{ form.moving_floor_number(class="form-control form-control-lg", type="number", min="0") }}
+            <div class="form-text">输入搬运地点的楼层数</div>
+        </div>
+        
+        <button type="button" class="btn btn-primary next-question">
+            <i class="fas fa-check me-2"></i>完成
+        </button>
     </div>
 </div>
 
@@ -35,36 +72,72 @@
 <div class="service-fields d-none" id="pickup-fields">
     <h4 class="h5 mb-3">接送机服务详情</h4>
     
-    <div class="mb-3">
-        <label class="form-label">服务类型</label>
-        <div class="d-flex">
-            <div class="form-check me-4">
-                <input class="form-check-input" type="radio" name="pickup_is_arrival" id="pickup_is_arrival_1" value="1" {% if form.pickup_is_arrival.data == '1' %}checked{% endif %}>
-                <label class="form-check-label" for="pickup_is_arrival_1">接机</label>
+    <!-- 服务类型问题 -->
+    <div class="question-item active" id="pickup-type-question">
+        <h4 class="question-title">您需要什么类型的接送机服务？</h4>
+        <p class="question-description">请选择您需要的服务类型。</p>
+        
+        <div class="mb-3">
+            <div class="d-flex">
+                <div class="form-check me-4">
+                    <input class="form-check-input" type="radio" name="pickup_is_arrival" id="pickup_is_arrival_1" value="1" {% if form.pickup_is_arrival.data == '1' %}checked{% endif %}>
+                    <label class="form-check-label" for="pickup_is_arrival_1">接机</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="pickup_is_arrival" id="pickup_is_arrival_0" value="0" {% if form.pickup_is_arrival.data == '0' %}checked{% endif %}>
+                    <label class="form-check-label" for="pickup_is_arrival_0">送机</label>
+                </div>
             </div>
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="pickup_is_arrival" id="pickup_is_arrival_0" value="0" {% if form.pickup_is_arrival.data == '0' %}checked{% endif %}>
-                <label class="form-check-label" for="pickup_is_arrival_0">送机</label>
-            </div>
+            <div class="form-text">选择您需要的服务类型</div>
         </div>
-        <div class="form-text">选择您需要的服务类型</div>
+        
+        <button type="button" class="btn btn-primary next-question">
+            <i class="fas fa-arrow-right me-2"></i>继续
+        </button>
     </div>
     
-    <div class="mb-3">
-        <label for="pickup_flight_number" class="form-label">航班号</label>
-        {{ form.pickup_flight_number(class="form-control") }}
-        <div class="form-text">输入您的航班号，例如：CA1234</div>
+    <!-- 航班号问题 -->
+    <div class="question-item hidden" id="pickup-flight-question">
+        <h4 class="question-title">请提供您的航班号</h4>
+        <p class="question-description">这将帮助我们追踪航班状态，确保准时接送。</p>
+        
+        <div class="mb-3">
+            {{ form.pickup_flight_number(class="form-control form-control-lg") }}
+            <div class="form-text">输入您的航班号，例如：CA1234</div>
+        </div>
+        
+        <button type="button" class="btn btn-primary next-question">
+            <i class="fas fa-arrow-right me-2"></i>继续
+        </button>
     </div>
     
-    <div class="mb-3">
-        <label for="pickup_passengers" class="form-label">乘客数量</label>
-        {{ form.pickup_passengers(class="form-control", type="number", min="1") }}
-        <div class="form-text">输入需要接送的乘客数量</div>
+    <!-- 乘客数量问题 -->
+    <div class="question-item hidden" id="pickup-passengers-question">
+        <h4 class="question-title">有多少位乘客需要接送？</h4>
+        <p class="question-description">请输入需要接送的乘客数量，这将帮助我们安排合适的车辆。</p>
+        
+        <div class="mb-3">
+            {{ form.pickup_passengers(class="form-control form-control-lg", type="number", min="1") }}
+            <div class="form-text">输入需要接送的乘客数量</div>
+        </div>
+        
+        <button type="button" class="btn btn-primary next-question">
+            <i class="fas fa-arrow-right me-2"></i>继续
+        </button>
     </div>
     
-    <div class="mb-3">
-        <label for="pickup_luggage_count" class="form-label">行李数量</label>
-        {{ form.pickup_luggage_count(class="form-control", type="number", min="0") }}
-        <div class="form-text">输入需要搬运的行李数量</div>
+    <!-- 行李数量问题 -->
+    <div class="question-item hidden" id="pickup-luggage-question">
+        <h4 class="question-title">您有多少件行李需要搬运？</h4>
+        <p class="question-description">请输入需要搬运的行李数量，这将帮助我们安排合适的车辆。</p>
+        
+        <div class="mb-3">
+            {{ form.pickup_luggage_count(class="form-control form-control-lg", type="number", min="0") }}
+            <div class="form-text">输入需要搬运的行李数量</div>
+        </div>
+        
+        <button type="button" class="btn btn-primary next-question">
+            <i class="fas fa-check me-2"></i>完成
+        </button>
     </div>
 </div> 

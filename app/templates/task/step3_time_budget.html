@@ -2,49 +2,76 @@
 <div class="form-step d-none" id="step-3">
     <h3 class="card-title mb-4">设置时间和预算</h3>
     
-    <div class="mb-4">
-        <label for="deadline" class="form-label fw-bold">您希望何时完成这项服务？</label>
-        {{ form.deadline(class="form-control form-control-lg", type="date") }}
-        <div class="form-text">选择您期望服务完成的最晚日期</div>
-        <div class="invalid-feedback">
-            {% if form.deadline.errors %}
-                {{ form.deadline.errors[0] }}
-            {% else %}
-                请选择截止日期
-            {% endif %}
+    <!-- 截止日期问题 -->
+    <div class="question-item active" id="deadline-question">
+        <h4 class="question-title">您希望何时完成这项服务？</h4>
+        <p class="question-description">请选择您期望服务完成的最晚日期，这将帮助我们安排合适的服务提供者。</p>
+        
+        <div class="mb-3">
+            {{ form.deadline(class="form-control form-control-lg", type="date") }}
+            <div class="form-text">选择您期望服务完成的最晚日期</div>
+            <div class="invalid-feedback">
+                {% if form.deadline.errors %}
+                    {{ form.deadline.errors[0] }}
+                {% else %}
+                    请选择截止日期
+                {% endif %}
+            </div>
         </div>
+        
+        <button type="button" class="btn btn-primary next-question">
+            <i class="fas fa-arrow-right me-2"></i>继续
+        </button>
     </div>
     
-    <div class="mb-4">
-        <label for="budget" class="form-label fw-bold">您的预算是多少？(可选)</label>
-        <div class="input-group input-group-lg">
-            <span class="input-group-text">€</span>
-            {{ form.budget(class="form-control", type="number", step="0.01", min="0", placeholder="输入金额") }}
+    <!-- 预算问题 -->
+    <div class="question-item hidden" id="budget-question">
+        <h4 class="question-title">您的预算是多少？</h4>
+        <p class="question-description">设置合理的预算可以吸引更多优质服务提供者，如不确定可留空。</p>
+        
+        <div class="mb-3">
+            <div class="input-group input-group-lg">
+                <span class="input-group-text">€</span>
+                {{ form.budget(class="form-control", type="number", step="0.01", min="0", placeholder="输入金额") }}
+            </div>
+            <div class="form-text">设置合理的预算可以吸引更多优质服务提供者，如不确定可留空</div>
+            <div class="invalid-feedback">
+                {% if form.budget.errors %}
+                    {{ form.budget.errors[0] }}
+                {% else %}
+                    请输入有效的预算金额
+                {% endif %}
+            </div>
         </div>
-        <div class="form-text">设置合理的预算可以吸引更多优质服务提供者，如不确定可留空</div>
-        <div class="invalid-feedback">
-            {% if form.budget.errors %}
-                {{ form.budget.errors[0] }}
-            {% else %}
-                请输入有效的预算金额
-            {% endif %}
-        </div>
+        
+        <button type="button" class="btn btn-primary next-question">
+            <i class="fas fa-arrow-right me-2"></i>继续
+        </button>
     </div>
     
-    <div class="mb-4">
-        <label for="location" class="form-label fw-bold">服务地点 (可选)</label>
-        {{ form.location(class="form-control form-control-lg", placeholder="输入详细地址或区域") }}
-        <div class="form-text">准确的地点信息有助于匹配附近的服务提供者，如不适用可留空</div>
-        <div class="invalid-feedback">
-            {% if form.location.errors %}
-                {{ form.location.errors[0] }}
-            {% else %}
-                请输入有效的服务地点
-            {% endif %}
+    <!-- 地点问题 -->
+    <div class="question-item hidden" id="location-question">
+        <h4 class="question-title">服务将在哪里进行？</h4>
+        <p class="question-description">准确的地点信息有助于匹配附近的服务提供者，如不适用可留空。</p>
+        
+        <div class="mb-3">
+            {{ form.location(class="form-control form-control-lg", placeholder="输入详细地址或区域") }}
+            <div class="form-text">准确的地点信息有助于匹配附近的服务提供者，如不适用可留空</div>
+            <div class="invalid-feedback">
+                {% if form.location.errors %}
+                    {{ form.location.errors[0] }}
+                {% else %}
+                    请输入有效的服务地点
+                {% endif %}
+            </div>
         </div>
+        
+        <button type="button" class="btn btn-primary next-question">
+            <i class="fas fa-check me-2"></i>完成
+        </button>
     </div>
     
-    <div class="d-flex justify-content-between mt-4">
+    <div class="step-buttons hidden">
         <button type="button" class="btn btn-outline-secondary btn-lg px-4 prev-step">上一步</button>
         <button type="button" class="btn btn-primary btn-lg px-4 next-step">下一步</button>
     </div>

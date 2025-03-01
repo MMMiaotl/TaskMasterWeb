@@ -9,8 +9,10 @@
     </div>
     {% endif %}
     
-    <div class="mb-4">
-        <label class="form-label fw-bold">您需要什么类型的服务？</label>
+    <div class="question-item active" id="category-question">
+        <h4 class="question-title">您需要什么类型的服务？</h4>
+        <p class="question-description">选择一个最符合您需求的服务类别，我们将为您提供相应的服务选项。</p>
+        
         <div class="service-categories">
             <select class="form-select form-select-lg" id="service_category" name="service_category" required>
                 {% for value, label in form.service_category.choices %}
@@ -29,9 +31,14 @@
             </select>
             <div class="invalid-feedback">请选择服务类别</div>
         </div>
+        
+        <button type="button" class="btn btn-primary next-question mt-4">
+            <i class="fas fa-arrow-right me-2"></i>继续
+        </button>
     </div>
     
-    <div class="d-flex justify-content-end mt-4">
-        <button type="button" class="btn btn-primary btn-lg px-4 next-step">下一步</button>
+    <div class="step-buttons hidden">
+        <div></div> <!-- 占位，保持右对齐 -->
+        <button type="button" class="btn btn-primary btn-lg px-4 next-step" onclick="goToStep(2)">下一步</button>
     </div>
 </div> 

@@ -7,55 +7,91 @@
         根据您提供的信息，我们已为您自动生成任务标题和描述。您可以直接使用或进行修改。
     </div>
     
-    <div class="mb-4">
-        <label for="title" class="form-label fw-bold">任务标题</label>
-        <div class="input-group mb-2">
-            {{ form.title(class="form-control form-control-lg", placeholder="简短描述您需要的服务，例如：客厅墙面粉刷") }}
-            <button class="btn btn-outline-primary" type="button" id="generate-title-btn">
-                <i class="fas fa-magic"></i> 自动生成
-            </button>
+    <!-- 任务标题问题 -->
+    <div class="question-item active" id="title-question">
+        <h4 class="question-title">为您的任务起个标题</h4>
+        <p class="question-description">清晰的标题可以帮助服务提供者更好地理解您的需求。</p>
+        
+        <div class="mb-3">
+            <div class="input-group mb-2">
+                {{ form.title(class="form-control form-control-lg", placeholder="简短描述您需要的服务，例如：客厅墙面粉刷") }}
+                <button class="btn btn-outline-primary" type="button" id="generate-title-btn">
+                    <i class="fas fa-magic"></i> 自动生成
+                </button>
+            </div>
+            <div class="form-text">清晰的标题可以帮助服务提供者更好地理解您的需求</div>
+            <div class="invalid-feedback">
+                {% if form.title.errors %}
+                    {{ form.title.errors[0] }}
+                {% else %}
+                    请输入有效的任务标题
+                {% endif %}
+            </div>
         </div>
-        <div class="form-text">清晰的标题可以帮助服务提供者更好地理解您的需求</div>
-        <div class="invalid-feedback">
-            {% if form.title.errors %}
-                {{ form.title.errors[0] }}
-            {% else %}
-                请输入有效的任务标题
-            {% endif %}
-        </div>
+        
+        <button type="button" class="btn btn-primary next-question">
+            <i class="fas fa-arrow-right me-2"></i>继续
+        </button>
     </div>
     
-    <div class="mb-4">
-        <label for="description" class="form-label fw-bold">详细描述</label>
-        <div class="input-group mb-2">
-            {{ form.description(class="form-control", rows=5, placeholder="详细描述您的需求，包括具体要求、面积大小、材料偏好等信息") }}
-            <button class="btn btn-outline-primary" type="button" id="generate-description-btn" style="align-self: flex-start;">
-                <i class="fas fa-magic"></i> 自动生成
-            </button>
+    <!-- 详细描述问题 -->
+    <div class="question-item hidden" id="description-question">
+        <h4 class="question-title">详细描述您的需求</h4>
+        <p class="question-description">详细的描述可以帮助您获得更准确的报价和更好的服务。</p>
+        
+        <div class="mb-3">
+            <div class="input-group mb-2">
+                {{ form.description(class="form-control", rows=5, placeholder="详细描述您的需求，包括具体要求、面积大小、材料偏好等信息") }}
+                <button class="btn btn-outline-primary" type="button" id="generate-description-btn" style="align-self: flex-start;">
+                    <i class="fas fa-magic"></i> 自动生成
+                </button>
+            </div>
+            <div class="form-text">详细的描述可以帮助您获得更准确的报价</div>
+            <div class="invalid-feedback">
+                {% if form.description.errors %}
+                    {{ form.description.errors[0] }}
+                {% else %}
+                    请输入有效的任务描述
+                {% endif %}
+            </div>
         </div>
-        <div class="form-text">详细的描述可以帮助您获得更准确的报价</div>
-        <div class="invalid-feedback">
-            {% if form.description.errors %}
-                {{ form.description.errors[0] }}
-            {% else %}
-                请输入有效的任务描述
-            {% endif %}
+        
+        <button type="button" class="btn btn-primary next-question">
+            <i class="fas fa-arrow-right me-2"></i>继续
+        </button>
+    </div>
+    
+    <!-- 补充信息问题 -->
+    <div class="question-item hidden" id="additional-info-question">
+        <h4 class="question-title">有什么补充信息吗？</h4>
+        <p class="question-description">您可以在这里添加任何其他重要信息，这是可选的。</p>
+        
+        <div class="mb-3">
+            {{ form.additional_info(class="form-control", rows=3, placeholder="添加任何其他您认为重要的信息") }}
+            <div class="form-text">您可以在这里添加任何其他重要信息</div>
         </div>
+        
+        <button type="button" class="btn btn-primary next-question">
+            <i class="fas fa-arrow-right me-2"></i>继续
+        </button>
     </div>
     
-    <div class="mb-4">
-        <label for="additional_info" class="form-label fw-bold">补充信息 (可选)</label>
-        {{ form.additional_info(class="form-control", rows=3, placeholder="添加任何其他您认为重要的信息") }}
-        <div class="form-text">您可以在这里添加任何其他重要信息</div>
+    <!-- 上传图片问题 -->
+    <div class="question-item hidden" id="images-question">
+        <h4 class="question-title">上传相关图片</h4>
+        <p class="question-description">上传相关图片可以帮助服务提供者更好地理解您的需求，这是可选的。</p>
+        
+        <div class="mb-3">
+            {{ form.task_images(class="form-control") }}
+            <div class="form-text">上传相关图片可以帮助服务提供者更好地理解您的需求 (支持jpg, jpeg, png, gif格式)</div>
+        </div>
+        
+        <button type="button" class="btn btn-primary next-question">
+            <i class="fas fa-check me-2"></i>完成
+        </button>
     </div>
     
-    <div class="mb-4">
-        <label for="task_images" class="form-label fw-bold">上传图片 (可选)</label>
-        {{ form.task_images(class="form-control") }}
-        <div class="form-text">上传相关图片可以帮助服务提供者更好地理解您的需求 (支持jpg, jpeg, png, gif格式)</div>
-    </div>
-    
-    <div class="d-flex justify-content-between mt-4">
+    <div class="step-buttons hidden">
         <button type="button" class="btn btn-outline-secondary btn-lg px-4 prev-step">上一步</button>
         <button type="button" class="btn btn-primary btn-lg px-4 next-step">下一步</button>
     </div>

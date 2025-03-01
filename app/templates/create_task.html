@@ -39,6 +39,7 @@
 
 {% block styles %}
 {% include 'task/form_styles.html' %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/task_form.css') }}">
 {% endblock %}
 
 {% block scripts %}
@@ -47,5 +48,6 @@
 <script src="{{ url_for('static', filename='js/task_form/form_validation.js') }}"></script>
 <script src="{{ url_for('static', filename='js/task_form/auto_generation.js') }}"></script>
 <script src="{{ url_for('static', filename='js/task_form/summary_update.js') }}"></script>
+<script src="{{ url_for('static', filename='js/task_form/form_animation.js') }}"></script>
 {% endblock %}
 {% endblock %}
