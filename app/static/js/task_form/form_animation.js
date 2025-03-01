@@ -106,10 +106,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 添加动画类
                 nextQuestion.classList.add('fade-in');
                 
-                // 滚动到新问题
+                // 滚动到新问题，时间与动画时间匹配
                 setTimeout(() => {
-                    nextQuestion.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 300);
+                    nextQuestion.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start',
+                        inline: 'nearest'
+                    });
+                }, 100); // 减少延迟时间，使滚动与动画同步
                 
                 // 为下一个问题添加输入字段事件监听
                 addInputEventListeners(nextQuestion);
@@ -142,10 +146,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     // 添加动画类
                     stepButtons.classList.add('fade-in');
                     
-                    // 滚动到按钮位置
+                    // 滚动到按钮位置，时间与动画时间匹配
                     setTimeout(() => {
-                        stepButtons.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 300);
+                        stepButtons.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start',
+                            inline: 'nearest'
+                        });
+                    }, 100); // 减少延迟时间，使滚动与动画同步
                 }
             }
         }

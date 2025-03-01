@@ -9,6 +9,7 @@
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     transition: all 0.5s ease;
     position: relative;
+    border-left: 3px solid transparent;
 }
 
 /* 隐藏的问题 */
@@ -25,27 +26,38 @@
 .question-item.active {
     opacity: 1;
     transform: translateY(0);
+    border-left: 3px solid #007bff;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
 }
 
 /* 已回答的问题 */
 .question-item.answered {
     background-color: #f8f9fa;
     box-shadow: none;
+    transition: all 0.3s ease;
+    border-left: 3px solid #28a745;
+    transform: scale(0.98);
 }
 
 /* 淡入动画 */
 .fade-in {
-    animation: fadeIn 0.5s ease forwards;
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes fadeIn {
-    from {
+    0% {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(15px) scale(0.98);
+        filter: blur(3px);
     }
-    to {
+    50% {
+        opacity: 0.8;
+        filter: blur(1px);
+    }
+    100% {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
+        filter: blur(0);
     }
 }
 
@@ -68,6 +80,23 @@
 .form-control:focus, .form-select:focus {
     border-color: #80bdff;
     box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+    transition: all 0.2s ease-in-out;
+}
+
+/* 输入字段悬停样式 */
+.form-control:hover, .form-select:hover {
+    border-color: #b8daff;
+}
+
+/* 输入字段动画 */
+.form-control, .form-select {
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+/* 问题项悬停效果 */
+.question-item.active:hover {
+    box-shadow: 0 0.35rem 0.65rem rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
 }
 
 /* 步骤按钮容器 */
@@ -93,16 +122,40 @@
 }
 
 .form-progress .step {
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
 }
 
 .form-progress .step.completed {
     background-color: #28a745;
+    transform: scale(1.05);
+}
+
+.form-progress .step.completed::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
 }
 
 .form-progress .step.active {
     background-color: #007bff;
     transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
 }
 
 /* 响应式调整 */
