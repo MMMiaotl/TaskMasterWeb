@@ -446,7 +446,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // 标记当前问题为已回答
             currentQuestion.classList.add('answered');
             currentQuestion.classList.remove('active');
-            currentQuestion.classList.add('hidden');
+            
+            // 检查当前问题是否属于接送机服务
+            const isPickupService = currentId.includes('pickup-');
+            
+            // 如果不是接送机服务，则添加hidden类隐藏
+            // 接送机服务的问题回答后保持显示
+            if (!isPickupService) {
+                currentQuestion.classList.add('hidden');
+            }
             
             // 显示下一个问题
             nextQuestion.classList.remove('hidden');
