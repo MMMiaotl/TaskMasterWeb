@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // 检查是否有下一个问题项
             if (nextQuestion && nextQuestion.classList.contains('question-item')) {
-                console.log('自动跳转到下一个问题');
+                console.log('自动跳转到下一个问题:', nextQuestion.id);
                 // 显示下一个问题
                 nextQuestion.classList.remove('hidden');
                 
@@ -355,6 +355,55 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 300);
             }
             
+            return isValid;
+        }
+        
+        // 特殊处理标题问题
+        if (questionElement.id === 'title-question') {
+            const titleInput = questionElement.querySelector('#title');
+            if (titleInput && !titleInput.value.trim()) {
+                titleInput.classList.add('is-invalid');
+                isValid = false;
+            } else if (titleInput) {
+                titleInput.classList.remove('is-invalid');
+                
+                // 获取下一个问题元素
+                const nextQuestion = document.getElementById('description-question');
+                if (nextQuestion) {
+                    // 显示下一个问题
+                    nextQuestion.classList.remove('hidden');
+                    nextQuestion.classList.add('fade-in');
+                    
+                    // 平滑滚动到下一个问题
+                    setTimeout(() => {
+                        nextQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                    
+                    // 为下一个问题添加输入字段事件监听
+                    addInputEventListeners(nextQuestion);
+                }
+            }
+            return isValid;
+        }
+        
+        // 特殊处理描述问题
+        if (questionElement.id === 'description-question') {
+            const descriptionInput = questionElement.querySelector('#description');
+            if (descriptionInput && !descriptionInput.value.trim()) {
+                descriptionInput.classList.add('is-invalid');
+                isValid = false;
+            } else if (descriptionInput) {
+                descriptionInput.classList.remove('is-invalid');
+                
+                // 显示下一步按钮
+                const nextStepBtn = questionElement.closest('.form-step').querySelector('.next-step');
+                nextStepBtn.classList.remove('hidden');
+                
+                // 平滑滚动到下一步按钮
+                setTimeout(() => {
+                    nextStepBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
             return isValid;
         }
         
