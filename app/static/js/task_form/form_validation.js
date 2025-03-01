@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 deadline.classList.remove('is-invalid');
             }
             
-            // 预算和地点是可选的，不需要验证
+            // 预算和地点已移除，不需要验证
         } else if (stepNumber === 4) {
             // 第4步中的字段都是可选的，不需要验证
             // 如果用户没有填写，自动生成标题和描述
