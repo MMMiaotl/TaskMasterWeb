@@ -1,0 +1,70 @@
+<!-- 日常生活服务字段 -->
+
+<!-- 搬家服务特定字段 -->
+<div class="service-fields d-none" id="moving-fields">
+    <h4 class="h5 mb-3">搬家服务详情</h4>
+    
+    <div class="mb-3">
+        <label for="moving_item_size" class="form-label">物品大小</label>
+        {{ form.moving_item_size(class="form-control") }}
+        <div class="form-text">选择您需要搬运的物品大小类型</div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="moving_item_quantity" class="form-label">物品数量</label>
+        {{ form.moving_item_quantity(class="form-control", type="number", min="1") }}
+        <div class="form-text">输入需要搬运的物品数量</div>
+    </div>
+    
+    <div class="mb-3">
+        <div class="form-check">
+            {{ form.moving_has_elevator(class="form-check-input") }}
+            <label class="form-check-label" for="moving_has_elevator">有电梯</label>
+        </div>
+        <div class="form-text">勾选表示搬运地点有电梯</div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="moving_floor_number" class="form-label">楼层</label>
+        {{ form.moving_floor_number(class="form-control", type="number", min="0") }}
+        <div class="form-text">输入搬运地点的楼层数</div>
+    </div>
+</div>
+
+<!-- 接送机特定字段 -->
+<div class="service-fields d-none" id="pickup-fields">
+    <h4 class="h5 mb-3">接送机服务详情</h4>
+    
+    <div class="mb-3">
+        <label class="form-label">服务类型</label>
+        <div class="d-flex">
+            <div class="form-check me-4">
+                <input class="form-check-input" type="radio" name="pickup_is_arrival" id="pickup_is_arrival_1" value="1" {% if form.pickup_is_arrival.data == '1' %}checked{% endif %}>
+                <label class="form-check-label" for="pickup_is_arrival_1">接机</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="pickup_is_arrival" id="pickup_is_arrival_0" value="0" {% if form.pickup_is_arrival.data == '0' %}checked{% endif %}>
+                <label class="form-check-label" for="pickup_is_arrival_0">送机</label>
+            </div>
+        </div>
+        <div class="form-text">选择您需要的服务类型</div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="pickup_flight_number" class="form-label">航班号</label>
+        {{ form.pickup_flight_number(class="form-control") }}
+        <div class="form-text">输入您的航班号，例如：CA1234</div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="pickup_passengers" class="form-label">乘客数量</label>
+        {{ form.pickup_passengers(class="form-control", type="number", min="1") }}
+        <div class="form-text">输入需要接送的乘客数量</div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="pickup_luggage_count" class="form-label">行李数量</label>
+        {{ form.pickup_luggage_count(class="form-control", type="number", min="0") }}
+        <div class="form-text">输入需要搬运的行李数量</div>
+    </div>
+</div> 

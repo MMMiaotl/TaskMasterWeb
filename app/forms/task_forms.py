@@ -169,4 +169,70 @@ class TaskForm(FlaskForm):
         validators=[Optional()]
     )
     
+    # 维修服务特定字段
+    repair_service_type = SelectField('维修类型', 
+        choices=[
+            ('', '请选择维修类型'), 
+            ('electronics', '电子设备'), 
+            ('appliances', '家用电器'), 
+            ('furniture', '家具'),
+            ('plumbing', '水管'),
+            ('electrical', '电路'),
+            ('other', '其他')
+        ],
+        validators=[Optional()]
+    )
+    
+    repair_service_item_age = SelectField('物品年龄', 
+        choices=[
+            ('', '请选择物品年龄'), 
+            ('less_than_1', '不到1年'), 
+            ('1_to_3', '1-3年'), 
+            ('3_to_5', '3-5年'),
+            ('more_than_5', '5年以上'),
+            ('unknown', '不确定')
+        ],
+        validators=[Optional()]
+    )
+    
+    repair_service_brand_model = StringField('品牌和型号', 
+        validators=[Optional(), Length(max=100)]
+    )
+    
+    repair_service_has_warranty = BooleanField('是否在保修期内', default=False)
+    
+    # 其他商业服务特定字段
+    other_business_service_type = SelectField('服务类型', 
+        choices=[
+            ('', '请选择服务类型'), 
+            ('marketing', '市场营销'), 
+            ('design', '设计服务'), 
+            ('translation', '翻译服务'),
+            ('accounting', '会计服务'),
+            ('it_support', 'IT支持'),
+            ('other', '其他')
+        ],
+        validators=[Optional()]
+    )
+    
+    other_business_project_scale = SelectField('项目规模', 
+        choices=[
+            ('', '请选择项目规模'), 
+            ('small', '小型'), 
+            ('medium', '中型'), 
+            ('large', '大型')
+        ],
+        validators=[Optional()]
+    )
+    
+    other_business_duration = SelectField('预计时长', 
+        choices=[
+            ('', '请选择预计时长'), 
+            ('one_time', '一次性服务'), 
+            ('short_term', '短期（1-3个月）'), 
+            ('long_term', '长期（3个月以上）')
+        ],
+        validators=[Optional()]
+    )
+    
     submit = SubmitField('发布任务') 

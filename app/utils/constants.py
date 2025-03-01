@@ -29,8 +29,8 @@ SERVICE_CATEGORIES = [
         'subcategories': [
             ('accounting', '会计税务'),
             ('legal', '法律咨询'),
-            ('investment', '投资理财'),
-            ('shop', '商铺转让')
+            ('repair_service', '维修服务'),
+            ('other_business', '其他商业服务')
         ]
     }
 ]

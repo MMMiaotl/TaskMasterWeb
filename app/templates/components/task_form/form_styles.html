@@ -1,0 +1,59 @@
+<style>
+.progress-container {
+    padding: 0 10px;
+}
+
+.step {
+    text-align: center;
+    position: relative;
+    width: 20%;
+}
+
+.step-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px;
+    font-weight: bold;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.step.active .step-circle {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+
+.step.completed .step-circle {
+    background-color: #198754;
+    color: white;
+    border-color: #198754;
+}
+
+.step-text {
+    font-size: 0.85rem;
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.step.active .step-text,
+.step.completed .step-text {
+    color: #212529;
+    font-weight: 500;
+}
+
+.form-step {
+    transition: all 0.3s ease;
+}
+
+.service-categories {
+    max-height: 300px;
+    overflow-y: auto;
+}
+</style> 

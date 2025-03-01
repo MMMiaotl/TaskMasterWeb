@@ -1,0 +1,170 @@
+<!-- 步骤5：确认发布 -->
+<div class="form-step d-none" id="step-5">
+    <h3 class="card-title mb-4">确认并发布</h3>
+    
+    <div class="task-summary mb-4">
+        <h4 class="h5 mb-3">任务摘要</h4>
+        <div class="card bg-light">
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">服务类别:</dt>
+                    <dd class="col-sm-8" id="summary-category"></dd>
+                    
+                    <dt class="col-sm-4">任务标题:</dt>
+                    <dd class="col-sm-8" id="summary-title"></dd>
+                    
+                    <dt class="col-sm-4">服务地点:</dt>
+                    <dd class="col-sm-8" id="summary-location"></dd>
+                    
+                    <dt class="col-sm-4">截止日期:</dt>
+                    <dd class="col-sm-8" id="summary-deadline"></dd>
+                    
+                    <dt class="col-sm-4">预算:</dt>
+                    <dd class="col-sm-8" id="summary-budget"></dd>
+                </dl>
+                
+                <div class="mt-3 pt-3 border-top">
+                    <dt class="col-sm-12">任务描述:</dt>
+                    <dd class="col-sm-12" id="summary-description"></dd>
+                    
+                    <div id="summary-additional-info-container" class="mt-3 d-none">
+                        <dt class="col-sm-12">补充信息:</dt>
+                        <dd class="col-sm-12" id="summary-additional-info"></dd>
+                    </div>
+                    
+                    <div id="summary-images-container" class="mt-3 d-none">
+                        <dt class="col-sm-12">上传图片:</dt>
+                        <dd class="col-sm-12" id="summary-images"></dd>
+                    </div>
+                </div>
+                
+                <!-- 服务类别特定字段摘要 -->
+                <div id="service-specific-summary" class="mt-3 pt-3 border-top">
+                    <!-- 搬家服务特定字段摘要 -->
+                    <div class="service-summary d-none" id="moving-summary">
+                        <h5 class="h6 mb-2">搬家服务详情</h5>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">物品大小:</dt>
+                            <dd class="col-sm-8" id="summary-moving-size"></dd>
+                            
+                            <dt class="col-sm-4">物品数量:</dt>
+                            <dd class="col-sm-8" id="summary-moving-quantity"></dd>
+                            
+                            <dt class="col-sm-4">是否有电梯:</dt>
+                            <dd class="col-sm-8" id="summary-moving-elevator"></dd>
+                            
+                            <dt class="col-sm-4">楼层:</dt>
+                            <dd class="col-sm-8" id="summary-moving-floor"></dd>
+                        </dl>
+                    </div>
+                    
+                    <!-- 接送机特定字段摘要 -->
+                    <div class="service-summary d-none" id="pickup-summary">
+                        <h5 class="h6 mb-2">接送机服务详情</h5>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">服务类型:</dt>
+                            <dd class="col-sm-8" id="summary-pickup-type"></dd>
+                            
+                            <dt class="col-sm-4">航班号:</dt>
+                            <dd class="col-sm-8" id="summary-pickup-flight"></dd>
+                            
+                            <dt class="col-sm-4">乘客数量:</dt>
+                            <dd class="col-sm-8" id="summary-pickup-passengers"></dd>
+                            
+                            <dt class="col-sm-4">行李数量:</dt>
+                            <dd class="col-sm-8" id="summary-pickup-luggage"></dd>
+                        </dl>
+                    </div>
+                    
+                    <!-- 装修维修特定字段摘要 -->
+                    <div class="service-summary d-none" id="repair-summary">
+                        <h5 class="h6 mb-2">装修维修服务详情</h5>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">维修类型:</dt>
+                            <dd class="col-sm-8" id="summary-repair-type"></dd>
+                            
+                            <dt class="col-sm-4">面积:</dt>
+                            <dd class="col-sm-8" id="summary-repair-area"></dd>
+                            
+                            <dt class="col-sm-4">包含材料:</dt>
+                            <dd class="col-sm-8" id="summary-repair-materials"></dd>
+                        </dl>
+                    </div>
+                    
+                    <!-- 法律咨询特定字段摘要 -->
+                    <div class="service-summary d-none" id="legal-summary">
+                        <h5 class="h6 mb-2">法律咨询服务详情</h5>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">案件类型:</dt>
+                            <dd class="col-sm-8" id="summary-legal-case-type"></dd>
+                            
+                            <dt class="col-sm-4">紧急程度:</dt>
+                            <dd class="col-sm-8" id="summary-legal-urgency"></dd>
+                            
+                            <dt class="col-sm-4">文件已准备:</dt>
+                            <dd class="col-sm-8" id="summary-legal-documents"></dd>
+                        </dl>
+                    </div>
+                    
+                    <!-- 留学咨询特定字段摘要 -->
+                    <div class="service-summary d-none" id="education-summary">
+                        <h5 class="h6 mb-2">留学咨询服务详情</h5>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">目标国家:</dt>
+                            <dd class="col-sm-8" id="summary-education-country"></dd>
+                            
+                            <dt class="col-sm-4">学习阶段:</dt>
+                            <dd class="col-sm-8" id="summary-education-level"></dd>
+                            
+                            <dt class="col-sm-4">学习领域:</dt>
+                            <dd class="col-sm-8" id="summary-education-field"></dd>
+                        </dl>
+                    </div>
+                    
+                    <!-- 维修服务特定字段摘要 -->
+                    <div class="service-summary d-none" id="repair-service-summary">
+                        <h5 class="h6 mb-2">维修服务详情</h5>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">维修类型:</dt>
+                            <dd class="col-sm-8" id="summary-repair-service-type"></dd>
+                            
+                            <dt class="col-sm-4">物品年龄:</dt>
+                            <dd class="col-sm-8" id="summary-repair-service-age"></dd>
+                            
+                            <dt class="col-sm-4">品牌型号:</dt>
+                            <dd class="col-sm-8" id="summary-repair-service-brand"></dd>
+                            
+                            <dt class="col-sm-4">是否在保修期内:</dt>
+                            <dd class="col-sm-8" id="summary-repair-service-warranty"></dd>
+                        </dl>
+                    </div>
+                    
+                    <!-- 其他商业服务特定字段摘要 -->
+                    <div class="service-summary d-none" id="other-business-summary">
+                        <h5 class="h6 mb-2">其他商业服务详情</h5>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">服务类型:</dt>
+                            <dd class="col-sm-8" id="summary-other-business-type"></dd>
+                            
+                            <dt class="col-sm-4">项目规模:</dt>
+                            <dd class="col-sm-8" id="summary-other-business-scale"></dd>
+                            
+                            <dt class="col-sm-4">预计时长:</dt>
+                            <dd class="col-sm-8" id="summary-other-business-duration"></dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="alert alert-warning mb-4">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        发布后，您的任务将对所有用户可见。请确认以上信息准确无误。
+    </div>
+    
+    <div class="d-flex justify-content-between mt-4">
+        <button type="button" class="btn btn-outline-secondary btn-lg px-4 prev-step">上一步</button>
+        <button type="submit" class="btn btn-success btn-lg px-4">发布任务</button>
+    </div>
+</div> 

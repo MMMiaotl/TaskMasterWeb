@@ -1,0 +1,85 @@
+<!-- 专业服务字段 -->
+
+<!-- 法律咨询特定字段 -->
+<div class="service-fields d-none" id="legal-fields">
+    <h4 class="h5 mb-3">法律咨询服务详情</h4>
+    
+    <div class="mb-3">
+        <label for="legal_case_type" class="form-label">案件类型</label>
+        <select class="form-control" id="legal_case_type" name="legal_case_type">
+            <option value="">请选择案件类型</option>
+            <option value="visa" {% if form.legal_case_type.data == 'visa' %}selected{% endif %}>签证/移民</option>
+            <option value="contract" {% if form.legal_case_type.data == 'contract' %}selected{% endif %}>合同审核</option>
+            <option value="business" {% if form.legal_case_type.data == 'business' %}selected{% endif %}>商业咨询</option>
+            <option value="personal" {% if form.legal_case_type.data == 'personal' %}selected{% endif %}>个人法律事务</option>
+            <option value="other" {% if form.legal_case_type.data == 'other' %}selected{% endif %}>其他</option>
+        </select>
+        <div class="form-text">选择您需要咨询的法律案件类型</div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="legal_urgency" class="form-label">紧急程度</label>
+        <select class="form-control" id="legal_urgency" name="legal_urgency">
+            <option value="low" {% if form.legal_urgency.data == 'low' %}selected{% endif %}>低 - 一周内</option>
+            <option value="medium" {% if form.legal_urgency.data == 'medium' %}selected{% endif %}>中 - 三天内</option>
+            <option value="high" {% if form.legal_urgency.data == 'high' %}selected{% endif %}>高 - 24小时内</option>
+        </select>
+        <div class="form-text">选择您需要得到回复的紧急程度</div>
+    </div>
+    
+    <div class="mb-3">
+        <div class="form-check">
+            {{ form.legal_documents_ready(class="form-check-input") }}
+            <label class="form-check-label" for="legal_documents_ready">文件已准备好</label>
+        </div>
+        <div class="form-text">勾选表示您已经准备好相关法律文件</div>
+    </div>
+</div>
+
+<!-- 留学咨询特定字段 -->
+<div class="service-fields d-none" id="education-fields">
+    <h4 class="h5 mb-3">留学咨询服务详情</h4>
+    
+    <div class="mb-3">
+        <label for="education_target_country" class="form-label">目标国家</label>
+        <select class="form-control" id="education_target_country" name="education_target_country">
+            <option value="">请选择目标国家</option>
+            <option value="us" {% if form.education_target_country.data == 'us' %}selected{% endif %}>美国</option>
+            <option value="uk" {% if form.education_target_country.data == 'uk' %}selected{% endif %}>英国</option>
+            <option value="canada" {% if form.education_target_country.data == 'canada' %}selected{% endif %}>加拿大</option>
+            <option value="australia" {% if form.education_target_country.data == 'australia' %}selected{% endif %}>澳大利亚</option>
+            <option value="germany" {% if form.education_target_country.data == 'germany' %}selected{% endif %}>德国</option>
+            <option value="france" {% if form.education_target_country.data == 'france' %}selected{% endif %}>法国</option>
+            <option value="other" {% if form.education_target_country.data == 'other' %}selected{% endif %}>其他</option>
+        </select>
+        <div class="form-text">选择您想要留学的目标国家</div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="education_study_level" class="form-label">学习阶段</label>
+        <select class="form-control" id="education_study_level" name="education_study_level">
+            <option value="">请选择学习阶段</option>
+            <option value="undergraduate" {% if form.education_study_level.data == 'undergraduate' %}selected{% endif %}>本科</option>
+            <option value="master" {% if form.education_study_level.data == 'master' %}selected{% endif %}>硕士</option>
+            <option value="phd" {% if form.education_study_level.data == 'phd' %}selected{% endif %}>博士</option>
+            <option value="language" {% if form.education_study_level.data == 'language' %}selected{% endif %}>语言课程</option>
+            <option value="other" {% if form.education_study_level.data == 'other' %}selected{% endif %}>其他</option>
+        </select>
+        <div class="form-text">选择您想要申请的学习阶段</div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="education_field" class="form-label">学习领域</label>
+        <select class="form-control" id="education_field" name="education_field">
+            <option value="">请选择学习领域</option>
+            <option value="business" {% if form.education_field.data == 'business' %}selected{% endif %}>商科</option>
+            <option value="engineering" {% if form.education_field.data == 'engineering' %}selected{% endif %}>工程</option>
+            <option value="science" {% if form.education_field.data == 'science' %}selected{% endif %}>理科</option>
+            <option value="arts" {% if form.education_field.data == 'arts' %}selected{% endif %}>文科/艺术</option>
+            <option value="medicine" {% if form.education_field.data == 'medicine' %}selected{% endif %}>医学</option>
+            <option value="law" {% if form.education_field.data == 'law' %}selected{% endif %}>法律</option>
+            <option value="other" {% if form.education_field.data == 'other' %}selected{% endif %}>其他</option>
+        </select>
+        <div class="form-text">选择您想要学习的领域</div>
+    </div>
+</div> 

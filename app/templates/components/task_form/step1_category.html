@@ -1,0 +1,37 @@
+<!-- 步骤1：服务类别 -->
+<div class="form-step" id="step-1">
+    <h3 class="card-title mb-4">选择服务类别</h3>
+    
+    {% if preselect_category %}
+    <div class="alert alert-info mb-4">
+        <i class="fas fa-info-circle me-2"></i>
+        根据您的搜索"{{ preselect_category }}"，我们已为您预选了最匹配的服务类别。
+    </div>
+    {% endif %}
+    
+    <div class="mb-4">
+        <label class="form-label fw-bold">您需要什么类型的服务？</label>
+        <div class="service-categories">
+            <select class="form-select form-select-lg" id="service_category" name="service_category" required>
+                {% for value, label in form.service_category.choices %}
+                    {% if '.' not in value %}
+                        {% if value != '' %}
+                            <option disabled class="fw-bold bg-light">{{ label }}</option>
+                        {% else %}
+                            <option value="">{{ label }}</option>
+                        {% endif %}
+                    {% else %}
+                        <option value="{{ value }}"{% if form.service_category.data == value %} selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+            <div class="invalid-feedback">请选择服务类别</div>
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-end mt-4">
+        <button type="button" class="btn btn-primary btn-lg px-4 next-step">下一步</button>
+    </div>
+</div> 

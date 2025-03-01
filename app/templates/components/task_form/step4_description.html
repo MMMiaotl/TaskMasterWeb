@@ -1,0 +1,62 @@
+<!-- 步骤4：任务描述 -->
+<div class="form-step d-none" id="step-4">
+    <h3 class="card-title mb-4">任务描述</h3>
+    
+    <div class="alert alert-info mb-4">
+        <i class="fas fa-magic me-2"></i>
+        根据您提供的信息，我们已为您自动生成任务标题和描述。您可以直接使用或进行修改。
+    </div>
+    
+    <div class="mb-4">
+        <label for="title" class="form-label fw-bold">任务标题</label>
+        <div class="input-group mb-2">
+            {{ form.title(class="form-control form-control-lg", placeholder="简短描述您需要的服务，例如：客厅墙面粉刷") }}
+            <button class="btn btn-outline-primary" type="button" id="generate-title-btn">
+                <i class="fas fa-magic"></i> 自动生成
+            </button>
+        </div>
+        <div class="form-text">清晰的标题可以帮助服务提供者更好地理解您的需求</div>
+        <div class="invalid-feedback">
+            {% if form.title.errors %}
+                {{ form.title.errors[0] }}
+            {% else %}
+                请输入有效的任务标题
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="mb-4">
+        <label for="description" class="form-label fw-bold">详细描述</label>
+        <div class="input-group mb-2">
+            {{ form.description(class="form-control", rows=5, placeholder="详细描述您的需求，包括具体要求、面积大小、材料偏好等信息") }}
+            <button class="btn btn-outline-primary" type="button" id="generate-description-btn" style="align-self: flex-start;">
+                <i class="fas fa-magic"></i> 自动生成
+            </button>
+        </div>
+        <div class="form-text">详细的描述可以帮助您获得更准确的报价</div>
+        <div class="invalid-feedback">
+            {% if form.description.errors %}
+                {{ form.description.errors[0] }}
+            {% else %}
+                请输入有效的任务描述
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="mb-4">
+        <label for="additional_info" class="form-label fw-bold">补充信息 (可选)</label>
+        {{ form.additional_info(class="form-control", rows=3, placeholder="添加任何其他您认为重要的信息") }}
+        <div class="form-text">您可以在这里添加任何其他重要信息</div>
+    </div>
+    
+    <div class="mb-4">
+        <label for="task_images" class="form-label fw-bold">上传图片 (可选)</label>
+        {{ form.task_images(class="form-control") }}
+        <div class="form-text">上传相关图片可以帮助服务提供者更好地理解您的需求 (支持jpg, jpeg, png, gif格式)</div>
+    </div>
+    
+    <div class="d-flex justify-content-between mt-4">
+        <button type="button" class="btn btn-outline-secondary btn-lg px-4 prev-step">上一步</button>
+        <button type="button" class="btn btn-primary btn-lg px-4 next-step">下一步</button>
+    </div>
+</div> 

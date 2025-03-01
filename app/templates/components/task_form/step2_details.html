@@ -1,0 +1,21 @@
+<!-- 步骤2：服务详情 -->
+<div class="form-step d-none" id="step-2">
+    <h3 class="card-title mb-4">填写服务详情</h3>
+    
+    <!-- 服务类别特定字段 -->
+    <div id="service-specific-fields">
+        <!-- 日常生活服务字段 -->
+        {% include 'components/task_form/service_details/daily_services.html' %}
+        
+        <!-- 专业服务字段 -->
+        {% include 'components/task_form/service_details/professional_services.html' %}
+        
+        <!-- 商业服务字段 -->
+        {% include 'components/task_form/service_details/business_services.html' %}
+    </div>
+    
+    <div class="d-flex justify-content-between mt-4">
+        <button type="button" class="btn btn-outline-secondary btn-lg px-4 prev-step">上一步</button>
+        <button type="button" class="btn btn-primary btn-lg px-4 next-step">下一步</button>
+    </div>
+</div> 

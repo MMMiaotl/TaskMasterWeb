@@ -1,0 +1,88 @@
+<!-- 商业服务字段 -->
+
+<!-- 维修服务特定字段 -->
+<div class="service-fields d-none" id="repair_service-fields">
+    <h4 class="h5 mb-3">维修服务详情</h4>
+    
+    <div class="mb-3">
+        <label for="repair_service_type" class="form-label">维修类型</label>
+        <select class="form-control" id="repair_service_type" name="repair_service_type">
+            <option value="">请选择维修类型</option>
+            <option value="electronics" {% if form.repair_service_type.data == 'electronics' %}selected{% endif %}>电子设备</option>
+            <option value="appliances" {% if form.repair_service_type.data == 'appliances' %}selected{% endif %}>家用电器</option>
+            <option value="furniture" {% if form.repair_service_type.data == 'furniture' %}selected{% endif %}>家具</option>
+            <option value="plumbing" {% if form.repair_service_type.data == 'plumbing' %}selected{% endif %}>水管/水暖</option>
+            <option value="electrical" {% if form.repair_service_type.data == 'electrical' %}selected{% endif %}>电路</option>
+            <option value="other" {% if form.repair_service_type.data == 'other' %}selected{% endif %}>其他</option>
+        </select>
+        <div class="form-text">选择需要维修的物品类型</div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="repair_service_item_age" class="form-label">物品使用年限</label>
+        <select class="form-control" id="repair_service_item_age" name="repair_service_item_age">
+            <option value="">请选择物品年龄</option>
+            <option value="less_than_1" {% if form.repair_service_item_age.data == 'less_than_1' %}selected{% endif %}>不到1年</option>
+            <option value="1_to_3" {% if form.repair_service_item_age.data == '1_to_3' %}selected{% endif %}>1-3年</option>
+            <option value="3_to_5" {% if form.repair_service_item_age.data == '3_to_5' %}selected{% endif %}>3-5年</option>
+            <option value="more_than_5" {% if form.repair_service_item_age.data == 'more_than_5' %}selected{% endif %}>5年以上</option>
+            <option value="unknown" {% if form.repair_service_item_age.data == 'unknown' %}selected{% endif %}>不确定</option>
+        </select>
+        <div class="form-text">选择物品的使用年限</div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="repair_service_brand_model" class="form-label">品牌型号</label>
+        <input type="text" class="form-control" id="repair_service_brand_model" name="repair_service_brand_model" value="{{ form.repair_service_brand_model.data or '' }}">
+        <div class="form-text">请提供物品的品牌和型号信息（如有）</div>
+    </div>
+    
+    <div class="mb-3">
+        <div class="form-check">
+            {{ form.repair_service_has_warranty(class="form-check-input") }}
+            <label class="form-check-label" for="repair_service_has_warranty">在保修期内</label>
+        </div>
+        <div class="form-text">勾选表示物品仍在保修期内</div>
+    </div>
+</div>
+
+<!-- 其他商业服务特定字段 -->
+<div class="service-fields d-none" id="other_business-fields">
+    <h4 class="h5 mb-3">其他商业服务详情</h4>
+    
+    <div class="mb-3">
+        <label for="other_business_service_type" class="form-label">服务类型</label>
+        <select class="form-control" id="other_business_service_type" name="other_business_service_type">
+            <option value="">请选择服务类型</option>
+            <option value="marketing" {% if form.other_business_service_type.data == 'marketing' %}selected{% endif %}>市场营销</option>
+            <option value="design" {% if form.other_business_service_type.data == 'design' %}selected{% endif %}>设计服务</option>
+            <option value="translation" {% if form.other_business_service_type.data == 'translation' %}selected{% endif %}>翻译服务</option>
+            <option value="accounting" {% if form.other_business_service_type.data == 'accounting' %}selected{% endif %}>会计服务</option>
+            <option value="it_support" {% if form.other_business_service_type.data == 'it_support' %}selected{% endif %}>IT支持</option>
+            <option value="other" {% if form.other_business_service_type.data == 'other' %}selected{% endif %}>其他</option>
+        </select>
+        <div class="form-text">选择您需要的商业服务类型</div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="other_business_project_scale" class="form-label">项目规模</label>
+        <select class="form-control" id="other_business_project_scale" name="other_business_project_scale">
+            <option value="">请选择项目规模</option>
+            <option value="small" {% if form.other_business_project_scale.data == 'small' %}selected{% endif %}>小型（个人项目）</option>
+            <option value="medium" {% if form.other_business_project_scale.data == 'medium' %}selected{% endif %}>中型（小型企业）</option>
+            <option value="large" {% if form.other_business_project_scale.data == 'large' %}selected{% endif %}>大型（大型企业）</option>
+        </select>
+        <div class="form-text">选择项目的规模大小</div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="other_business_duration" class="form-label">预计持续时间</label>
+        <select class="form-control" id="other_business_duration" name="other_business_duration">
+            <option value="">请选择预计时长</option>
+            <option value="one_time" {% if form.other_business_duration.data == 'one_time' %}selected{% endif %}>一次性服务</option>
+            <option value="short_term" {% if form.other_business_duration.data == 'short_term' %}selected{% endif %}>短期（1-3个月）</option>
+            <option value="long_term" {% if form.other_business_duration.data == 'long_term' %}selected{% endif %}>长期（3个月以上）</option>
+        </select>
+        <div class="form-text">选择项目预计的持续时间</div>
+    </div>
+</div> 
