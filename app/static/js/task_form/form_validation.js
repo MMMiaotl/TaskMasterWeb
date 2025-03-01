@@ -104,14 +104,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             itemQuantityRange.classList.remove('is-invalid');
                         }
                     } else if (subCategory === 'pickup') {
-                        const passengers = document.getElementById('pickup_passengers');
-                        
-                        if (!passengers.value || parseInt(passengers.value) < 1) {
-                            passengers.classList.add('is-invalid');
-                            isValid = false;
-                        } else {
-                            passengers.classList.remove('is-invalid');
-                        }
+                        // 验证接送机服务字段
+                        validatePickupServiceFields();
                     } else if (subCategory === 'repair') {
                         const area = document.getElementById('repair_area');
                         const repairType = document.getElementById('repair_type');
@@ -221,6 +215,46 @@ document.addEventListener('DOMContentLoaded', function() {
         return isValid;
     }
     
+    // 验证接送机服务字段
+    function validatePickupServiceFields() {
+        const isArrival = document.querySelector('input[name="pickup_is_arrival"]:checked');
+        const flightNumber = document.getElementById('pickup_flight_number');
+        const passengers = document.getElementById('pickup_passengers');
+        const luggageCount = document.getElementById('pickup_luggage_count');
+        
+        let isValid = true;
+        
+        // 验证服务类型
+        if (!isArrival) {
+            document.querySelectorAll('input[name="pickup_is_arrival"]').forEach(radio => {
+                radio.closest('.form-check').classList.add('is-invalid');
+            });
+            isValid = false;
+        } else {
+            document.querySelectorAll('input[name="pickup_is_arrival"]').forEach(radio => {
+                radio.closest('.form-check').classList.remove('is-invalid');
+            });
+        }
+        
+        // 验证航班号
+        if (!flightNumber.value.trim()) {
+            flightNumber.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            flightNumber.classList.remove('is-invalid');
+        }
+        
+        // 验证乘客数量
+        if (!passengers.value || parseInt(passengers.value) < 1) {
+            passengers.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            passengers.classList.remove('is-invalid');
+        }
+        
+        return isValid;
+    }
+    
     // 显示服务特定字段
     function showServiceSpecificFields(categoryValue) {
         // 隐藏所有服务特定字段
@@ -238,12 +272,199 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (field) {
                     field.classList.remove('d-none');
+                    
+                    // 根据服务类型初始化问题
+                    initializeServiceQuestions(subCategory);
+                    
+                    // 添加字段事件监听
+                    setupFieldEvents(subCategory);
                 }
             }
+        }
+    }
+    
+    // 初始化服务问题
+    function initializeServiceQuestions(serviceType) {
+        console.log(`初始化服务问题: ${serviceType}`);
+        const serviceContainer = document.getElementById(`${serviceType}-fields`);
+        
+        if (serviceContainer) {
+            // 重置所有问题状态
+            const allQuestions = serviceContainer.querySelectorAll('.question-item');
+            allQuestions.forEach(question => {
+                question.classList.remove('active');
+                question.classList.add('hidden');
+            });
+            
+            // 显示第一个问题
+            const firstQuestion = allQuestions[0];
+            if (firstQuestion) {
+                firstQuestion.classList.remove('hidden');
+                firstQuestion.classList.add('active');
+                console.log(`已激活第一个问题: ${firstQuestion.id}`);
+            } else {
+                console.log(`未找到问题项，服务类型: ${serviceType}`);
+            }
+        } else {
+            console.log(`未找到服务容器: ${serviceType}-fields`);
+        }
+    }
+    
+    // 设置字段事件监听
+    function setupFieldEvents(serviceType) {
+        if (serviceType === 'moving') {
+            // 搬家服务字段事件监听
+            setupMovingFieldEvents();
+        } else if (serviceType === 'pickup') {
+            // 接送机服务字段事件监听
+            setupPickupFieldEvents();
+        }
+    }
+    
+    // 搬家服务字段事件监听
+    function setupMovingFieldEvents() {
+        // 监听地址字段变化
+        const outAddress = document.getElementById('moving_out_address');
+        const inAddress = document.getElementById('moving_in_address');
+        
+        if (outAddress && inAddress) {
+            function checkAddresses() {
+                if (outAddress.value.trim() && inAddress.value.trim()) {
+                    // 检查邮编格式
+                    const pattern = /^[0-9]{4}[A-Za-z]{2}$/;
+                    if (pattern.test(outAddress.value) && pattern.test(inAddress.value)) {
+                        goToNextQuestion('moving-address-question', 'moving-house-type-question');
+                    }
+                }
+            }
+            
+            outAddress.addEventListener('change', checkAddresses);
+            inAddress.addEventListener('change', checkAddresses);
+            outAddress.addEventListener('blur', checkAddresses);
+            inAddress.addEventListener('blur', checkAddresses);
+        }
+        
+        // 监听房屋类型字段变化
+        const outHouseType = document.getElementById('moving_out_house_type');
+        const inHouseType = document.getElementById('moving_in_house_type');
+        
+        if (outHouseType && inHouseType) {
+            function checkHouseTypes() {
+                if (outHouseType.value && inHouseType.value) {
+                    // 如果有任一是公寓，显示电梯问题，否则直接跳到物品数量
+                    if (outHouseType.value === 'apartment' || inHouseType.value === 'apartment') {
+                        goToNextQuestion('moving-house-type-question', 'moving-elevator-question');
+                    } else {
+                        goToNextQuestion('moving-house-type-question', 'moving-quantity-question');
+                    }
+                }
+            }
+            
+            outHouseType.addEventListener('change', checkHouseTypes);
+            inHouseType.addEventListener('change', checkHouseTypes);
+        }
+        
+        // 监听电梯和楼层字段变化
+        const outElevator = document.getElementById('moving_out_has_elevator');
+        const inElevator = document.getElementById('moving_in_has_elevator');
+        const outFloor = document.getElementById('moving_out_floor_number');
+        const inFloor = document.getElementById('moving_in_floor_number');
+        
+        function setupElevatorEvents() {
+            function checkElevatorInfo() {
+                if (outFloor.value && inFloor.value) {
+                    goToNextQuestion('moving-elevator-question', 'moving-quantity-question');
+                }
+            }
+            
+            if (outElevator) outElevator.addEventListener('change', checkElevatorInfo);
+            if (inElevator) inElevator.addEventListener('change', checkElevatorInfo);
+            if (outFloor) outFloor.addEventListener('change', checkElevatorInfo);
+            if (inFloor) inFloor.addEventListener('change', checkElevatorInfo);
+        }
+        
+        // 仅当电梯问题显示时设置监听
+        const elevatorQuestion = document.getElementById('moving-elevator-question');
+        if (elevatorQuestion && !elevatorQuestion.classList.contains('hidden')) {
+            setupElevatorEvents();
+        }
+        
+        // 监听物品数量选择
+        const itemQuantity = document.getElementById('moving_item_quantity_range');
+        if (itemQuantity) {
+            itemQuantity.addEventListener('change', function() {
+                if (itemQuantity.value) {
+                    goToNextQuestion('moving-quantity-question', 'moving-special-items-question');
+                }
+            });
+        }
+    }
+    
+    // 接送机服务字段事件监听
+    function setupPickupFieldEvents() {
+        // 监听服务类型选择
+        const arrivalRadios = document.querySelectorAll('input[name="pickup_is_arrival"]');
+        arrivalRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                goToNextQuestion('pickup-type-question', 'pickup-flight-question');
+            });
+        });
+        
+        // 监听航班号变化
+        const flightNumber = document.getElementById('pickup_flight_number');
+        if (flightNumber) {
+            flightNumber.addEventListener('change', function() {
+                if (flightNumber.value.trim()) {
+                    goToNextQuestion('pickup-flight-question', 'pickup-passengers-question');
+                }
+            });
+            
+            flightNumber.addEventListener('blur', function() {
+                if (flightNumber.value.trim()) {
+                    goToNextQuestion('pickup-flight-question', 'pickup-passengers-question');
+                }
+            });
+        }
+        
+        // 监听乘客人数变化
+        const passengers = document.getElementById('pickup_passengers');
+        if (passengers) {
+            passengers.addEventListener('change', function() {
+                if (passengers.value && parseInt(passengers.value) > 0) {
+                    goToNextQuestion('pickup-passengers-question', 'pickup-luggage-question');
+                }
+            });
+        }
+    }
+    
+    // 切换到下一个问题
+    function goToNextQuestion(currentId, nextId) {
+        const currentQuestion = document.getElementById(currentId);
+        const nextQuestion = document.getElementById(nextId);
+        
+        if (currentQuestion && nextQuestion) {
+            // 标记当前问题为已回答
+            currentQuestion.classList.add('answered');
+            currentQuestion.classList.remove('active');
+            currentQuestion.classList.add('hidden');
+            
+            // 显示下一个问题
+            nextQuestion.classList.remove('hidden');
+            nextQuestion.classList.add('active');
+            nextQuestion.classList.add('fade-in');
+            
+            // 如果下一个问题是电梯问题，设置其事件监听
+            if (nextId === 'moving-elevator-question') {
+                setupElevatorEvents();
+            }
+            
+            // 滚动到下一个问题
+            nextQuestion.scrollIntoView({ behavior: 'smooth' });
         }
     }
     
     // 导出全局函数
     window.validateStep = validateStep;
     window.showServiceSpecificFields = showServiceSpecificFields;
+    window.goToNextQuestion = goToNextQuestion;
 }); 
