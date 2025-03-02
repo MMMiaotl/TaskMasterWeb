@@ -67,7 +67,7 @@
                         </div>
                         <div class="text-end">
                             <p class="mb-0">预算：€{{ task.budget }}</p>
-                            <p class="text-muted mb-0">截止：{{ task.deadline|datetimeformat }}</p>
+                            <p class="text-muted mb-0">截止：{% if task.deadline %}{{ task.deadline|datetimeformat }}{% else %}未设置{% endif %}</p>
                         </div>
                     </div>
                 </div>

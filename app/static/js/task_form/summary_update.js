@@ -13,8 +13,12 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('summary-location').textContent = document.getElementById('location').value || '(未提供)';
         
         const deadline = document.getElementById('deadline').value;
-        const formattedDate = new Date(deadline).toLocaleDateString('zh-CN');
-        document.getElementById('summary-deadline').textContent = formattedDate;
+        if (deadline) {
+            const formattedDate = new Date(deadline).toLocaleDateString('zh-CN');
+            document.getElementById('summary-deadline').textContent = formattedDate;
+        } else {
+            document.getElementById('summary-deadline').textContent = '(未设置)';
+        }
         
         const budget = document.getElementById('budget').value;
         document.getElementById('summary-budget').textContent = budget ? `€${budget}` : '(未提供)';

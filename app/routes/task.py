@@ -133,8 +133,8 @@ def create_task():
             
             db.session.add(task)
             db.session.commit()
-            flash('任务发布成功！', 'success')
-            return redirect(url_for('task.tasks'))
+            flash(f'任务发布成功！您现在可以查看任务详情或邀请服务提供者。', 'success')
+            return redirect(url_for('task.task_detail', task_id=task.id))
         except Exception as e:
             db.session.rollback()
             flash('发布任务时出错：' + str(e), 'danger')
