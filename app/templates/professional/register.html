@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}成为专业人士 - 海帮{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h3 class="card-title mb-0 text-center">注册成为专业人士</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form action="{{ url_for('auth.professional_register') }}" method="post">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row mb-4">
+                            <div class="col-12 mb-3">
+                                <h5 class="border-bottom pb-2">基本账户信息</h5>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.username.label(class="form-label") }}
+                                {{ form.username(class="form-control") }}
+                                {% for error in form.username.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.email.label(class="form-label") }}
+                                {{ form.email(class="form-control") }}
+                                {% for error in form.email.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.password.label(class="form-label") }}
+                                {{ form.password(class="form-control") }}
+                                {% for error in form.password.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.password2.label(class="form-label") }}
+                                {{ form.password2(class="form-control") }}
+                                {% for error in form.password2.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-12 mb-3">
+                                <h5 class="border-bottom pb-2">专业信息</h5>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.professional_title.label(class="form-label") }}
+                                {{ form.professional_title(class="form-control") }}
+                                {% for error in form.professional_title.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                                <div class="form-text">例如：资深室内设计师、专业搬家服务提供者</div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                {{ form.experience_years.label(class="form-label") }}
+                                {{ form.experience_years(class="form-control") }}
+                                {% for error in form.experience_years.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                {{ form.hourly_rate.label(class="form-label") }}
+                                {{ form.hourly_rate(class="form-control") }}
+                                {% for error in form.hourly_rate.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                {{ form.professional_summary.label(class="form-label") }}
+                                {{ form.professional_summary(class="form-control", rows=4) }}
+                                {% for error in form.professional_summary.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                                <div class="form-text">请简要描述您的专业经验、擅长领域等信息（30-500字）</div>
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                {{ form.skills.label(class="form-label") }}
+                                {{ form.skills(class="form-control") }}
+                                {% for error in form.skills.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                                <div class="form-text">请用逗号分隔您的专业技能，例如：室内设计,家具组装,空间规划</div>
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                {{ form.certifications.label(class="form-label") }}
+                                {{ form.certifications(class="form-control", rows=3) }}
+                                {% for error in form.certifications.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                                <div class="form-text">请列出您拥有的证书、资质或专业认证（选填）</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-12 mb-3">
+                                <h5 class="border-bottom pb-2">联系信息</h5>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.phone.label(class="form-label") }}
+                                {{ form.phone(class="form-control") }}
+                                {% for error in form.phone.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.location.label(class="form-label") }}
+                                {{ form.location(class="form-control") }}
+                                {% for error in form.location.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                                <div class="form-text">例如：巴黎、马赛、里昂等</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4 form-check">
+                            {{ form.terms_agree(class="form-check-input") }}
+                            {{ form.terms_agree.label(class="form-check-label") }}
+                            {% for error in form.terms_agree.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                            <a href="{{ url_for('auth.professional_login') }}" class="btn btn-outline-secondary">已有账户？立即登录</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(45deg, #4e73df, #36b9cc);
+}
+</style>
+{% endblock %} 

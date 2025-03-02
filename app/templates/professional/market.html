@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}任务市场 - 专业人士中心{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">任务市场</h1>
+                <a href="{{ url_for('professional.dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>返回控制面板
+                </a>
+            </div>
+            <p class="text-muted">浏览并申请适合您技能的任务</p>
+        </div>
+    </div>
+
+    <!-- 任务筛选 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form method="get" action="{{ url_for('professional.market') }}" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="category" class="form-label">服务类别</label>
+                            <select name="category" id="category" class="form-select">
+                                <option value="">所有类别</option>
+                                <option value="家居维修" {% if category == '家居维修' %}selected{% endif %}>家居维修</option>
+                                <option value="清洁服务" {% if category == '清洁服务' %}selected{% endif %}>清洁服务</option>
+                                <option value="搬家服务" {% if category == '搬家服务' %}selected{% endif %}>搬家服务</option>
+                                <option value="家电维修" {% if category == '家电维修' %}selected{% endif %}>家电维修</option>
+                                <option value="园艺服务" {% if category == '园艺服务' %}selected{% endif %}>园艺服务</option>
+                                <option value="其他服务" {% if category == '其他服务' %}selected{% endif %}>其他服务</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="budget" class="form-label">最低预算</label>
+                            <div class="input-group">
+                                <span class="input-group-text">€</span>
+                                <input type="number" class="form-control" id="budget" name="min_budget" value="{{ min_budget if min_budget }}" min="0" step="10">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sort" class="form-label">排序方式</label>
+                            <select name="sort" id="sort" class="form-select">
+                                <option value="date_desc" {% if sort == 'date_desc' %}selected{% endif %}>最新发布</option>
+                                <option value="date_asc" {% if sort == 'date_asc' %}selected{% endif %}>最早发布</option>
+                                <option value="budget_desc" {% if sort == 'budget_desc' %}selected{% endif %}>预算从高到低</option>
+                                <option value="budget_asc" {% if sort == 'budget_asc' %}selected{% endif %}>预算从低到高</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="search" class="form-label">搜索任务</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="search" name="search" placeholder="输入关键词..." value="{{ search if search }}">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 任务列表 -->
+    <div class="row">
+        {% if tasks %}
+            {% for task in tasks %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm task-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title mb-0">{{ task.title }}</h5>
+                            <span class="badge bg-success">€{{ task.budget }}</span>
+                        </div>
+                        <p class="card-text text-muted small mb-3">{{ task.description|truncate(100) }}</p>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge bg-light text-dark">{{ task.service_category }}</span>
+                            <small class="text-muted">{{ task.created_at|time_ago }}</small>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="{{ task.client.avatar or url_for('static', filename='img/default-avatar.png') }}" class="avatar-sm rounded-circle me-2" alt="{{ task.client.username }}">
+                            <span>{{ task.client.username }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-map-marker-alt text-muted me-1"></i>
+                                <small class="text-muted">{{ task.location or '未指定位置' }}</small>
+                            </div>
+                            {% if task.deadline %}
+                            <div>
+                                <i class="fas fa-calendar-alt text-muted me-1"></i>
+                                <small class="{% if task.deadline < now %}text-danger{% else %}text-muted{% endif %}">
+                                    {{ task.deadline.strftime('%Y-%m-%d') }}
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-top-0">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('task.task_detail', task_id=task.id) }}" class="btn btn-outline-primary">查看详情</a>
+                            {% if task.id in applied_tasks %}
+                                <button class="btn btn-secondary" disabled>已申请</button>
+                            {% else %}
+                                <a href="{{ url_for('professional.apply_task', task_id=task.id) }}" class="btn btn-primary">申请任务</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                        <h4>没有找到任务</h4>
+                        <p class="text-muted">尝试调整筛选条件或稍后再查看</p>
+                        <a href="{{ url_for('professional.market') }}" class="btn btn-primary mt-2">查看所有任务</a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- 分页 -->
+    {% if pagination %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('professional.market', page=pagination.prev_num, category=category, min_budget=min_budget, sort=sort, search=search) }}">上一页</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1">上一页</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page in pagination.iter_pages() %}
+                        {% if page %}
+                            {% if page != pagination.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('professional.market', page=page, category=category, min_budget=min_budget, sort=sort, search=search) }}">{{ page }}</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <a class="page-link" href="#">{{ page }}</a>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">...</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('professional.market', page=pagination.next_num, category=category, min_budget=min_budget, sort=sort, search=search) }}">下一页</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1">下一页</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 技能匹配提示 -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            <i class="fas fa-lightbulb fa-2x text-warning"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">提示：完善您的专业资料</h5>
+                            <p class="mb-0">添加更多技能和认证到您的专业资料，以便我们能够为您推荐更多匹配的任务。</p>
+                        </div>
+                        <div class="ms-auto">
+                            <a href="{{ url_for('professional.profile') }}" class="btn btn-outline-primary">更新资料</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.task-card {
+    transition: transform 0.2s;
+}
+
+.task-card:hover {
+    transform: translateY(-5px);
+}
+
+.avatar-sm {
+    width: 24px;
+    height: 24px;
+    object-fit: cover;
+}
+</style>
+{% endblock %} 

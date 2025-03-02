@@ -10,7 +10,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
-    role = db.Column(db.String(20), default='user')  # 'user' or 'admin'
+    role = db.Column(db.String(20), default='user')  # 'user', 'professional' or 'admin'
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
@@ -19,6 +19,15 @@ class User(UserMixin, db.Model):
     location = db.Column(db.String(64))
     website = db.Column(db.String(128))
     avatar_url = db.Column(db.String(200))  # 用户头像URL
+    
+    # 专业人士额外字段
+    is_professional = db.Column(db.Boolean, default=False)
+    professional_title = db.Column(db.String(64))  # 专业人士头衔
+    professional_summary = db.Column(db.Text)  # 专业简介
+    experience_years = db.Column(db.Integer)  # 经验年数
+    hourly_rate = db.Column(db.Float)  # 每小时费率
+    skills = db.Column(db.String(200))  # 技能列表，以逗号分隔
+    certifications = db.Column(db.Text)  # 资质证书
     
     # 关系
     tasks = db.relationship('Task', foreign_keys='Task.user_id', backref='author', lazy='dynamic')
@@ -55,9 +64,12 @@ class User(UserMixin, db.Model):
     def is_admin(self):
         return self.role == 'admin'
     
+    def is_pro(self):
+        return self.is_professional
+    
     def update_last_seen(self):
         self.last_seen = datetime.utcnow()
         db.session.commit()
     
     def __repr__(self):
-        return '<User {}>'.format(self.username) 
+        return f'<User {self.username}>' 

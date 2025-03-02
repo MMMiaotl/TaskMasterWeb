@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}专业人士控制面板 - 海帮{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">专业人士控制面板</h1>
+                <a href="{{ url_for('professional.market') }}" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i>浏览任务市场
+                </a>
+            </div>
+            <p class="text-muted">欢迎回来，{{ current_user.username }}！以下是您的账户概览。</p>
+        </div>
+    </div>
+
+    <!-- 状态卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card dashboard-card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="mb-0">进行中任务</h5>
+                        <div class="icon-circle bg-primary">
+                            <i class="fas fa-tasks text-white"></i>
+                        </div>
+                    </div>
+                    <h2 class="mb-0 text-primary">{{ active_tasks }}</h2>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('professional.tasks', status='active') }}" class="text-decoration-none">查看详情</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card dashboard-card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="mb-0">已完成任务</h5>
+                        <div class="icon-circle bg-success">
+                            <i class="fas fa-check text-white"></i>
+                        </div>
+                    </div>
+                    <h2 class="mb-0 text-success">{{ completed_tasks }}</h2>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('professional.tasks', status='completed') }}" class="text-decoration-none">查看详情</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card dashboard-card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="mb-0">最近30天收入</h5>
+                        <div class="icon-circle bg-info">
+                            <i class="fas fa-euro-sign text-white"></i>
+                        </div>
+                    </div>
+                    <h2 class="mb-0 text-info">€{{ recent_income }}</h2>
+                    <div class="mt-auto">
+                        <span class="text-muted small">已完成任务总金额</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card dashboard-card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="mb-0">用户评价</h5>
+                        <div class="icon-circle bg-warning">
+                            <i class="fas fa-star text-white"></i>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-baseline">
+                        <h2 class="mb-0 text-warning me-2">{{ "%.1f"|format(avg_rating) }}</h2>
+                        <span class="text-muted">({{ reviews_count }}条评价)</span>
+                    </div>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('professional.profile') }}" class="text-decoration-none">查看详情</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 最近任务 -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">最近任务</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_tasks %}
+                    <div class="list-group list-group-flush">
+                        {% for task in recent_tasks %}
+                        <a href="{{ url_for('task.task_detail', task_id=task.id) }}" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between py-3 px-0 border-bottom">
+                            <div>
+                                <h6 class="mb-1">{{ task.title }}</h6>
+                                <p class="mb-0 small text-muted">
+                                    {% if task.status == 1 %}
+                                    <span class="badge bg-info">等待执行</span>
+                                    {% elif task.status == 2 %}
+                                    <span class="badge bg-primary">进行中</span>
+                                    {% elif task.status == 3 %}
+                                    <span class="badge bg-success">已完成</span>
+                                    {% elif task.status == 4 %}
+                                    <span class="badge bg-danger">已取消</span>
+                                    {% endif %}
+                                    <span class="ms-1">{{ task.updated_at.strftime('%Y-%m-%d') }}</span>
+                                </p>
+                            </div>
+                            <span class="text-success">€{{ task.budget }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                        <p>您还没有接受任何任务</p>
+                        <a href="{{ url_for('professional.market') }}" class="btn btn-primary btn-sm">浏览可接任务</a>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white">
+                    <a href="{{ url_for('professional.tasks') }}" class="text-decoration-none">查看所有任务</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 推荐任务 -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">适合您的任务</h5>
+                </div>
+                <div class="card-body">
+                    {% if recommended_tasks %}
+                    <div class="list-group list-group-flush">
+                        {% for task in recommended_tasks %}
+                        <a href="{{ url_for('task.task_detail', task_id=task.id) }}" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between py-3 px-0 border-bottom">
+                            <div>
+                                <h6 class="mb-1">{{ task.title }}</h6>
+                                <p class="mb-0 small text-muted">
+                                    <span>{{ task.service_category }}</span>
+                                    <span class="mx-1">•</span>
+                                    <span>{{ task.created_at.strftime('%Y-%m-%d') }}</span>
+                                </p>
+                            </div>
+                            <span class="text-success">€{{ task.budget }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <p>暂无与您技能匹配的任务</p>
+                        <p class="text-muted small">请在您的专业人士档案中添加更多技能或浏览任务市场</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white">
+                    <a href="{{ url_for('professional.market') }}" class="text-decoration-none">浏览所有可接任务</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快捷功能 -->
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-user-circle fa-3x text-primary mb-3"></i>
+                    <h5>个人档案</h5>
+                    <p class="text-muted">更新您的专业档案和展示技能</p>
+                    <a href="{{ url_for('professional.profile') }}" class="btn btn-primary">管理档案</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-comments fa-3x text-primary mb-3"></i>
+                    <h5>消息中心</h5>
+                    <p class="text-muted">查看客户消息和任务邀请</p>
+                    <a href="{{ url_for('professional.messages') }}" class="btn btn-primary">查看消息
+                    {% if unread_messages > 0 %}
+                    <span class="badge bg-danger ms-1">{{ unread_messages }}</span>
+                    {% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                    <h5>收入统计</h5>
+                    <p class="text-muted">查看您的服务收入和任务统计</p>
+                    <a href="{{ url_for('professional.tasks') }}" class="btn btn-primary">查看统计</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.dashboard-card {
+    border-radius: 0.75rem;
+    transition: transform 0.2s;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
+
+.icon-circle {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+{% endblock %} 

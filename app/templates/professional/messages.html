@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+
+{% block title %}消息中心 - 专业人士中心{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">消息中心</h1>
+                <a href="{{ url_for('professional.dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>返回控制面板
+                </a>
+            </div>
+            <p class="text-muted">管理与客户的沟通和任务邀请</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <!-- 对话列表 -->
+                        <div class="col-md-4 border-end">
+                            <div class="conversations-header p-3 border-bottom">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="searchConversation" placeholder="搜索对话...">
+                                    <button class="btn btn-outline-secondary" type="button">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="conversations-list">
+                                {% if conversations %}
+                                    {% for conversation in conversations %}
+                                    <a href="{{ url_for('professional.messages', conversation_id=conversation.id) }}" class="conversation-item d-flex align-items-center p-3 border-bottom text-decoration-none {% if conversation.id == current_conversation.id %}active{% endif %}">
+                                        <div class="position-relative me-3">
+                                            <img src="{{ conversation.other_user.avatar or url_for('static', filename='img/default-avatar.png') }}" class="avatar-md rounded-circle" alt="{{ conversation.other_user.username }}">
+                                            {% if conversation.unread_count > 0 %}
+                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                                {{ conversation.unread_count }}
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex-grow-1 min-width-0">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <h6 class="mb-0 text-truncate">{{ conversation.other_user.username }}</h6>
+                                                <small class="text-muted">{{ conversation.last_message_time|time_ago }}</small>
+                                            </div>
+                                            <p class="mb-0 text-truncate text-muted small">
+                                                {% if conversation.last_message %}
+                                                    {{ conversation.last_message.content }}
+                                                {% else %}
+                                                    开始新对话
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </a>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                                        <p>您还没有任何对话</p>
+                                        <p class="text-muted small">当客户联系您时，对话将显示在这里</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- 消息内容 -->
+                        <div class="col-md-8">
+                            {% if current_conversation %}
+                                <div class="d-flex flex-column h-100">
+                                    <div class="message-header p-3 border-bottom">
+                                        <div class="d-flex align-items-center">
+                                            <img src="{{ current_conversation.other_user.avatar or url_for('static', filename='img/default-avatar.png') }}" class="avatar-md rounded-circle me-3" alt="{{ current_conversation.other_user.username }}">
+                                            <div>
+                                                <h5 class="mb-0">{{ current_conversation.other_user.username }}</h5>
+                                                {% if current_conversation.related_task %}
+                                                <p class="mb-0 text-muted small">
+                                                    <i class="fas fa-clipboard-list me-1"></i>
+                                                    <a href="{{ url_for('task.task_detail', task_id=current_conversation.related_task.id) }}" class="text-decoration-none">
+                                                        {{ current_conversation.related_task.title }}
+                                                    </a>
+                                                </p>
+                                                {% endif %}
+                                            </div>
+                                            {% if current_conversation.related_task %}
+                                            <div class="ms-auto">
+                                                <span class="badge {% if current_conversation.related_task.status == 1 %}bg-info{% elif current_conversation.related_task.status == 2 %}bg-primary{% elif current_conversation.related_task.status == 3 %}bg-success{% elif current_conversation.related_task.status == 4 %}bg-danger{% endif %}">
+                                                    {% if current_conversation.related_task.status == 1 %}
+                                                    等待执行
+                                                    {% elif current_conversation.related_task.status == 2 %}
+                                                    进行中
+                                                    {% elif current_conversation.related_task.status == 3 %}
+                                                    已完成
+                                                    {% elif current_conversation.related_task.status == 4 %}
+                                                    已取消
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="message-body p-3 flex-grow-1 overflow-auto" id="messageContainer">
+                                        {% if messages %}
+                                            <div class="text-center mb-3">
+                                                <span class="badge bg-light text-dark">{{ messages[0].created_at.strftime('%Y-%m-%d') }}</span>
+                                            </div>
+                                            
+                                            {% for message in messages %}
+                                                {% if loop.index > 1 and message.created_at.date() != messages[loop.index-2].created_at.date() %}
+                                                <div class="text-center mb-3">
+                                                    <span class="badge bg-light text-dark">{{ message.created_at.strftime('%Y-%m-%d') }}</span>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                <div class="message-item d-flex mb-3 {% if message.sender_id == current_user.id %}justify-content-end{% endif %}">
+                                                    {% if message.sender_id != current_user.id %}
+                                                    <img src="{{ current_conversation.other_user.avatar or url_for('static', filename='img/default-avatar.png') }}" class="avatar-sm rounded-circle me-2 align-self-end" alt="{{ current_conversation.other_user.username }}">
+                                                    {% endif %}
+                                                    
+                                                    <div class="message-content {% if message.sender_id == current_user.id %}bg-primary text-white{% else %}bg-light{% endif %} p-3 rounded">
+                                                        {{ message.content }}
+                                                        <div class="message-time text-end mt-1">
+                                                            <small class="{% if message.sender_id == current_user.id %}text-white-50{% else %}text-muted{% endif %}">
+                                                                {{ message.created_at.strftime('%H:%M') }}
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {% if message.sender_id == current_user.id %}
+                                                    <img src="{{ current_user.avatar or url_for('static', filename='img/default-avatar.png') }}" class="avatar-sm rounded-circle ms-2 align-self-end" alt="{{ current_user.username }}">
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
+                                        {% else %}
+                                            <div class="text-center py-5">
+                                                <i class="fas fa-comment-dots fa-3x text-muted mb-3"></i>
+                                                <p>没有消息记录</p>
+                                                <p class="text-muted small">发送第一条消息开始对话</p>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="message-footer p-3 border-top">
+                                        <form action="{{ url_for('professional.send_message', conversation_id=current_conversation.id) }}" method="post" id="messageForm">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="messageInput" name="content" placeholder="输入消息..." required>
+                                                <button class="btn btn-primary" type="submit">
+                                                    <i class="fas fa-paper-plane"></i>
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="d-flex flex-column justify-content-center align-items-center h-100 py-5">
+                                    <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                                    <h5>选择一个对话</h5>
+                                    <p class="text-muted">从左侧列表选择一个对话开始聊天</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 任务邀请 -->
+    {% if invitations %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">任务邀请</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">任务名称</th>
+                                    <th scope="col">客户</th>
+                                    <th scope="col">预算</th>
+                                    <th scope="col">截止日期</th>
+                                    <th scope="col">邀请时间</th>
+                                    <th scope="col">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for invitation in invitations %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="task-icon me-3">
+                                                <i class="fas fa-clipboard-list text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{ invitation.task.title }}</h6>
+                                                <small class="text-muted">{{ invitation.task.service_category }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2">
+                                                <img src="{{ invitation.client.avatar or url_for('static', filename='img/default-avatar.png') }}" class="avatar-sm rounded-circle" alt="{{ invitation.client.username }}">
+                                            </div>
+                                            <span>{{ invitation.client.username }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-success fw-bold">€{{ invitation.task.budget }}</span>
+                                    </td>
+                                    <td>
+                                        {% if invitation.task.deadline %}
+                                        <span {% if invitation.task.deadline < now %}class="text-danger"{% endif %}>
+                                            {{ invitation.task.deadline.strftime('%Y-%m-%d') }}
+                                        </span>
+                                        {% else %}
+                                        <span class="text-muted">未设置</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">{{ invitation.created_at.strftime('%Y-%m-%d') }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex">
+                                            <a href="{{ url_for('task.task_detail', task_id=invitation.task.id) }}" class="btn btn-sm btn-outline-primary me-2">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('professional.accept_invitation', invitation_id=invitation.id) }}" class="btn btn-sm btn-success me-2">
+                                                <i class="fas fa-check"></i>
+                                            </a>
+                                            <a href="{{ url_for('professional.decline_invitation', invitation_id=invitation.id) }}" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-times"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 滚动到最新消息
+    const messageContainer = document.getElementById('messageContainer');
+    if (messageContainer) {
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+    }
+    
+    // 表单提交后清空输入框
+    const messageForm = document.getElementById('messageForm');
+    const messageInput = document.getElementById('messageInput');
+    
+    if (messageForm && messageInput) {
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (messageInput.value.trim() !== '') {
+                // 使用fetch API提交表单
+                fetch(messageForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams(new FormData(messageForm))
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // 添加新消息到消息容器
+                        const newMessage = document.createElement('div');
+                        newMessage.className = 'message-item d-flex mb-3 justify-content-end';
+                        
+                        const currentTime = new Date();
+                        const timeString = currentTime.getHours().toString().padStart(2, '0') + ':' + 
+                                          currentTime.getMinutes().toString().padStart(2, '0');
+                        
+                        newMessage.innerHTML = `
+                            <div class="message-content bg-primary text-white p-3 rounded">
+                                ${messageInput.value}
+                                <div class="message-time text-end mt-1">
+                                    <small class="text-white-50">${timeString}</small>
+                                </div>
+                            </div>
+                            <img src="${data.sender_avatar}" class="avatar-sm rounded-circle ms-2 align-self-end" alt="${data.sender_name}">
+                        `;
+                        
+                        messageContainer.appendChild(newMessage);
+                        messageContainer.scrollTop = messageContainer.scrollHeight;
+                        messageInput.value = '';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        });
+    }
+    
+    // 搜索对话功能
+    const searchInput = document.getElementById('searchConversation');
+    const conversationItems = document.querySelectorAll('.conversation-item');
+    
+    if (searchInput && conversationItems.length > 0) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            conversationItems.forEach(item => {
+                const username = item.querySelector('h6').textContent.toLowerCase();
+                const lastMessage = item.querySelector('p').textContent.toLowerCase();
+                
+                if (username.includes(searchTerm) || lastMessage.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+.conversations-list {
+    height: calc(100vh - 200px);
+    overflow-y: auto;
+}
+
+.message-body {
+    height: calc(100vh - 270px);
+    overflow-y: auto;
+}
+
+.conversation-item {
+    transition: background-color 0.2s;
+}
+
+.conversation-item:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+.conversation-item.active {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+.message-content {
+    max-width: 75%;
+    word-wrap: break-word;
+}
+
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+}
+
+.avatar-md {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+}
+
+.task-icon {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+{% endblock %} 

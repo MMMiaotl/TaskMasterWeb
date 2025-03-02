@@ -1,0 +1,479 @@
+{% extends "base.html" %}
+
+{% block title %}个人资料 - 专业人士中心{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">个人资料</h1>
+                <a href="{{ url_for('professional.dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>返回控制面板
+                </a>
+            </div>
+            <p class="text-muted">管理您的专业人士资料和展示信息</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 左侧个人资料卡片 -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body text-center">
+                    <div class="profile-image-container mb-3">
+                        <img src="{{ current_user.avatar or url_for('static', filename='img/default-avatar.png') }}" class="profile-image rounded-circle" alt="{{ current_user.username }}">
+                        <div class="profile-image-overlay">
+                            <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#avatarModal">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <h4>{{ current_user.username }}</h4>
+                    <p class="text-primary mb-1">{{ current_user.professional_title }}</p>
+                    <p class="text-muted small">
+                        <i class="fas fa-map-marker-alt me-1"></i>{{ current_user.location or '未设置位置' }}
+                    </p>
+                    <div class="d-flex justify-content-center mb-3">
+                        <div class="me-3">
+                            <span class="d-block fw-bold">{{ stats.completed_tasks }}</span>
+                            <small class="text-muted">已完成任务</small>
+                        </div>
+                        <div class="me-3">
+                            <span class="d-block fw-bold">{{ "%.1f"|format(stats.avg_rating) }}</span>
+                            <small class="text-muted">平均评分</small>
+                        </div>
+                        <div>
+                            <span class="d-block fw-bold">{{ stats.reviews_count }}</span>
+                            <small class="text-muted">评价数</small>
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                            <i class="fas fa-edit me-2"></i>编辑资料
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 联系信息 -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">联系信息</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-envelope text-primary me-3"></i>
+                            <div>
+                                <p class="mb-0 fw-bold">电子邮箱</p>
+                                <p class="mb-0">{{ current_user.email }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-phone text-primary me-3"></i>
+                            <div>
+                                <p class="mb-0 fw-bold">电话号码</p>
+                                <p class="mb-0">{{ current_user.phone or '未设置' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-map-marker-alt text-primary me-3"></i>
+                            <div>
+                                <p class="mb-0 fw-bold">所在地</p>
+                                <p class="mb-0">{{ current_user.location or '未设置' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 技能和认证 -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">技能和认证</h5>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editSkillsModal">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <h6>技能</h6>
+                    <div class="mb-3">
+                        {% if current_user.skills %}
+                            {% for skill in current_user.skills.split(',') %}
+                                <span class="badge bg-primary me-1 mb-1">{{ skill.strip() }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted small">未添加技能</p>
+                        {% endif %}
+                    </div>
+                    <h6>认证</h6>
+                    <div>
+                        {% if current_user.certifications %}
+                            {% for cert in current_user.certifications.split(',') %}
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-certificate text-warning me-2"></i>
+                                    <span>{{ cert.strip() }}</span>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted small">未添加认证</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧内容 -->
+        <div class="col-lg-8">
+            <!-- 专业简介 -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">专业简介</h5>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editSummaryModal">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if current_user.professional_summary %}
+                        <p>{{ current_user.professional_summary }}</p>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                            <p>您还没有添加专业简介</p>
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editSummaryModal">
+                                添加简介
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 服务信息 -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">服务信息</h5>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editServiceModal">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3 border rounded">
+                                <h6 class="mb-2">服务类别</h6>
+                                <p class="mb-0">{{ current_user.service_category or '未设置' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3 border rounded">
+                                <h6 class="mb-2">工作经验</h6>
+                                <p class="mb-0">{{ current_user.experience_years or '0' }} 年</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3 border rounded">
+                                <h6 class="mb-2">小时收费</h6>
+                                <p class="mb-0 text-success">€{{ current_user.hourly_rate or '未设置' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3 border rounded">
+                                <h6 class="mb-2">可接受任务</h6>
+                                <p class="mb-0">{{ '是' if current_user.is_available else '否' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 客户评价 -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">客户评价</h5>
+                </div>
+                <div class="card-body">
+                    {% if reviews %}
+                        {% for review in reviews %}
+                        <div class="review-item mb-3 pb-3 border-bottom">
+                            <div class="d-flex mb-2">
+                                <img src="{{ review.client.avatar or url_for('static', filename='img/default-avatar.png') }}" class="avatar-sm rounded-circle me-2" alt="{{ review.client.username }}">
+                                <div>
+                                    <h6 class="mb-0">{{ review.client.username }}</h6>
+                                    <div class="text-muted small">{{ review.created_at.strftime('%Y-%m-%d') }}</div>
+                                </div>
+                                <div class="ms-auto">
+                                    <div class="rating">
+                                        {% for i in range(5) %}
+                                            {% if i < review.rating %}
+                                                <i class="fas fa-star text-warning"></i>
+                                            {% else %}
+                                                <i class="far fa-star text-warning"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="mb-0">{{ review.comment }}</p>
+                        </div>
+                        {% endfor %}
+                        
+                        {% if pagination %}
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center mb-0">
+                                {% if pagination.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('professional.profile', page=pagination.prev_num) }}">上一页</a>
+                                </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1">上一页</a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for page in pagination.iter_pages() %}
+                                    {% if page %}
+                                        {% if page != pagination.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('professional.profile', page=page) }}">{{ page }}</a>
+                                        </li>
+                                        {% else %}
+                                        <li class="page-item active">
+                                            <a class="page-link" href="#">{{ page }}</a>
+                                        </li>
+                                        {% endif %}
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#">...</a>
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if pagination.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('professional.profile', page=pagination.next_num) }}">下一页</a>
+                                </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1">下一页</a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                            <p>您还没有收到任何评价</p>
+                            <p class="text-muted small">完成更多任务以获得客户评价</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 修改头像模态框 -->
+<div class="modal fade" id="avatarModal" tabindex="-1" aria-labelledby="avatarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="avatarModalLabel">更新头像</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('professional.update_avatar') }}" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="avatar" class="form-label">选择新头像</label>
+                        <input class="form-control" type="file" id="avatar" name="avatar" accept="image/*" required>
+                        <div class="form-text">支持JPG、PNG格式，最大2MB</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">上传</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑个人资料模态框 -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProfileModalLabel">编辑个人资料</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('professional.update_profile') }}" method="post">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="username" class="form-label">用户名</label>
+                            <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="professional_title" class="form-label">专业头衔</label>
+                            <input type="text" class="form-control" id="professional_title" name="professional_title" value="{{ current_user.professional_title }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label">电话号码</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" value="{{ current_user.phone }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="location" class="form-label">所在地</label>
+                            <input type="text" class="form-control" id="location" name="location" value="{{ current_user.location }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存更改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑专业简介模态框 -->
+<div class="modal fade" id="editSummaryModal" tabindex="-1" aria-labelledby="editSummaryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editSummaryModalLabel">编辑专业简介</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('professional.update_summary') }}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="professional_summary" class="form-label">专业简介</label>
+                        <textarea class="form-control" id="professional_summary" name="professional_summary" rows="5" placeholder="描述您的专业背景、经验和服务特色...">{{ current_user.professional_summary }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存更改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑技能和认证模态框 -->
+<div class="modal fade" id="editSkillsModal" tabindex="-1" aria-labelledby="editSkillsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editSkillsModalLabel">编辑技能和认证</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('professional.update_skills') }}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="skills" class="form-label">技能</label>
+                        <input type="text" class="form-control" id="skills" name="skills" value="{{ current_user.skills }}" placeholder="输入技能，用逗号分隔">
+                        <div class="form-text">例如：室内设计,家具组装,墙面粉刷</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="certifications" class="form-label">认证</label>
+                        <textarea class="form-control" id="certifications" name="certifications" rows="3" placeholder="输入认证，用逗号分隔">{{ current_user.certifications }}</textarea>
+                        <div class="form-text">例如：室内设计师证书,家具安装技师认证</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存更改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑服务信息模态框 -->
+<div class="modal fade" id="editServiceModal" tabindex="-1" aria-labelledby="editServiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editServiceModalLabel">编辑服务信息</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('professional.update_service') }}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="service_category" class="form-label">服务类别</label>
+                        <select class="form-select" id="service_category" name="service_category" required>
+                            <option value="">选择服务类别</option>
+                            <option value="家居维修" {% if current_user.service_category == '家居维修' %}selected{% endif %}>家居维修</option>
+                            <option value="清洁服务" {% if current_user.service_category == '清洁服务' %}selected{% endif %}>清洁服务</option>
+                            <option value="搬家服务" {% if current_user.service_category == '搬家服务' %}selected{% endif %}>搬家服务</option>
+                            <option value="家电维修" {% if current_user.service_category == '家电维修' %}selected{% endif %}>家电维修</option>
+                            <option value="园艺服务" {% if current_user.service_category == '园艺服务' %}selected{% endif %}>园艺服务</option>
+                            <option value="其他服务" {% if current_user.service_category == '其他服务' %}selected{% endif %}>其他服务</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="experience_years" class="form-label">工作经验（年）</label>
+                        <input type="number" class="form-control" id="experience_years" name="experience_years" value="{{ current_user.experience_years or 0 }}" min="0" max="50">
+                    </div>
+                    <div class="mb-3">
+                        <label for="hourly_rate" class="form-label">小时收费（€）</label>
+                        <input type="number" class="form-control" id="hourly_rate" name="hourly_rate" value="{{ current_user.hourly_rate or '' }}" min="0" step="0.5">
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="is_available" name="is_available" {% if current_user.is_available %}checked{% endif %}>
+                        <label class="form-check-label" for="is_available">当前可接受新任务</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存更改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.profile-image-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+}
+
+.profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-image-overlay {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    padding: 5px;
+}
+
+.avatar-sm {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+}
+
+.review-item:last-child {
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+</style>
+{% endblock %} 
