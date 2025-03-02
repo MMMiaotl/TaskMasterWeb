@@ -10,10 +10,10 @@
             <a href="#task-description" class="quick-link px-3 py-2">
                 <i class="fas fa-info-circle me-1"></i>描述
             </a>
-            <a href="#basicInfoCollapse" class="quick-link px-3 py-2" onclick="toggleCollapse('basicInfoCollapse')">
+            <a href="#basicInfoCollapse" class="quick-link px-3 py-2">
                 <i class="fas fa-clipboard-list me-1"></i>基本信息
             </a>
-            <a href="#serviceDetailsCollapse" class="quick-link px-3 py-2" onclick="toggleCollapse('serviceDetailsCollapse')">
+            <a href="#serviceDetailsCollapse" class="quick-link px-3 py-2">
                 <i class="fas fa-cogs me-1"></i>服务详情
             </a>
             <a href="#task-progress" class="quick-link px-3 py-2">
@@ -62,11 +62,11 @@
 
             <!-- 任务元信息 -->
             <div class="task-meta mb-4">
-                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3 collapsible-header" data-bs-toggle="collapse" data-bs-target="#basicInfoCollapse" aria-expanded="false">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3 collapsible-header" data-target="basicInfoCollapse" aria-expanded="false">
                     <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>基本信息</h5>
                     <i class="fas fa-chevron-down toggle-icon"></i>
                 </div>
-                <div class="collapse" id="basicInfoCollapse">
+                <div class="collapsible-content" id="basicInfoCollapse">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="d-flex align-items-center mb-2">
@@ -146,12 +146,12 @@
             
             <!-- 服务类别特定信息 -->
             <div class="service-specific-info mb-4">
-                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3 collapsible-header" data-bs-toggle="collapse" data-bs-target="#serviceDetailsCollapse" aria-expanded="false">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3 collapsible-header" data-target="serviceDetailsCollapse" aria-expanded="false">
                     <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>服务详情</h5>
                     <i class="fas fa-chevron-down toggle-icon"></i>
                 </div>
                 
-                <div class="collapse" id="serviceDetailsCollapse">
+                <div class="collapsible-content" id="serviceDetailsCollapse">
                     {% if task.service_sub_category == 'moving' %}
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-light">
@@ -937,7 +937,14 @@
     transform: rotate(180deg);
 }
 
-.collapse.show {
+.collapsible-content {
+    display: none;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.collapsible-content.active {
+    display: block;
     animation: fadeIn 0.5s ease;
 }
 
@@ -1037,29 +1044,54 @@ document.addEventListener('DOMContentLoaded', function() {
     const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
     
     collapsibleHeaders.forEach(header => {
-        header.addEventListener('click', function() {
+        header.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('data-target');
+            const targetContent = document.getElementById(targetId);
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            
             this.setAttribute('aria-expanded', !isExpanded);
             
-            const targetId = this.getAttribute('data-bs-target').substring(1);
-            const targetContent = document.getElementById(targetId);
-            
-            if (targetContent.classList.contains('show')) {
-                targetContent.classList.remove('show');
+            if (!isExpanded) {
+                targetContent.classList.add('active');
             } else {
-                targetContent.classList.add('show');
+                targetContent.classList.remove('active');
             }
         });
     });
 
-    // 快速导航链接激活状态处理
+    // 设置快速访问栏点击事件
     const quickLinks = document.querySelectorAll('.quick-link');
     
-    // 处理点击
     quickLinks.forEach(link => {
-        link.addEventListener('click', function() {
+        link.addEventListener('click', function(e) {
+            // 激活当前点击的链接
             quickLinks.forEach(l => l.classList.remove('active'));
             this.classList.add('active');
+            
+            // 如果链接指向的是可折叠内容，则展开它
+            const href = this.getAttribute('href');
+            if (href.includes('InfoCollapse') || href.includes('DetailsCollapse')) {
+                e.preventDefault();
+                const targetId = href.substring(1);
+                const targetContent = document.getElementById(targetId);
+                const header = document.querySelector(`[data-target="${targetId}"]`);
+                
+                if (header && targetContent) {
+                    header.setAttribute('aria-expanded', 'true');
+                    targetContent.classList.add('active');
+                }
+                
+                // 滚动到目标位置
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                }
+            }
         });
     });
 
@@ -1089,24 +1121,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-
-// 修复折叠面板切换函数
-function toggleCollapse(targetId) {
-    event.preventDefault();
-    const targetContent = document.getElementById(targetId);
-    const header = document.querySelector(`[data-bs-target="#${targetId}"]`);
-    
-    if(targetContent) {
-        const isExpanded = targetContent.classList.contains('show');
-        if (isExpanded) {
-            targetContent.classList.remove('show');
-            header.setAttribute('aria-expanded', 'false');
-        } else {
-            targetContent.classList.add('show');
-            header.setAttribute('aria-expanded', 'true');
-        }
-    }
-}
 </script>
 
 {% endblock %}
