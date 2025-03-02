@@ -3,394 +3,487 @@
 {% block title %}{{ _(task.title) }} - Task Detail{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="task-detail card">
+<div class="container py-4">
+    <!-- 快速访问栏 -->
+    <div class="quick-access-bar mb-4 sticky-top bg-white shadow-sm rounded-lg p-2 d-flex justify-content-between">
+        <div class="d-flex overflow-auto quick-nav">
+            <a href="#task-description" class="quick-link px-3 py-2">
+                <i class="fas fa-info-circle me-1"></i>描述
+            </a>
+            <a href="#basicInfoCollapse" class="quick-link px-3 py-2" onclick="toggleCollapse('basicInfoCollapse')">
+                <i class="fas fa-clipboard-list me-1"></i>基本信息
+            </a>
+            <a href="#serviceDetailsCollapse" class="quick-link px-3 py-2" onclick="toggleCollapse('serviceDetailsCollapse')">
+                <i class="fas fa-cogs me-1"></i>服务详情
+            </a>
+            <a href="#task-progress" class="quick-link px-3 py-2">
+                <i class="fas fa-tasks me-1"></i>任务进度
+            </a>
+            <a href="#recommended-section" class="quick-link px-3 py-2 active">
+                <i class="fas fa-crown me-1"></i>推荐用户
+            </a>
+        </div>
+        <div class="d-none d-md-block">
+            {% if task.status == 0 %}
+            <span class="badge bg-warning text-dark">
+                <i class="fas fa-hourglass-start me-1"></i>等待接单
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="task-detail card shadow-sm border-0 rounded-lg mb-4">
+        <div class="card-header bg-gradient-primary text-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="card-title h3 mb-0">{{ task.title }}</h1>
+                <span class="badge bg-light text-dark">
+                    {% if task.status == 0 %}
+                        <i class="fas fa-hourglass-start me-1"></i>等待接单
+                    {% elif task.status == 1 %}
+                        <i class="fas fa-hourglass-half me-1"></i>等待执行
+                    {% elif task.status == 2 %}
+                        <i class="fas fa-check-circle me-1"></i>任务完成
+                    {% elif task.status == 3 %}
+                        <i class="fas fa-money-bill-wave me-1"></i>付款完成
+                    {% elif task.status == 4 %}
+                        <i class="fas fa-times-circle me-1"></i>已取消
+                    {% else %}
+                        <i class="fas fa-question-circle me-1"></i>未知状态
+                    {% endif %}
+                </span>
+            </div>
+        </div>
         <div class="card-body">
-            <!-- 任务标题和描述 -->
-            <h1 class="card-title">{{ task.title }}</h1>
-            <div class="task-content">
+            <!-- 任务描述 -->
+            <div id="task-description" class="task-content mb-4">
+                <h5 class="border-bottom pb-2 mb-3"><i class="fas fa-info-circle me-2"></i>任务描述</h5>
                 <p class="card-text">{{ task.description }}</p>
             </div>
 
             <!-- 任务元信息 -->
-            <div class="task-meta text-muted mt-3">
-                <p>
-                    <strong>发布者:</strong> 
-                    <a href="{{ url_for('user.other_user_profile', username=task.author.username) }}">
-                        {{ task.author.username }}
-                    </a>
-                </p>
-                <p><strong>发布时间:</strong> {{ task.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
-                {% if task.updated_at != task.created_at %}
-                    <p><strong>最后更新:</strong> {{ task.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
-                {% endif %}
-                <p>
-                    <strong>任务状态:</strong> 
-                    {% if task.status == 0 %}
-                        <span class="badge bg-warning">等待接单</span>
-                    {% elif task.status == 1 %}
-                        <span class="badge bg-info">等待执行</span>
-                    {% elif task.status == 2 %}
-                        <span class="badge bg-primary">任务完成</span>
-                    {% elif task.status == 3 %}
-                        <span class="badge bg-success">付款完成</span>
-                    {% elif task.status == 4 %}
-                        <span class="badge bg-danger">已取消</span>
-                    {% else %}
-                        <span class="badge bg-secondary">未知状态</span>
-                    {% endif %}
-                </p>
+            <div class="task-meta mb-4">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3 collapsible-header" data-bs-toggle="collapse" data-bs-target="#basicInfoCollapse" aria-expanded="false">
+                    <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>基本信息</h5>
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </div>
+                <div class="collapse" id="basicInfoCollapse">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="icon-box bg-light rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-user text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">发布者</div>
+                                    <div class="fw-bold">
+                                        <a href="{{ url_for('user.other_user_profile', username=task.author.username) }}" class="text-decoration-none">
+                                            {{ task.author.username }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="icon-box bg-light rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-calendar-alt text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">发布时间</div>
+                                    <div class="fw-bold">{{ task.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="icon-box bg-light rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-tag text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">服务类别</div>
+                                    <div class="fw-bold">
+                                        <span class="badge bg-primary rounded-pill">{{ task.service_category }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="icon-box bg-light rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-map-marker-alt text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">服务地点</div>
+                                    <div class="fw-bold">{{ task.location }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="icon-box bg-light rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-clock text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">截止日期</div>
+                                    <div class="fw-bold">{% if task.deadline %}{{ task.deadline.strftime('%Y-%m-%d') }}{% else %}未设置{% endif %}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="icon-box bg-light rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-euro-sign text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">预算</div>
+                                    <div class="fw-bold">€{{ task.budget }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
-            <!-- 任务基本信息 -->
-            <div class="task-details mt-4">
-                <h4>任务详情</h4>
-                <div class="row">
-                    <div class="col-md-6">
+            <!-- 服务类别特定信息 -->
+            <div class="service-specific-info mb-4">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3 collapsible-header" data-bs-toggle="collapse" data-bs-target="#serviceDetailsCollapse" aria-expanded="false">
+                    <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>服务详情</h5>
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </div>
+                
+                <div class="collapse" id="serviceDetailsCollapse">
+                    {% if task.service_sub_category == 'moving' %}
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0 d-flex align-items-center">
+                                <i class="fas fa-truck me-2"></i>搬家服务详情
+                            </h5>
+                        </div>
                         <ul class="list-group list-group-flush">
+                            {% if task.moving_item_size %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>服务类别:</span>
-                                <span class="badge bg-primary rounded-pill">{{ task.service_category }}</span>
+                                <span>物品大小:</span>
+                                <span>
+                                    {% if task.moving_item_size == 'small' %}小型物品
+                                    {% elif task.moving_item_size == 'medium' %}中型物品
+                                    {% elif task.moving_item_size == 'large' %}大型物品
+                                    {% else %}{{ task.moving_item_size }}
+                                    {% endif %}
+                                </span>
                             </li>
+                            {% endif %}
+                            
+                            {% if task.moving_item_quantity %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>服务地点:</span>
-                                <span>{{ task.location }}</span>
+                                <span>物品数量:</span>
+                                <span>{{ task.moving_item_quantity }}</span>
                             </li>
+                            {% endif %}
+                            
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>截止日期:</span>
-                                <span>{% if task.deadline %}{{ task.deadline.strftime('%Y-%m-%d') }}{% else %}未设置{% endif %}</span>
+                                <span>是否有电梯:</span>
+                                <span>{{ '是' if task.moving_has_elevator else '否' }}</span>
                             </li>
+                            
+                            {% if task.moving_floor_number is not none %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>预算:</span>
-                                <span class="fw-bold">€{{ task.budget }}</span>
+                                <span>楼层:</span>
+                                <span>{{ task.moving_floor_number }}</span>
                             </li>
+                            {% endif %}
                         </ul>
                     </div>
                     
-                    <!-- 服务类别特定信息 -->
-                    <div class="col-md-6">
-                        {% if task.service_sub_category == 'moving' %}
-                        <div class="card">
-                            <div class="card-header bg-light">
-                                <h5 class="mb-0">搬家服务详情</h5>
-                            </div>
-                            <ul class="list-group list-group-flush">
-                                {% if task.moving_item_size %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>物品大小:</span>
-                                    <span>
-                                        {% if task.moving_item_size == 'small' %}小型物品
-                                        {% elif task.moving_item_size == 'medium' %}中型物品
-                                        {% elif task.moving_item_size == 'large' %}大型物品
-                                        {% else %}{{ task.moving_item_size }}
-                                        {% endif %}
-                                    </span>
-                                </li>
-                                {% endif %}
-                                
-                                {% if task.moving_item_quantity %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>物品数量:</span>
-                                    <span>{{ task.moving_item_quantity }}</span>
-                                </li>
-                                {% endif %}
-                                
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>是否有电梯:</span>
-                                    <span>{{ '是' if task.moving_has_elevator else '否' }}</span>
-                                </li>
-                                
-                                {% if task.moving_floor_number is not none %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>楼层:</span>
-                                    <span>{{ task.moving_floor_number }}</span>
-                                </li>
-                                {% endif %}
-                            </ul>
+                    {% elif task.service_sub_category == 'pickup' %}
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0 d-flex align-items-center">
+                                <i class="fas fa-plane me-2"></i>接送机服务详情
+                            </h5>
                         </div>
-                        
-                        {% elif task.service_sub_category == 'pickup' %}
-                        <div class="card">
-                            <div class="card-header bg-light">
-                                <h5 class="mb-0">接送机服务详情</h5>
-                            </div>
-                            <ul class="list-group list-group-flush">
-                                {% if task.pickup_flight_number %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>航班号:</span>
-                                    <span>{{ task.pickup_flight_number }}</span>
-                                </li>
-                                {% endif %}
-                                
-                                {% if task.pickup_passengers %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>乘客数量:</span>
-                                    <span>{{ task.pickup_passengers }}</span>
-                                </li>
-                                {% endif %}
-                                
-                                {% if task.pickup_luggage_count is not none %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>行李数量:</span>
-                                    <span>{{ task.pickup_luggage_count }}</span>
-                                </li>
-                                {% endif %}
-                                
-                                {% if task.pickup_is_arrival is not none %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>服务类型:</span>
-                                    <span>{{ '接机' if task.pickup_is_arrival else '送机' }}</span>
-                                </li>
-                                {% endif %}
-                            </ul>
+                        <ul class="list-group list-group-flush">
+                            {% if task.pickup_flight_number %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>航班号:</span>
+                                <span>{{ task.pickup_flight_number }}</span>
+                            </li>
+                            {% endif %}
+                            
+                            {% if task.pickup_passengers %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>乘客数量:</span>
+                                <span>{{ task.pickup_passengers }}</span>
+                            </li>
+                            {% endif %}
+                            
+                            {% if task.pickup_luggage_count is not none %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>行李数量:</span>
+                                <span>{{ task.pickup_luggage_count }}</span>
+                            </li>
+                            {% endif %}
+                            
+                            {% if task.pickup_is_arrival is not none %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>服务类型:</span>
+                                <span>{{ '接机' if task.pickup_is_arrival else '送机' }}</span>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    
+                    {% elif task.service_sub_category == 'repair' %}
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0 d-flex align-items-center">
+                                <i class="fas fa-tools me-2"></i>装修维修服务详情
+                            </h5>
                         </div>
-                        
-                        {% elif task.service_sub_category == 'repair' %}
-                        <div class="card">
-                            <div class="card-header bg-light">
-                                <h5 class="mb-0">装修维修服务详情</h5>
-                            </div>
-                            <ul class="list-group list-group-flush">
-                                {% if task.repair_area %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>面积:</span>
-                                    <span>{{ task.repair_area }} 平方米</span>
-                                </li>
-                                {% endif %}
-                                
-                                {% if task.repair_type %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>维修类型:</span>
-                                    <span>
-                                        {% if task.repair_type == 'water_electricity' %}水电维修
-                                        {% elif task.repair_type == 'wall' %}墙面维修
-                                        {% elif task.repair_type == 'floor' %}地板维修
-                                        {% elif task.repair_type == 'furniture' %}家具维修
-                                        {% elif task.repair_type == 'other' %}其他维修
-                                        {% else %}{{ task.repair_type }}
-                                        {% endif %}
-                                    </span>
-                                </li>
-                                {% endif %}
-                                
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>是否包含材料:</span>
-                                    <span>{{ '是' if task.repair_materials_included else '否' }}</span>
-                                </li>
-                                
-                                {% if task.repair_address %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>地址邮编:</span>
-                                    <span>{{ task.repair_address }}</span>
-                                </li>
-                                {% endif %}
-                                
-                                <!-- 装修工作内容 -->
-                                <li class="list-group-item">
-                                    <div class="mb-2">工作内容:</div>
-                                    <div class="repair-works">
-                                        {% set has_work_items = false %}
-                                        <div class="row g-2">
-                                            {% if task.repair_work_painting %}
-                                            <div class="col-auto">
-                                                <span class="badge rounded-pill bg-primary text-white">
-                                                    <i class="fas fa-paint-roller me-1"></i> 刷漆
-                                                </span>
-                                            </div>
-                                            {% set has_work_items = true %}
-                                            {% endif %}
-                                            
-                                            {% if task.repair_work_plastering %}
-                                            <div class="col-auto">
-                                                <span class="badge rounded-pill bg-primary text-white">
-                                                    <i class="fas fa-trowel me-1"></i> 批灰
-                                                </span>
-                                            </div>
-                                            {% set has_work_items = true %}
-                                            {% endif %}
-                                            
-                                            {% if task.repair_work_flooring %}
-                                            <div class="col-auto">
-                                                <span class="badge rounded-pill bg-primary text-white">
-                                                    <i class="fas fa-border-all me-1"></i> 铺地板
-                                                </span>
-                                            </div>
-                                            {% set has_work_items = true %}
-                                            {% endif %}
-                                            
-                                            {% if task.repair_work_plumbing %}
-                                            <div class="col-auto">
-                                                <span class="badge rounded-pill bg-primary text-white">
-                                                    <i class="fas fa-faucet me-1"></i> 改水电
-                                                </span>
-                                            </div>
-                                            {% set has_work_items = true %}
-                                            {% endif %}
-                                            
-                                            {% if task.repair_work_bathroom %}
-                                            <div class="col-auto">
-                                                <span class="badge rounded-pill bg-primary text-white">
-                                                    <i class="fas fa-bath me-1"></i> 浴室
-                                                </span>
-                                            </div>
-                                            {% set has_work_items = true %}
-                                            {% endif %}
-                                            
-                                            {% if task.repair_work_toilet %}
-                                            <div class="col-auto">
-                                                <span class="badge rounded-pill bg-primary text-white">
-                                                    <i class="fas fa-toilet me-1"></i> 厕所
-                                                </span>
-                                            </div>
-                                            {% set has_work_items = true %}
-                                            {% endif %}
-                                            
-                                            {% if task.repair_work_kitchen %}
-                                            <div class="col-auto">
-                                                <span class="badge rounded-pill bg-primary text-white">
-                                                    <i class="fas fa-utensils me-1"></i> 厨房
-                                                </span>
-                                            </div>
-                                            {% set has_work_items = true %}
-                                            {% endif %}
-                                            
-                                            {% if task.repair_work_garden %}
-                                            <div class="col-auto">
-                                                <span class="badge rounded-pill bg-primary text-white">
-                                                    <i class="fas fa-leaf me-1"></i> 花园
-                                                </span>
-                                            </div>
-                                            {% set has_work_items = true %}
-                                            {% endif %}
-                                            
-                                            {% if task.repair_work_extension %}
-                                            <div class="col-auto">
-                                                <span class="badge rounded-pill bg-primary text-white">
-                                                    <i class="fas fa-expand-alt me-1"></i> 扩建
-                                                </span>
-                                            </div>
-                                            {% set has_work_items = true %}
-                                            {% endif %}
-                                        </div>
-                                        
-                                        {% if task.repair_work_other %}
-                                        <div class="mt-2">
-                                            <div class="text-secondary">其他: {{ task.repair_work_other }}</div>
+                        <ul class="list-group list-group-flush">
+                            {% if task.repair_area %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>面积:</span>
+                                <span>{{ task.repair_area }} 平方米</span>
+                            </li>
+                            {% endif %}
+                            
+                            {% if task.repair_type %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>维修类型:</span>
+                                <span>
+                                    {% if task.repair_type == 'water_electricity' %}水电维修
+                                    {% elif task.repair_type == 'wall' %}墙面维修
+                                    {% elif task.repair_type == 'floor' %}地板维修
+                                    {% elif task.repair_type == 'furniture' %}家具维修
+                                    {% elif task.repair_type == 'other' %}其他维修
+                                    {% else %}{{ task.repair_type }}
+                                    {% endif %}
+                                </span>
+                            </li>
+                            {% endif %}
+                            
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>是否包含材料:</span>
+                                <span>{{ '是' if task.repair_materials_included else '否' }}</span>
+                            </li>
+                            
+                            {% if task.repair_address %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>地址邮编:</span>
+                                <span>{{ task.repair_address }}</span>
+                            </li>
+                            {% endif %}
+                            
+                            <!-- 装修工作内容 -->
+                            <li class="list-group-item">
+                                <div class="mb-2">工作内容:</div>
+                                <div class="repair-works">
+                                    {% set has_work_items = false %}
+                                    <div class="row g-2">
+                                        {% if task.repair_work_painting %}
+                                        <div class="col-auto">
+                                            <span class="badge rounded-pill bg-primary text-white">
+                                                <i class="fas fa-paint-roller me-1"></i> 刷漆
+                                            </span>
                                         </div>
                                         {% set has_work_items = true %}
                                         {% endif %}
                                         
-                                        {% if not has_work_items %}
-                                        <div class="text-muted">未指定工作内容</div>
+                                        {% if task.repair_work_plastering %}
+                                        <div class="col-auto">
+                                            <span class="badge rounded-pill bg-primary text-white">
+                                                <i class="fas fa-trowel me-1"></i> 批灰
+                                            </span>
+                                        </div>
+                                        {% set has_work_items = true %}
+                                        {% endif %}
+                                        
+                                        {% if task.repair_work_flooring %}
+                                        <div class="col-auto">
+                                            <span class="badge rounded-pill bg-primary text-white">
+                                                <i class="fas fa-border-all me-1"></i> 铺地板
+                                            </span>
+                                        </div>
+                                        {% set has_work_items = true %}
+                                        {% endif %}
+                                        
+                                        {% if task.repair_work_plumbing %}
+                                        <div class="col-auto">
+                                            <span class="badge rounded-pill bg-primary text-white">
+                                                <i class="fas fa-faucet me-1"></i> 改水电
+                                            </span>
+                                        </div>
+                                        {% set has_work_items = true %}
+                                        {% endif %}
+                                        
+                                        {% if task.repair_work_bathroom %}
+                                        <div class="col-auto">
+                                            <span class="badge rounded-pill bg-primary text-white">
+                                                <i class="fas fa-bath me-1"></i> 浴室
+                                            </span>
+                                        </div>
+                                        {% set has_work_items = true %}
+                                        {% endif %}
+                                        
+                                        {% if task.repair_work_toilet %}
+                                        <div class="col-auto">
+                                            <span class="badge rounded-pill bg-primary text-white">
+                                                <i class="fas fa-toilet me-1"></i> 厕所
+                                            </span>
+                                        </div>
+                                        {% set has_work_items = true %}
+                                        {% endif %}
+                                        
+                                        {% if task.repair_work_kitchen %}
+                                        <div class="col-auto">
+                                            <span class="badge rounded-pill bg-primary text-white">
+                                                <i class="fas fa-utensils me-1"></i> 厨房
+                                            </span>
+                                        </div>
+                                        {% set has_work_items = true %}
+                                        {% endif %}
+                                        
+                                        {% if task.repair_work_garden %}
+                                        <div class="col-auto">
+                                            <span class="badge rounded-pill bg-primary text-white">
+                                                <i class="fas fa-leaf me-1"></i> 花园
+                                            </span>
+                                        </div>
+                                        {% set has_work_items = true %}
+                                        {% endif %}
+                                        
+                                        {% if task.repair_work_extension %}
+                                        <div class="col-auto">
+                                            <span class="badge rounded-pill bg-primary text-white">
+                                                <i class="fas fa-expand-alt me-1"></i> 扩建
+                                            </span>
+                                        </div>
+                                        {% set has_work_items = true %}
                                         {% endif %}
                                     </div>
-                                </li>
-                            </ul>
-                        </div>
-                        
-                        {% elif task.service_sub_category == 'legal' %}
-                        <div class="card">
-                            <div class="card-header bg-light">
-                                <h5 class="mb-0">法律咨询服务详情</h5>
-                            </div>
-                            <ul class="list-group list-group-flush">
-                                {% if task.legal_case_type %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>案件类型:</span>
-                                    <span>
-                                        {% if task.legal_case_type == 'contract' %}合同纠纷
-                                        {% elif task.legal_case_type == 'immigration' %}移民事务
-                                        {% elif task.legal_case_type == 'business' %}商业法律
-                                        {% elif task.legal_case_type == 'personal' %}个人法律事务
-                                        {% elif task.legal_case_type == 'other' %}其他法律事务
-                                        {% else %}{{ task.legal_case_type }}
-                                        {% endif %}
-                                    </span>
-                                </li>
-                                {% endif %}
-                                
-                                {% if task.legal_urgency %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>紧急程度:</span>
-                                    <span>
-                                        {% if task.legal_urgency == 'low' %}不紧急
-                                        {% elif task.legal_urgency == 'medium' %}一般
-                                        {% elif task.legal_urgency == 'high' %}紧急
-                                        {% else %}{{ task.legal_urgency }}
-                                        {% endif %}
-                                    </span>
-                                </li>
-                                {% endif %}
-                                
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>文件是否准备好:</span>
-                                    <span>{{ '是' if task.legal_documents_ready else '否' }}</span>
-                                </li>
-                            </ul>
-                        </div>
-                        
-                        {% elif task.service_sub_category == 'education' %}
-                        <div class="card">
-                            <div class="card-header bg-light">
-                                <h5 class="mb-0">留学咨询服务详情</h5>
-                            </div>
-                            <ul class="list-group list-group-flush">
-                                {% if task.education_target_country %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>目标国家:</span>
-                                    <span>
-                                        {% if task.education_target_country == 'usa' %}美国
-                                        {% elif task.education_target_country == 'uk' %}英国
-                                        {% elif task.education_target_country == 'canada' %}加拿大
-                                        {% elif task.education_target_country == 'australia' %}澳大利亚
-                                        {% elif task.education_target_country == 'germany' %}德国
-                                        {% elif task.education_target_country == 'france' %}法国
-                                        {% elif task.education_target_country == 'other' %}其他国家
-                                        {% else %}{{ task.education_target_country }}
-                                        {% endif %}
-                                    </span>
-                                </li>
-                                {% endif %}
-                                
-                                {% if task.education_study_level %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>学习阶段:</span>
-                                    <span>
-                                        {% if task.education_study_level == 'bachelor' %}本科
-                                        {% elif task.education_study_level == 'master' %}硕士
-                                        {% elif task.education_study_level == 'phd' %}博士
-                                        {% elif task.education_study_level == 'other' %}其他
-                                        {% else %}{{ task.education_study_level }}
-                                        {% endif %}
-                                    </span>
-                                </li>
-                                {% endif %}
-                                
-                                {% if task.education_field %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>学习领域:</span>
-                                    <span>
-                                        {% if task.education_field == 'business' %}商科
-                                        {% elif task.education_field == 'engineering' %}工程
-                                        {% elif task.education_field == 'science' %}理科
-                                        {% elif task.education_field == 'arts' %}文科
-                                        {% elif task.education_field == 'medicine' %}医学
-                                        {% elif task.education_field == 'law' %}法律
-                                        {% elif task.education_field == 'other' %}其他
-                                        {% else %}{{ task.education_field }}
-                                        {% endif %}
-                                    </span>
-                                </li>
-                                {% endif %}
-                            </ul>
-                        </div>
-                        {% endif %}
+                                    
+                                    {% if task.repair_work_other %}
+                                    <div class="mt-2">
+                                        <div class="text-secondary">其他: {{ task.repair_work_other }}</div>
+                                    </div>
+                                    {% set has_work_items = true %}
+                                    {% endif %}
+                                    
+                                    {% if not has_work_items %}
+                                    <div class="text-muted">未指定工作内容</div>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        </ul>
                     </div>
+                    
+                    {% elif task.service_sub_category == 'legal' %}
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0 d-flex align-items-center">
+                                <i class="fas fa-gavel me-2"></i>法律咨询服务详情
+                            </h5>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            {% if task.legal_case_type %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>案件类型:</span>
+                                <span>
+                                    {% if task.legal_case_type == 'contract' %}合同纠纷
+                                    {% elif task.legal_case_type == 'immigration' %}移民事务
+                                    {% elif task.legal_case_type == 'business' %}商业法律
+                                    {% elif task.legal_case_type == 'personal' %}个人法律事务
+                                    {% elif task.legal_case_type == 'other' %}其他法律事务
+                                    {% else %}{{ task.legal_case_type }}
+                                    {% endif %}
+                                </span>
+                            </li>
+                            {% endif %}
+                            
+                            {% if task.legal_urgency %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>紧急程度:</span>
+                                <span>
+                                    {% if task.legal_urgency == 'low' %}不紧急
+                                    {% elif task.legal_urgency == 'medium' %}一般
+                                    {% elif task.legal_urgency == 'high' %}紧急
+                                    {% else %}{{ task.legal_urgency }}
+                                    {% endif %}
+                                </span>
+                            </li>
+                            {% endif %}
+                            
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>文件是否准备好:</span>
+                                <span>{{ '是' if task.legal_documents_ready else '否' }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    {% elif task.service_sub_category == 'education' %}
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0 d-flex align-items-center">
+                                <i class="fas fa-graduation-cap me-2"></i>留学咨询服务详情
+                            </h5>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            {% if task.education_target_country %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>目标国家:</span>
+                                <span>
+                                    {% if task.education_target_country == 'usa' %}美国
+                                    {% elif task.education_target_country == 'uk' %}英国
+                                    {% elif task.education_target_country == 'canada' %}加拿大
+                                    {% elif task.education_target_country == 'australia' %}澳大利亚
+                                    {% elif task.education_target_country == 'germany' %}德国
+                                    {% elif task.education_target_country == 'france' %}法国
+                                    {% elif task.education_target_country == 'other' %}其他国家
+                                    {% else %}{{ task.education_target_country }}
+                                    {% endif %}
+                                </span>
+                            </li>
+                            {% endif %}
+                            
+                            {% if task.education_study_level %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>学习阶段:</span>
+                                <span>
+                                    {% if task.education_study_level == 'bachelor' %}本科
+                                    {% elif task.education_study_level == 'master' %}硕士
+                                    {% elif task.education_study_level == 'phd' %}博士
+                                    {% elif task.education_study_level == 'other' %}其他
+                                    {% else %}{{ task.education_study_level }}
+                                    {% endif %}
+                                </span>
+                            </li>
+                            {% endif %}
+                            
+                            {% if task.education_field %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>学习领域:</span>
+                                <span>
+                                    {% if task.education_field == 'business' %}商科
+                                    {% elif task.education_field == 'engineering' %}工程
+                                    {% elif task.education_field == 'science' %}理科
+                                    {% elif task.education_field == 'arts' %}文科
+                                    {% elif task.education_field == 'medicine' %}医学
+                                    {% elif task.education_field == 'law' %}法律
+                                    {% elif task.education_field == 'other' %}其他
+                                    {% else %}{{ task.education_field }}
+                                    {% endif %}
+                                </span>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
 
             <!-- 任务进度条 -->
-            <div class="progress-module mt-4">
+            <div id="task-progress" class="progress-module my-5">
+                <h5 class="mb-3 border-bottom pb-2"><i class="fas fa-tasks me-2"></i>任务进度</h5>
                 <div class="progress-bar">
                     <div class="progress-line"></div>
                     <div class="progress-step {% if task.status >= 0 %}active{% endif %}" style="left: 0%;">
@@ -413,61 +506,74 @@
             </div>
 
             <!-- 任务状态提示 -->
-            <div class="alert alert-info mt-4">
-                {% if task.status == 1 %}
-                    <p>{{ task.executor.username }} 已接受任务邀请，等待执行。</p>
-                {% endif %}
+            {% if task.status == 1 %}
+            <div class="alert alert-info d-flex align-items-center" role="alert">
+                <i class="fas fa-info-circle me-3 fa-lg"></i>
+                <div>
+                    <strong>{{ task.executor.username }}</strong> 已接受任务邀请，等待执行。
+                </div>
             </div>
+            {% endif %}
 
             <!-- 操作按钮 -->
-            <div class="task-actions mt-4">
-                <a href="{{ url_for('task.tasks') }}" class="btn btn-secondary">返回任务列表</a>
+            <div class="task-actions mt-4 d-flex flex-wrap gap-2">
+                <a href="{{ url_for('task.tasks') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>返回任务列表
+                </a>
                 {% if current_user.is_authenticated and task.author == current_user %}
-                    <a href="{{ url_for('task.edit_task', task_id=task.id) }}" class="btn btn-primary">编辑任务</a>
+                    <a href="{{ url_for('task.edit_task', task_id=task.id) }}" class="btn btn-primary">
+                        <i class="fas fa-edit me-1"></i>编辑任务
+                    </a>
                     
                     {% if task.status <= 1 %}
                     <!-- 取消任务按钮 -->
                     <form action="{{ url_for('task.cancel_task', task_id=task.id) }}" method="POST" class="d-inline" 
                           onsubmit="return confirm('确定要取消这个任务吗？此操作不可撤销。');">
-                        <button type="submit" class="btn btn-danger">取消任务</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-times me-1"></i>取消任务
+                        </button>
                     </form>
                     {% endif %}
                 {% endif %}
-            </div>
-
-            <!-- 如果有消息系统，可以添加发送消息按钮 -->
-            {% if current_user.is_authenticated and task.author != current_user %}
-                <div class="message-actions mt-3">
+                
+                <!-- 如果有消息系统，可以添加发送消息按钮 -->
+                {% if current_user.is_authenticated and task.author != current_user %}
                     <a href="{{ url_for('message.send_message', recipient_id=task.author.id, task_id=task.id) }}" 
                        class="btn btn-outline-primary">
-                        联系发布者
+                        <i class="fas fa-comment me-1"></i>联系发布者
                     </a>
-                </div>
-            {% endif %}
+                {% endif %}
 
-            <!-- 任务操作按钮 -->
-            <div class="mt-4">
+                <!-- 任务操作按钮 -->
                 {% if task.status == 1 and current_user.id == task.executor_id %}
                     <form action="{{ url_for('task.update_task_status', task_id=task.id) }}" method="POST" class="d-inline">
                         <input type="hidden" name="status" value="2">
-                        <button type="submit" class="btn btn-success">任务已完成</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check-circle me-1"></i>任务已完成
+                        </button>
                     </form>
                 {% elif task.status == 2 and current_user.id == task.user_id %}
                     <form action="{{ url_for('task.update_task_status', task_id=task.id) }}" method="POST" class="d-inline">
                         <input type="hidden" name="status" value="3">
-                        <button type="submit" class="btn btn-success">付款已完成</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-money-bill-wave me-1"></i>付款已完成
+                        </button>
                     </form>
                 {% endif %}
             </div>
 
             {% if task.status == 3 %}
-                <div class="mt-3">
+                <div class="mt-4">
                     {% if current_user.is_authenticated %}
                         {% set existing_review = current_user.reviews_given.filter_by(task_id=task.id).first() %}
                         {% if not existing_review and current_user.id == task.helper_id %}
-                            <div class="card">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-light">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-star me-2"></i>评价任务
+                                    </h5>
+                                </div>
                                 <div class="card-body">
-                                    <h5 class="card-title">评价任务</h5>
                                     <form method="post" action="{{ url_for('task.add_review', task_id=task.id) }}">
                                         {{ review_form.csrf_token }}
                                         <div class="mb-3">
@@ -478,107 +584,186 @@
                                             {{ review_form.comment.label(class="form-label") }}
                                             {{ review_form.comment(class="form-control") }}
                                         </div>
-                                        <button type="submit" class="btn btn-primary">提交评价</button>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-paper-plane me-1"></i>提交评价
+                                        </button>
                                     </form>
                                 </div>
                             </div>
                         {% endif %}
                     {% else %}
-                        <div class="alert alert-info">
-                            <a href="{{ url_for('auth.login', next=request.url) }}">登录</a> 后可以查看和发表评价
+                        <div class="alert alert-info d-flex align-items-center" role="alert">
+                            <i class="fas fa-info-circle me-3 fa-lg"></i>
+                            <div>
+                                <a href="{{ url_for('auth.login', next=request.url) }}" class="alert-link">登录</a> 后可以查看和发表评价
+                            </div>
                         </div>
                     {% endif %}
                 </div>
             {% endif %}
         </div>
     </div>
-</div>
 
-<div class="row mt-4">
-    <!-- 感兴趣的用户 -->
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">感兴趣的用户</h5>
-            </div>
-            <div class="card-body">
-                {% if interested_users %}
-                    <div class="list-group">
-                        {% for user in interested_users %}
-                        <div class="list-group-item d-flex align-items-center">
-                            <img src="{{ user.avatar_url or url_for('static', filename='images/default-avatar.jpg') }}" 
-                                 class="rounded-circle me-3" 
-                                 alt="{{ user.username }}"
-                                 style="width: 40px; height: 40px;">
-                            <div>
-                                <h6 class="mb-1">{{ user.username }}</h6>
-                                <small class="text-muted">评分：{{ user.average_rating|default(0)|round(1) }}</small>
+    <div class="row mt-4">
+        <!-- 感兴趣的用户 -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-lg">
+                <div class="card-header bg-gradient-secondary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-hand-paper me-2"></i>感兴趣的用户
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if interested_users %}
+                        <div class="interested-users">
+                            {% for user in interested_users %}
+                            <div class="interested-user-card mb-3 p-3 rounded-lg border border-light">
+                                <div class="d-flex align-items-center">
+                                    <div class="position-relative">
+                                        <img src="{{ user.avatar_url or url_for('static', filename='images/default-avatar.jpg') }}" 
+                                             class="rounded-circle border" 
+                                             alt="{{ user.username }}"
+                                             style="width: 60px; height: 60px; object-fit: cover;">
+                                    </div>
+                                    <div class="ms-3 flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0 fw-bold">{{ user.username }}</h5>
+                                            <div class="rating-stars">
+                                                {% set rating = user.average_rating|default(0)|round(1) %}
+                                                {% for i in range(5) %}
+                                                    {% if i < rating|int %}
+                                                        <i class="fas fa-star text-warning"></i>
+                                                    {% elif i == rating|int and rating % 1 >= 0.5 %}
+                                                        <i class="fas fa-star-half-alt text-warning"></i>
+                                                    {% else %}
+                                                        <i class="far fa-star text-warning"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                <span class="ms-1 text-muted">{{ rating }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="user-tags mt-2">
+                                            <span class="badge bg-secondary">主动申请</span>
+                                        </div>
+                                        {% if user.bio %}
+                                        <p class="text-muted small mt-2 mb-0 text-truncate">{{ user.bio }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end mt-3 gap-2">
+                                    <a href="{{ url_for('user.other_user_profile', username=user.username) }}" 
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-user me-1"></i>查看资料
+                                    </a>
+                                    <a href="{{ url_for('message.send_message', recipient_id=user.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-comment me-1"></i>联系
+                                    </a>
+                                    <form action="{{ url_for('task.send_invitation', task_id=task.id, user_id=user.id) }}" 
+                                          method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            <i class="fas fa-check me-1"></i>选择
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
-                            <div class="ms-auto d-flex gap-2">
-                                <a href="{{ url_for('message.send_message', recipient_id=user.id) }}" 
-                                   class="btn btn-sm btn-outline-primary">
-                                    联系
-                                </a>
-                                <form action="{{ url_for('task.send_invitation', task_id=task.id, user_id=user.id) }}" 
-                                      method="POST" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-success">
-                                        选择
-                                    </button>
-                                </form>
-                            </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">目前还没有用户表示感兴趣</p>
-                    </div>
-                {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">目前还没有用户表示感兴趣</p>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- 平台推荐 -->
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">平台推荐</h5>
-            </div>
-            <div class="card-body">
-                {% if recommended_users %}
-                    <div class="list-group">
-                        {% for user in recommended_users %}
-                        <div class="list-group-item d-flex align-items-center">
-                            <img src="{{ user.avatar_url or url_for('static', filename='images/default-avatar.jpg') }}" 
-                                 class="rounded-circle me-3" 
-                                 alt="{{ user.username }}"
-                                 style="width: 40px; height: 40px;">
-                            <div>
-                                <h6 class="mb-1">{{ user.username }}</h6>
-                                <small class="text-muted">评分：{{ user.average_rating|default(0)|round(1) }}</small>
+        <!-- 平台推荐 -->
+        <div id="recommended-section" class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-lg position-relative recommended-section">
+                <!-- 添加突出显示标签 -->
+                <div class="recommend-ribbon">
+                    <span>推荐</span>
+                </div>
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-crown me-2"></i>平台推荐
+                        <span class="badge bg-warning text-dark ms-2">精选</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recommended_users %}
+                        <div class="recommended-users">
+                            {% for user in recommended_users %}
+                            <div class="recommended-user-card mb-3 p-3 rounded-lg border {% if loop.index == 1 %}border-primary border-2 bg-light highlight-card{% else %}border-light{% endif %}">
+                                <div class="d-flex align-items-center">
+                                    <div class="position-relative">
+                                        <img src="{{ user.avatar_url or url_for('static', filename='images/default-avatar.jpg') }}" 
+                                             class="rounded-circle border {% if loop.index == 1 %}border-primary border-3{% endif %}" 
+                                             alt="{{ user.username }}"
+                                             style="width: 60px; height: 60px; object-fit: cover;">
+                                        {% if loop.index == 1 %}
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+                                            <i class="fas fa-star"></i>
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="ms-3 flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0 fw-bold">{{ user.username }}</h5>
+                                            <div class="rating-stars">
+                                                {% set rating = user.average_rating|default(0)|round(1) %}
+                                                {% for i in range(5) %}
+                                                    {% if i < rating|int %}
+                                                        <i class="fas fa-star text-warning"></i>
+                                                    {% elif i == rating|int and rating % 1 >= 0.5 %}
+                                                        <i class="fas fa-star-half-alt text-warning"></i>
+                                                    {% else %}
+                                                        <i class="far fa-star text-warning"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                <span class="ms-1 text-muted">{{ rating }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="user-tags mt-2">
+                                            {% if loop.index == 1 %}
+                                            <span class="badge bg-success me-1">最佳匹配</span>
+                                            {% endif %}
+                                            <span class="badge bg-info me-1">高评分</span>
+                                            <span class="badge bg-secondary">活跃用户</span>
+                                        </div>
+                                        {% if user.bio %}
+                                        <p class="text-muted small mt-2 mb-0 text-truncate">{{ user.bio }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end mt-3 gap-2">
+                                    <a href="{{ url_for('user.other_user_profile', username=user.username) }}" 
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-user me-1"></i>查看资料
+                                    </a>
+                                    <a href="{{ url_for('message.send_message', recipient_id=user.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-comment me-1"></i>联系
+                                    </a>
+                                    <form action="{{ url_for('task.send_invitation', task_id=task.id, user_id=user.id) }}" 
+                                          method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            <i class="fas fa-check me-1"></i>选择
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
-                            <div class="ms-auto d-flex gap-2">
-                                <a href="{{ url_for('message.send_message', recipient_id=user.id) }}" 
-                                   class="btn btn-sm btn-outline-primary">
-                                    联系
-                                </a>
-                                <form action="{{ url_for('task.send_invitation', task_id=task.id, user_id=user.id) }}" 
-                                      method="POST" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-success">
-                                        选择
-                                    </button>
-                                </form>
-                            </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-user-plus fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">暂时没有推荐用户</p>
-                    </div>
-                {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-user-plus fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">暂时没有推荐用户</p>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -676,5 +861,252 @@
         line-height: 1.2;
     }
 }
+
+/* 平台推荐用户样式 */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+}
+
+.recommended-user-card {
+    transition: all 0.3s ease;
+}
+
+.recommended-user-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.recommended-users .recommended-user-card:first-child {
+    position: relative;
+    overflow: hidden;
+}
+
+.recommended-users .recommended-user-card:first-child::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 40px 40px 0;
+    border-color: transparent #4f46e5 transparent transparent;
+    z-index: 1;
+}
+
+.user-tags .badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+}
+
+.rating-stars {
+    font-size: 0.9rem;
+}
+
+/* 添加到样式部分 */
+.bg-gradient-secondary {
+    background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%);
+}
+
+.interested-user-card {
+    transition: all 0.3s ease;
+}
+
+.interested-user-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* 可折叠部分的样式 */
+.collapsible-header {
+    cursor: pointer;
+    user-select: none;
+    padding: 0.5rem 0;
+    transition: all 0.3s ease;
+}
+
+.collapsible-header:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+.collapsible-header[aria-expanded="true"] .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.collapse.show {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* 推荐部分的增强样式 */
+.recommended-section {
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid rgba(79, 70, 229, 0.1) !important;
+}
+
+.recommend-ribbon {
+    position: absolute;
+    top: -10px;
+    right: -40px;
+    width: 120px;
+    height: 40px;
+    text-align: center;
+    background-color: #4f46e5;
+    color: white;
+    font-weight: bold;
+    z-index: 5;
+    transform: rotate(45deg);
+    font-size: 14px;
+    line-height: 36px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.recommend-ribbon span {
+    display: inline-block;
+    transform: translateY(2px);
+}
+
+.highlight-card {
+    position: relative;
+    animation: pulse 2s infinite;
+    box-shadow: 0 5px 15px rgba(79, 70, 229, 0.2) !important;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+    }
+}
+
+/* 在小屏幕上优化布局 */
+@media (max-width: 767.98px) {
+    .recommended-section {
+        margin-top: 2rem;
+    }
+}
+
+/* 快速访问栏样式 */
+.quick-access-bar {
+    z-index: 1000;
+    top: 10px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.quick-link {
+    color: #64748b;
+    text-decoration: none;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.quick-link:hover, .quick-link.active {
+    color: #4f46e5;
+    background-color: rgba(79, 70, 229, 0.1);
+}
+
+.quick-nav {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+.quick-nav::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 折叠部分处理
+    const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+    
+    collapsibleHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            this.setAttribute('aria-expanded', !isExpanded);
+            
+            const targetId = this.getAttribute('data-bs-target').substring(1);
+            const targetContent = document.getElementById(targetId);
+            
+            if (targetContent.classList.contains('show')) {
+                targetContent.classList.remove('show');
+            } else {
+                targetContent.classList.add('show');
+            }
+        });
+    });
+
+    // 快速导航链接激活状态处理
+    const quickLinks = document.querySelectorAll('.quick-link');
+    
+    // 处理点击
+    quickLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            quickLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    // 处理滚动
+    window.addEventListener('scroll', function() {
+        let currentSection = '';
+        const sections = ['task-description', 'basicInfoCollapse', 'serviceDetailsCollapse', 
+                         'task-progress', 'recommended-section'];
+        
+        sections.forEach(sectionId => {
+            const section = document.getElementById(sectionId);
+            if(section) {
+                const sectionTop = section.offsetTop;
+                if(window.pageYOffset >= sectionTop - 100) {
+                    currentSection = sectionId;
+                }
+            }
+        });
+        
+        if(currentSection) {
+            quickLinks.forEach(link => {
+                link.classList.remove('active');
+                if(link.getAttribute('href') === '#' + currentSection) {
+                    link.classList.add('active');
+                }
+            });
+        }
+    });
+});
+
+// 修复折叠面板切换函数
+function toggleCollapse(targetId) {
+    event.preventDefault();
+    const targetContent = document.getElementById(targetId);
+    const header = document.querySelector(`[data-bs-target="#${targetId}"]`);
+    
+    if(targetContent) {
+        const isExpanded = targetContent.classList.contains('show');
+        if (isExpanded) {
+            targetContent.classList.remove('show');
+            header.setAttribute('aria-expanded', 'false');
+        } else {
+            targetContent.classList.add('show');
+            header.setAttribute('aria-expanded', 'true');
+        }
+    }
+}
+</script>
+
 {% endblock %}
