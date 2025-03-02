@@ -66,59 +66,6 @@
             <!-- 简化后的导航菜单 -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle border-0 shadow-none" href="#" role="button" 
-                           data-bs-toggle="dropdown" aria-expanded="false">
-                            服务
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-lg">
-                            <li class="dropdown-item">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <h6 class="dropdown-header">日常生活服务</h6>
-                                        <ul class="list-unstyled">
-                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='daily', service_id='moving') }}">
-                                                <i class="fas fa-truck me-2"></i>搬家服务</a></li>
-                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='daily', service_id='pickup') }}">
-                                                <i class="fas fa-plane-arrival me-2"></i>接送机</a></li>
-                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='daily', service_id='driving') }}">
-                                                <i class="fas fa-car me-2"></i>代驾服务</a></li>
-                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='daily', service_id='repair') }}">
-                                                <i class="fas fa-tools me-2"></i>装修维修</a></li>
-                                        </ul>
-                                    </div>
-                                    
-                                    <div class="col-md-4">
-                                        <h6 class="dropdown-header">专业服务</h6>
-                                        <ul class="list-unstyled">
-                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='professional', service_id='housing') }}">
-                                                <i class="fas fa-home me-2"></i>房产中介</a></li>
-                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='professional', service_id='company') }}">
-                                                <i class="fas fa-building me-2"></i>公司注册</a></li>
-                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='professional', service_id='translation') }}">
-                                                <i class="fas fa-file-alt me-2"></i>文件翻译</a></li>
-                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='professional', service_id='education') }}">
-                                                <i class="fas fa-graduation-cap me-2"></i>留学咨询</a></li>
-                                        </ul>
-                                    </div>
-                                    
-                                    <div class="col-md-4">
-                                        <h6 class="dropdown-header">商业服务</h6>
-                                        <ul class="list-unstyled">
-                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='business', service_id='accounting') }}">
-                                                <i class="fas fa-calculator me-2"></i>会计税务</a></li>
-                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='business', service_id='legal') }}">
-                                                <i class="fas fa-gavel me-2"></i>法律咨询</a></li>
-                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='business', service_id='investment') }}">
-                                                <i class="fas fa-chart-line me-2"></i>投资理财</a></li>
-                                            <li><a class="dropdown-item" href="{{ url_for('service.service_page', category='business', service_id='shop') }}">
-                                                <i class="fas fa-store me-2"></i>商铺转让</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
-                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main.contact') }}">联系我们</a>
                     </li>
