@@ -19,9 +19,14 @@
             <a href="#task-progress" class="quick-link px-3 py-2">
                 <i class="fas fa-tasks me-1"></i>任务进度
             </a>
-            <a href="#recommended-section" class="quick-link px-3 py-2 active">
+            <a href="#recommended-section" class="quick-link px-3 py-2">
                 <i class="fas fa-crown me-1"></i>推荐用户
             </a>
+            {% if task.user_id == current_user.id %}
+            <a href="{{ url_for('task.task_responses', task_id=task.id) }}" class="quick-link px-3 py-2 active">
+                <i class="fas fa-comments me-1"></i>任务回应
+            </a>
+            {% endif %}
         </div>
         <div class="d-none d-md-block">
             {% if task.status == 0 %}
@@ -36,21 +41,29 @@
         <div class="card-header bg-gradient-primary text-white py-3">
             <div class="d-flex justify-content-between align-items-center">
                 <h1 class="card-title h3 mb-0">{{ task.title }}</h1>
-                <span class="badge bg-light text-dark">
-                    {% if task.status == 0 %}
-                        <i class="fas fa-hourglass-start me-1"></i>等待接单
-                    {% elif task.status == 1 %}
-                        <i class="fas fa-hourglass-half me-1"></i>等待执行
-                    {% elif task.status == 2 %}
-                        <i class="fas fa-check-circle me-1"></i>任务完成
-                    {% elif task.status == 3 %}
-                        <i class="fas fa-money-bill-wave me-1"></i>付款完成
-                    {% elif task.status == 4 %}
-                        <i class="fas fa-times-circle me-1"></i>已取消
-                    {% else %}
-                        <i class="fas fa-question-circle me-1"></i>未知状态
+                <div>
+                    <span class="badge bg-light text-dark me-2">
+                        {% if task.status == 0 %}
+                            <i class="fas fa-hourglass-start me-1"></i>等待接单
+                        {% elif task.status == 1 %}
+                            <i class="fas fa-hourglass-half me-1"></i>等待执行
+                        {% elif task.status == 2 %}
+                            <i class="fas fa-check-circle me-1"></i>任务完成
+                        {% elif task.status == 3 %}
+                            <i class="fas fa-money-bill-wave me-1"></i>付款完成
+                        {% elif task.status == 4 %}
+                            <i class="fas fa-times-circle me-1"></i>已取消
+                        {% else %}
+                            <i class="fas fa-question-circle me-1"></i>未知状态
+                        {% endif %}
+                    </span>
+                    {% if task.user_id == current_user.id and task.status == 0 %}
+                    <a href="{{ url_for('task.task_responses', task_id=task.id) }}" class="btn btn-light btn-sm">
+                        <i class="fas fa-comments me-1"></i>查看任务回应 
+                        <span class="badge bg-danger rounded-pill ms-1">{{ task.responses_count|default(0) }}</span>
+                    </a>
                     {% endif %}
-                </span>
+                </div>
             </div>
         </div>
         <div class="card-body">

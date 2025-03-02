@@ -146,7 +146,7 @@ def create_task():
                          categories=SERVICE_CATEGORIES,
                          preselect_category=request.args.get('category', ''))
 
-@task_bp.route('/task/<int:task_id>')
+@task_bp.route('/<int:task_id>')
 def task_detail(task_id):
     task = Task.query.get_or_404(task_id)
     
@@ -170,12 +170,22 @@ def task_detail(task_id):
         db.func.random()
     ).limit(5).all()
     
+    # 计算任务的响应数量（不同的消息发送者数量）
+    senders = set()
+    for message in task.messages:
+        if message.sender_id != task.author.id:
+            senders.add(message.sender_id)
+    responses_count = len(senders)
+    
+    # 将responses_count添加到task对象中，以便在模板中使用
+    task.responses_count = responses_count
+    
     return render_template('task_detail.html', 
                          task=task,
                          interested_users=interested_users,
                          recommended_users=recommended_users)
 
-@task_bp.route('/task/<int:task_id>/edit', methods=['GET', 'POST'])
+@task_bp.route('/<int:task_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_task(task_id):
     task = Task.query.get_or_404(task_id)
@@ -204,7 +214,7 @@ def edit_task(task_id):
 
     return render_template('edit_task.html', title='编辑任务', form=form, task=task)
 
-@task_bp.route('/task/<int:task_id>/delete', methods=['POST'])
+@task_bp.route('/<int:task_id>/delete', methods=['POST'])
 @login_required
 def delete_task(task_id):
     task = Task.query.get_or_404(task_id)
@@ -217,7 +227,7 @@ def delete_task(task_id):
     flash('Your task has been deleted.')
     return redirect(url_for('task.tasks'))
 
-@task_bp.route('/task/<int:task_id>/cancel', methods=['POST'])
+@task_bp.route('/<int:task_id>/cancel', methods=['POST'])
 @login_required
 def cancel_task(task_id):
     task = Task.query.get_or_404(task_id)
@@ -239,16 +249,84 @@ def cancel_task(task_id):
     flash('任务已成功取消', 'success')
     return redirect(url_for('task.tasks'))
 
-@task_bp.route('/task/<int:task_id>/conversation', methods=['GET', 'POST'])
+@task_bp.route('/<int:task_id>/conversation', methods=['GET', 'POST'])
 @login_required
 def task_conversation(task_id):
-    task = Task.query.get_or_404(task_id)
-    user_tasks = Task.query.filter_by(user_id=current_user.id).order_by(Task.created_at.desc()).all()  # 查询当前用户的所有任务
-    
-    if request.method == 'POST':
-        content = request.form.get('content')
-        if content:
-            recipient_id = task.user_id
+    """处理任务对话页面和消息发送"""
+    try:
+        # 获取任务信息
+        task = Task.query.get_or_404(task_id)
+        
+        # 如果是GET请求，显示对话页面
+        if request.method == 'GET':
+            # 获取对话对象
+            pro_id = request.args.get('pro_id', type=int)
+            if pro_id:
+                pro = User.query.get_or_404(pro_id)
+                
+                # 检查权限（任务创建者或被选中的专业人士才能查看）
+                is_creator = task.user_id == current_user.id
+                is_executor = task.executor_id == current_user.id
+                if not (is_creator or is_executor or pro_id == current_user.id):
+                    flash('您无权访问此对话', 'danger')
+                    return redirect(url_for('task.view_task', task_id=task_id))
+                
+                # 查询与任务和专业人士相关的所有消息
+                messages = Message.query.filter(
+                    (Message.task_id == task_id) &
+                    (
+                        ((Message.sender_id == current_user.id) & (Message.recipient_id == pro_id)) |
+                        ((Message.recipient_id == current_user.id) & (Message.sender_id == pro_id))
+                    )
+                ).order_by(Message.created_at.asc()).all()
+                
+                # 标记消息为已读
+                for msg in messages:
+                    if msg.recipient_id == current_user.id and not msg.is_read:
+                        msg.is_read = True
+                db.session.commit()
+                
+                return render_template('task_conversation.html', 
+                                       task=task,
+                                       pro=pro,
+                                       messages=messages)
+            else:
+                flash('未指定对话对象', 'warning')
+                return redirect(url_for('task.view_task', task_id=task_id))
+        
+        # 如果是POST请求，处理消息发送
+        elif request.method == 'POST':
+            # 获取消息内容和接收者ID
+            content = request.form.get('content') or request.json.get('content')
+            recipient_id = request.form.get('recipient_id') or request.json.get('recipient_id')
+            
+            # 检查参数
+            if not content or not recipient_id:
+                if request.is_json:
+                    return jsonify({"success": False, "error": "消息内容和接收者ID不能为空"}), 400
+                else:
+                    flash('消息内容和接收者ID不能为空', 'danger')
+                    return redirect(request.referrer or url_for('task.view_task', task_id=task_id))
+            
+            try:
+                recipient_id = int(recipient_id)
+            except ValueError:
+                if request.is_json:
+                    return jsonify({"success": False, "error": "接收者ID必须是整数"}), 400
+                else:
+                    flash('接收者ID必须是整数', 'danger')
+                    return redirect(request.referrer or url_for('task.view_task', task_id=task_id))
+            
+            # 获取接收者
+            recipient = User.query.get(recipient_id)
+            if not recipient:
+                if request.is_json:
+                    return jsonify({"success": False, "error": "接收者不存在"}), 404
+                else:
+                    flash('接收者不存在', 'danger')
+                    return redirect(request.referrer or url_for('task.view_task', task_id=task_id))
+            
+            # 创建消息
             message = Message(
                 content=content,
                 sender_id=current_user.id,
@@ -259,20 +337,33 @@ def task_conversation(task_id):
             db.session.add(message)
             db.session.commit()
             
-            return jsonify({
-                'success': True,
-                'message': {
-                    'content': message.content,
-                    'sender': message.sender.username,
-                    'created_at': message.created_at.strftime('%Y-%m-%d %H:%M')
-                }
-            })
-        return jsonify({'success': False, 'error': '内容不能为空'})
-    
-    messages = Message.query.filter_by(task_id=task_id).order_by(Message.created_at.asc()).all()
-    return render_template('task_conversation.html', task=task, messages=messages, user_tasks=user_tasks)
+            # 根据请求类型返回响应
+            if request.is_json:
+                return jsonify({
+                    "success": True,
+                    "message": {
+                        "id": message.id,
+                        "content": message.content,
+                        "sender_id": message.sender_id,
+                        "recipient_id": message.recipient_id,
+                        "created_at": message.created_at.isoformat(),
+                        "is_read": message.is_read
+                    }
+                })
+            else:
+                flash('消息已发送', 'success')
+                return redirect(url_for('task.task_conversation', task_id=task_id, pro_id=recipient_id))
+            
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error in task_conversation: {str(e)}")
+        if request.is_json:
+            return jsonify({"success": False, "error": str(e)}), 500
+        else:
+            flash('处理对话时发生错误', 'danger')
+            return redirect(url_for('task.view_task', task_id=task_id))
 
-@task_bp.route('/task/<int:task_id>/invite/<int:user_id>', methods=['POST'])
+@task_bp.route('/<int:task_id>/invite/<int:user_id>', methods=['POST'])
 @login_required
 def send_invitation(task_id, user_id):
     task = Task.query.get_or_404(task_id)
@@ -308,7 +399,7 @@ def send_invitation(task_id, user_id):
     
     return redirect(url_for('task.task_detail', task_id=task_id))
 
-@task_bp.route('/task/invitation/<int:message_id>/accept', methods=['POST'])
+@task_bp.route('/invitation/<int:message_id>/accept', methods=['POST'])
 @login_required
 def accept_invitation(message_id):
     message = Message.query.get_or_404(message_id)
@@ -322,7 +413,7 @@ def accept_invitation(message_id):
     flash('你已接受邀请', 'success')
     return redirect(url_for('task.task_detail', task_id=task.id))
 
-@task_bp.route('/task/invitation/<int:message_id>/reject', methods=['POST'])
+@task_bp.route('/invitation/<int:message_id>/reject', methods=['POST'])
 @login_required
 def reject_invitation(message_id):
     message = Message.query.get_or_404(message_id)
@@ -333,7 +424,7 @@ def reject_invitation(message_id):
     flash('你已拒绝邀请', 'info')
     return redirect(url_for('task.tasks'))
 
-@task_bp.route('/task/<int:task_id>/respond_invitation', methods=['POST'])
+@task_bp.route('/<int:task_id>/respond_invitation', methods=['POST'])
 @login_required
 def respond_invitation(task_id):
     task = Task.query.get_or_404(task_id)
@@ -358,7 +449,7 @@ def respond_invitation(task_id):
     db.session.commit()
     return redirect(url_for('user.user_profile', username=current_user.username))
 
-@task_bp.route('/task/<int:task_id>/update_status', methods=['POST'])
+@task_bp.route('/<int:task_id>/update_status', methods=['POST'])
 @login_required
 def update_task_status(task_id):
     task = Task.query.get_or_404(task_id)
@@ -377,7 +468,7 @@ def update_task_status(task_id):
     flash('任务状态已更新', 'success')
     return redirect(url_for('task.task_detail', task_id=task_id))
 
-@task_bp.route('/task/<int:task_id>/review_executor', methods=['GET', 'POST'])
+@task_bp.route('/<int:task_id>/review_executor', methods=['GET', 'POST'])
 @login_required
 def review_executor(task_id):
     task = Task.query.get_or_404(task_id)
@@ -443,4 +534,338 @@ def search_suggestions():
         'url': url_for('task.task_detail', task_id=task.id)
     } for task in suggestions]
     
-    return jsonify(results) 
+    return jsonify(results)
+
+@task_bp.route('/<int:task_id>/responses')
+@login_required
+def task_responses(task_id):
+    """显示任务的回应页面，包括对话、感兴趣的专业人士和符合要求的专业人士"""
+    try:
+        # 添加调试日志
+        current_app.logger.info(f"开始加载任务回应页面，任务ID: {task_id}, 用户ID: {current_user.id}")
+        
+        # 获取任务信息
+        task = Task.query.get_or_404(task_id)
+        current_app.logger.info(f"成功获取任务信息: {task.title}")
+        
+        # 检查当前用户是否为任务创建者
+        if task.user_id != current_user.id:
+            current_app.logger.warning(f"权限错误: 用户 {current_user.id} 尝试访问任务 {task_id} 的回应页面，但不是任务创建者")
+            flash('您无权访问此页面', 'danger')
+            return redirect(url_for('task.tasks'))
+        
+        # 查询与任务相关的所有对话
+        current_app.logger.info(f"开始查询任务相关的对话消息")
+        conversations = Message.query.filter(
+            (Message.task_id == task_id) &
+            ((Message.sender_id == current_user.id) | (Message.recipient_id == current_user.id))
+        ).order_by(Message.created_at.desc()).all()
+        current_app.logger.info(f"获取到 {len(conversations)} 条对话消息")
+        
+        # 整理对话数据，按照对话对象分组
+        current_app.logger.info(f"开始整理对话数据")
+        conversations_by_user = {}
+        for msg in conversations:
+            try:
+                other_user_id = msg.sender_id if msg.recipient_id == current_user.id else msg.recipient_id
+                if other_user_id not in conversations_by_user:
+                    other_user = User.query.get(other_user_id)
+                    if not other_user:
+                        current_app.logger.error(f"无法找到用户ID为 {other_user_id} 的用户")
+                        continue
+                    
+                    conversations_by_user[other_user_id] = {
+                        'id': other_user_id,  # 这里使用其他用户ID作为对话ID
+                        'pro_name': other_user.username,
+                        'pro_avatar': other_user.avatar(128),
+                        'messages': [],
+                        'has_unread': False,
+                        'unread_count': 0,
+                        'last_message_time': None,
+                        'last_message_preview': ''
+                    }
+                
+                # 添加消息到对话中
+                conversations_by_user[other_user_id]['messages'].append(msg)
+                
+                # 检查是否有未读消息
+                if msg.recipient_id == current_user.id and not msg.is_read:
+                    conversations_by_user[other_user_id]['has_unread'] = True
+                    conversations_by_user[other_user_id]['unread_count'] += 1
+                
+                # 更新最新消息时间和预览
+                if not conversations_by_user[other_user_id]['last_message_time'] or \
+                   msg.created_at > conversations_by_user[other_user_id]['last_message_time']:
+                    conversations_by_user[other_user_id]['last_message_time'] = msg.created_at
+                    conversations_by_user[other_user_id]['last_message_preview'] = msg.content[:30] + '...' if len(msg.content) > 30 else msg.content
+            except Exception as msg_e:
+                current_app.logger.error(f"处理消息ID {msg.id}时出错: {str(msg_e)}")
+        
+        current_app.logger.info(f"对话数据整理完成，共有 {len(conversations_by_user)} 个对话")
+        
+        # 将对话按照最新消息时间排序
+        try:
+            conversations_list = sorted(
+                conversations_by_user.values(),
+                key=lambda x: x['last_message_time'] or datetime.min,
+                reverse=True
+            )
+            current_app.logger.info(f"对话排序完成")
+        except Exception as sort_e:
+            current_app.logger.error(f"对话排序出错: {str(sort_e)}")
+            conversations_list = list(conversations_by_user.values())
+        
+        # 查询对此任务感兴趣的专业人士
+        current_app.logger.info(f"开始查询感兴趣的专业人士")
+        interested_pros = []
+        for user_id in conversations_by_user:
+            try:
+                user = User.query.get(user_id)
+                if user and user.id != current_user.id:
+                    # 获取完成的任务数量
+                    completed_jobs = Task.query.filter(
+                        (Task.executor_id == user.id) & 
+                        (Task.status == 2)  # 假设状态2表示已完成
+                    ).count()
+                    
+                    # 获取用户评分
+                    reviews = Review.query.filter_by(reviewee_id=user.id).all()
+                    rating = sum([r.rating for r in reviews]) / len(reviews) if reviews else 0
+                    
+                    interested_pros.append({
+                        'id': user.id,
+                        'name': user.username,
+                        'avatar': user.avatar(128),
+                        'rating': round(rating, 1),
+                        'completed_jobs': completed_jobs
+                    })
+            except Exception as pro_e:
+                current_app.logger.error(f"处理专业人士 {user_id} 数据时出错: {str(pro_e)}")
+        
+        current_app.logger.info(f"共找到 {len(interested_pros)} 个感兴趣的专业人士")
+        
+        # 模拟符合要求的专业人士数据
+        current_app.logger.info(f"开始生成匹配的专业人士数据")
+        matching_pros = []
+        try:
+            potential_pros = User.query.filter(User.id != current_user.id).limit(5).all()
+            for user in potential_pros:
+                # 获取用户评分
+                reviews = Review.query.filter_by(reviewee_id=user.id).all()
+                rating = sum([r.rating for r in reviews]) / len(reviews) if reviews else 0
+                
+                # 模拟匹配度和距离数据
+                import random
+                match_score = random.randint(70, 99)
+                distance = round(random.uniform(0.5, 15.0), 1)
+                
+                matching_pros.append({
+                    'id': user.id,
+                    'name': user.username,
+                    'avatar': user.avatar(128),
+                    'rating': round(rating, 1),
+                    'match_score': match_score,
+                    'distance': distance
+                })
+            
+            # 按匹配度排序
+            matching_pros = sorted(matching_pros, key=lambda x: x['match_score'], reverse=True)
+            current_app.logger.info(f"生成了 {len(matching_pros)} 个匹配的专业人士数据")
+        except Exception as match_e:
+            current_app.logger.error(f"生成匹配专业人士数据时出错: {str(match_e)}")
+        
+        # 准备渲染模板
+        current_app.logger.info(f"准备渲染任务回应页面模板")
+        try:
+            unread_count = sum(conv['unread_count'] for conv in conversations_list)
+            interested_count = len(interested_pros)
+            matching_count = len(matching_pros)
+            current_app.logger.info(f"未读消息数: {unread_count}, 感兴趣专业人士数: {interested_count}, 匹配专业人士数: {matching_count}")
+            
+            return render_template('task_responses.html', 
+                               task=task,
+                               conversations=conversations_list,
+                               interested_pros=interested_pros,
+                               matching_pros=matching_pros,
+                               unread_messages_count=unread_count,
+                               interested_pros_count=interested_count,
+                               matching_pros_count=matching_count)
+        except Exception as render_e:
+            current_app.logger.error(f"渲染模板时出错: {str(render_e)}, 错误类型: {type(render_e).__name__}")
+            raise
+    
+    except Exception as e:
+        current_app.logger.error(f"处理任务回应页面时发生错误: {str(e)}, 错误类型: {type(e).__name__}")
+        import traceback
+        current_app.logger.error(f"错误堆栈: {traceback.format_exc()}")
+        flash('加载任务回应页面时发生错误', 'danger')
+        return redirect(url_for('task.tasks'))
+
+@task_bp.route('/api/conversations/<int:conversation_id>/messages')
+@login_required
+def get_conversation_messages(conversation_id):
+    """获取与特定用户的对话消息"""
+    try:
+        task_id = request.args.get('task_id')
+        if not task_id:
+            # 尝试从消息中获取任务ID
+            message = Message.query.filter(
+                ((Message.sender_id == current_user.id) & (Message.recipient_id == conversation_id)) |
+                ((Message.recipient_id == current_user.id) & (Message.sender_id == conversation_id))
+            ).first()
+            if message:
+                task_id = message.task_id
+            else:
+                return jsonify({"error": "无法确定任务ID"}), 400
+        
+        # 查询与特定用户在特定任务下的所有消息
+        messages = Message.query.filter(
+            (Message.task_id == task_id) &
+            (
+                ((Message.sender_id == current_user.id) & (Message.recipient_id == conversation_id)) |
+                ((Message.recipient_id == current_user.id) & (Message.sender_id == conversation_id))
+            )
+        ).order_by(Message.created_at.asc()).all()
+        
+        # 计算未读消息数量
+        unread_count = sum(1 for m in messages if m.recipient_id == current_user.id and not m.is_read)
+        
+        # 将消息转换为JSON格式
+        messages_json = [{
+            'id': m.id,
+            'content': m.content,
+            'sender_id': m.sender_id,
+            'recipient_id': m.recipient_id,
+            'created_at': m.created_at.isoformat(),
+            'is_read': m.is_read
+        } for m in messages]
+        
+        return jsonify({
+            "messages": messages_json,
+            "unread_count": unread_count,
+            "task_id": task_id
+        })
+    except Exception as e:
+        current_app.logger.error(f"Error in get_conversation_messages: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@task_bp.route('/api/conversations/<int:conversation_id>/read', methods=['POST'])
+@login_required
+def mark_conversation_as_read(conversation_id):
+    """将与特定用户的对话标记为已读"""
+    try:
+        # 查找用户ID为conversation_id发送的未读消息
+        unread_messages = Message.query.filter(
+            (Message.sender_id == conversation_id) &
+            (Message.recipient_id == current_user.id) &
+            (Message.is_read == False)
+        ).all()
+        
+        # 标记为已读
+        for message in unread_messages:
+            message.is_read = True
+        
+        db.session.commit()
+        
+        return jsonify({"success": True, "marked_count": len(unread_messages)})
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error in mark_conversation_as_read: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@task_bp.route('/api/professionals/<int:user_id>')
+@login_required
+def get_professional_details(user_id):
+    """获取专业人士的详细信息"""
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        # 获取用户已完成的任务数量
+        completed_jobs = Task.query.filter(
+            (Task.executor_id == user.id) & 
+            (Task.status == 2)  # 假设状态2表示已完成
+        ).count()
+        
+        # 获取用户评分
+        reviews = Review.query.filter_by(reviewee_id=user.id).all()
+        rating = sum([r.rating for r in reviews]) / len(reviews) if reviews else 0
+        
+        # 获取用户技能 (假设用户模型有skills字段或关联表)
+        skills = []
+        if hasattr(user, 'skills'):
+            skills = [skill.name for skill in user.skills]
+        else:
+            # 模拟一些技能
+            from app.utils.constants import SERVICE_CATEGORIES
+            import random
+            all_services = []
+            for category in SERVICE_CATEGORIES:
+                all_services.extend([service[1] for service in category[1]])
+            skills = random.sample(all_services, min(5, len(all_services)))
+        
+        # 格式化评论
+        reviews_json = []
+        for review in reviews:
+            reviewer = User.query.get(review.reviewer_id)
+            if reviewer:
+                reviews_json.append({
+                    'id': review.id,
+                    'rating': review.rating,
+                    'content': review.content,
+                    'reviewer_id': reviewer.id,
+                    'reviewer_name': reviewer.username,
+                    'created_at': review.created_at.isoformat() if hasattr(review, 'created_at') else None
+                })
+        
+        # 构建响应
+        return jsonify({
+            'id': user.id,
+            'name': user.username,
+            'avatar': user.avatar(128),
+            'bio': user.about_me if hasattr(user, 'about_me') else '',
+            'rating': round(rating, 1),
+            'completed_jobs': completed_jobs,
+            'skills': skills,
+            'reviews': reviews_json
+        })
+    except Exception as e:
+        current_app.logger.error(f"Error in get_professional_details: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@task_bp.route('/<int:task_id>/hire/<int:pro_id>', methods=['POST'])
+@login_required
+def hire_professional(task_id, pro_id):
+    """雇佣专业人士执行任务"""
+    try:
+        task = Task.query.get_or_404(task_id)
+        pro = User.query.get_or_404(pro_id)
+        
+        # 检查权限
+        if task.user_id != current_user.id:
+            return jsonify({"success": False, "message": "您无权雇佣专业人士执行此任务"}), 403
+        
+        # 检查任务状态
+        if task.status != 0:  # 假设0表示等待接单
+            return jsonify({"success": False, "message": "该任务已不在等待接单状态"}), 400
+        
+        # 更新任务状态和执行者
+        task.status = 1  # 假设1表示等待执行
+        task.executor_id = pro_id
+        db.session.commit()
+        
+        # 发送通知消息给专业人士
+        message = Message(
+            content=f"恭喜！您已被选中执行任务：{task.title}",
+            sender_id=current_user.id,
+            recipient_id=pro_id,
+            task_id=task_id,
+            created_at=datetime.utcnow()
+        )
+        db.session.add(message)
+        db.session.commit()
+        
+        return jsonify({"success": True, "message": "已成功雇佣专业人士"})
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error in hire_professional: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500 

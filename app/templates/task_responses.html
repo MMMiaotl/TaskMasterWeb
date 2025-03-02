@@ -1,0 +1,886 @@
+{% extends "base.html" %}
+
+{% block title %}{{ task.title }} - 对你的某任务的回应{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- 任务标题和基本信息 -->
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm border-0 rounded-lg">
+                <div class="card-header bg-gradient-primary text-white py-3">
+                    <h1 class="card-title h3 mb-0">{{ task.title }}</h1>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-primary me-2">
+                                <i class="fas fa-map-marker-alt me-1"></i>{{ task.location }}
+                            </span>
+                            <span class="badge bg-info me-2">
+                                <i class="fas fa-calendar-alt me-1"></i>{{ task.created_at|datetimeformat }}
+                            </span>
+                        </div>
+                        <div>
+                            {% if task.status == 0 %}
+                            <span class="badge bg-warning text-dark">
+                                <i class="fas fa-hourglass-start me-1"></i>等待接单
+                            </span>
+                            {% elif task.status == 1 %}
+                            <span class="badge bg-info">
+                                <i class="fas fa-hourglass-half me-1"></i>等待执行
+                            </span>
+                            {% elif task.status == 2 %}
+                            <span class="badge bg-primary">
+                                <i class="fas fa-check-circle me-1"></i>任务完成
+                            </span>
+                            {% elif task.status == 3 %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-money-bill-wave me-1"></i>付款完成
+                            </span>
+                            {% elif task.status == 4 %}
+                            <span class="badge bg-danger">
+                                <i class="fas fa-times-circle me-1"></i>已取消
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 左侧导航栏 -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-lg" style="position: sticky; top: 1rem;">
+                <div class="card-body p-0">
+                    <nav class="nav flex-column">
+                        <a class="nav-link border-bottom py-3 px-4 active" href="#" id="myChats-tab" data-bs-toggle="tab" data-bs-target="#myChats">
+                            <i class="fas fa-comments me-2"></i>我的聊天
+                            <span class="badge bg-danger float-end">{{ unread_messages_count }}</span>
+                        </a>
+                        <a class="nav-link border-bottom py-3 px-4" href="#" id="interestedPros-tab" data-bs-toggle="tab" data-bs-target="#interestedPros">
+                            <i class="fas fa-user-tie me-2"></i>感兴趣的专业人士
+                            <span class="badge bg-primary float-end">{{ interested_pros_count }}</span>
+                        </a>
+                        <a class="nav-link border-bottom py-3 px-4" href="#" id="matchingPros-tab" data-bs-toggle="tab" data-bs-target="#matchingPros">
+                            <i class="fas fa-check-circle me-2"></i>符合你要求的专业人士
+                            <span class="badge bg-success float-end">{{ matching_pros_count }}</span>
+                        </a>
+                        <a class="nav-link py-3 px-4" href="#" id="taskDetails-tab" data-bs-toggle="tab" data-bs-target="#taskDetails">
+                            <i class="fas fa-info-circle me-2"></i>工作详情
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧内容区域 -->
+        <div class="col-md-9">
+            <div class="tab-content">
+                <!-- 我的聊天 -->
+                <div class="tab-pane fade show active" id="myChats">
+                    <div class="card shadow-sm border-0 rounded-lg">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">我的聊天</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- 左侧聊天列表 -->
+                            <div class="col-md-4 border-end">
+                                <div class="chats-list">
+                                    {% if conversations %}
+                                        {% for conv in conversations %}
+                                            <div class="chat-item p-3 border-bottom {% if conv.has_unread %}bg-light{% endif %}" data-conversation-id="{{ conv.id }}">
+                                                <div class="d-flex align-items-center position-relative">
+                                                    <img src="{{ conv.pro_avatar }}" alt="{{ conv.pro_name }}" class="rounded-circle" width="50">
+                                                    <div class="ms-3 flex-grow-1">
+                                                        <h6 class="mb-1">{{ conv.pro_name }}</h6>
+                                                        <p class="text-muted mb-0 text-truncate" style="max-width: 170px;">{{ conv.last_message_preview }}</p>
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <small class="text-muted d-block">{{ conv.last_message_time | datetimeformat }}</small>
+                                                        {% if conv.has_unread %}
+                                                            <span class="badge bg-danger rounded-pill mt-1">{{ conv.unread_count }}</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="text-center p-5">
+                                            <div class="mb-3"><i class="fas fa-comments-alt fa-3x text-muted"></i></div>
+                                            <h5>还没有对话</h5>
+                                            <p class="text-muted">您的任务尚未收到任何对话</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <!-- 聊天窗口 -->
+                                <div class="chat-window" id="chat-window">
+                                    <div class="text-center p-5 chat-placeholder">
+                                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                                        <p>请选择一个对话开始聊天</p>
+                                    </div>
+                                    
+                                    <div class="chat-messages d-none">
+                                        <!-- 消息内容区 -->
+                                    </div>
+                                    
+                                    <div class="chat-input-area d-none mt-3">
+                                        <form id="chat-form">
+                                            <div class="input-group">
+                                                <textarea class="form-control" id="message-input" rows="2" 
+                                                          placeholder="输入您的消息..."></textarea>
+                                                <button class="btn btn-primary" type="submit">
+                                                    <i class="fas fa-paper-plane"></i>
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 感兴趣的专业人士 -->
+                <div class="tab-pane fade" id="interestedPros">
+                    <div class="card shadow-sm border-0 rounded-lg">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">感兴趣的专业人士</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if interested_pros %}
+                            <div class="row">
+                                <div class="col-md-4 border-end">
+                                    <!-- 专业人士列表 -->
+                                    <div class="pros-list">
+                                        {% for pro in interested_pros %}
+                                        <div class="pro-item p-3 border-bottom" data-pro-id="{{ pro.id }}">
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0">
+                                                    <img src="{{ pro.avatar }}" alt="{{ pro.name }}的头像" 
+                                                         class="rounded-circle" width="48">
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <h6 class="mb-0">{{ pro.name }}</h6>
+                                                    <div class="text-muted small">
+                                                        <i class="fas fa-star text-warning"></i> {{ pro.rating }}
+                                                        <span class="mx-1">|</span>
+                                                        <i class="fas fa-briefcase"></i> {{ pro.completed_jobs }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <!-- 专业人士详情 -->
+                                    <div class="pro-details" id="pro-details">
+                                        <div class="text-center p-5 pro-placeholder">
+                                            <i class="fas fa-user-tie fa-3x text-muted mb-3"></i>
+                                            <p>请选择一位专业人士查看详情</p>
+                                        </div>
+                                        
+                                        <div class="pro-profile d-none">
+                                            <!-- 专业人士资料 -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="text-center p-5">
+                                <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
+                                <p>暂时没有专业人士对此任务感兴趣</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 符合要求的专业人士 -->
+                <div class="tab-pane fade" id="matchingPros">
+                    <div class="card shadow-sm border-0 rounded-lg">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">符合你要求的专业人士</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if matching_pros %}
+                            <div class="row">
+                                <div class="col-md-4 border-end">
+                                    <!-- 符合要求的专业人士列表 -->
+                                    <div class="pros-list">
+                                        {% for pro in matching_pros %}
+                                        <div class="pro-item p-3 border-bottom" data-pro-id="{{ pro.id }}">
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0">
+                                                    <img src="{{ pro.avatar }}" alt="{{ pro.name }}的头像" 
+                                                         class="rounded-circle" width="48">
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <h6 class="mb-0">{{ pro.name }}</h6>
+                                                    <div class="text-muted small">
+                                                        <i class="fas fa-star text-warning"></i> {{ pro.rating }}
+                                                        <span class="mx-1">|</span>
+                                                        <i class="fas fa-map-marker-alt"></i> {{ pro.distance }}km
+                                                    </div>
+                                                    <div class="mt-1">
+                                                        <span class="badge bg-success">匹配度: {{ pro.match_score }}%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <!-- 符合要求的专业人士详情 -->
+                                    <div class="pro-details" id="matching-pro-details">
+                                        <div class="text-center p-5 pro-placeholder">
+                                            <i class="fas fa-user-check fa-3x text-muted mb-3"></i>
+                                            <p>请选择一位专业人士查看详情</p>
+                                        </div>
+                                        
+                                        <div class="matching-pro-profile d-none">
+                                            <!-- 专业人士资料 -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="text-center p-5">
+                                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                                <p>我们正在为您寻找符合要求的专业人士</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 工作详情 -->
+                <div class="tab-pane fade" id="taskDetails">
+                    <div class="card shadow-sm border-0 rounded-lg">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">工作详情</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="task-info mb-4">
+                                <h6 class="fw-bold">描述</h6>
+                                <p>{{ task.description }}</p>
+                            </div>
+                            
+                            <div class="task-info mb-4">
+                                <h6 class="fw-bold">基本信息</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="d-flex">
+                                            <div class="flex-shrink-0">
+                                                <i class="fas fa-map-marker-alt text-primary"></i>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <small class="text-muted">位置</small>
+                                                <p class="mb-0">{{ task.location }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="d-flex">
+                                            <div class="flex-shrink-0">
+                                                <i class="fas fa-calendar-alt text-primary"></i>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <small class="text-muted">期望日期</small>
+                                                <p class="mb-0">{{ task.deadline|datetimeformat }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="d-flex">
+                                            <div class="flex-shrink-0">
+                                                <i class="fas fa-clock text-primary"></i>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <small class="text-muted">发布时间</small>
+                                                <p class="mb-0">{{ task.created_at|datetimeformat }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="d-flex">
+                                            <div class="flex-shrink-0">
+                                                <i class="fas fa-tag text-primary"></i>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <small class="text-muted">预算</small>
+                                                <p class="mb-0">¥{{ task.budget }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if task.attachments %}
+                            <div class="task-info mb-4">
+                                <h6 class="fw-bold">附件</h6>
+                                <div class="row">
+                                    {% for attachment in task.attachments %}
+                                    <div class="col-md-3 mb-3">
+                                        <div class="card">
+                                            <img src="{{ attachment.url }}" class="card-img-top" alt="附件图片">
+                                            <div class="card-body p-2">
+                                                <a href="{{ attachment.url }}" class="btn btn-sm btn-outline-primary w-100" download>
+                                                    <i class="fas fa-download me-1"></i>下载
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="task-actions text-center mt-4">
+                                <a href="{{ url_for('task.edit_task', task_id=task.id) }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-edit me-1"></i>编辑任务
+                                </a>
+                                <button type="button" class="btn btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#cancelTaskModal">
+                                    <i class="fas fa-times-circle me-1"></i>取消任务
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 取消任务确认模态框 -->
+<div class="modal fade" id="cancelTaskModal" tabindex="-1" aria-labelledby="cancelTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelTaskModalLabel">确认取消任务</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>您确定要取消此任务吗？此操作无法撤销。</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                <form action="{{ url_for('task.cancel_task', task_id=task.id) }}" method="post">
+                    <button type="submit" class="btn btn-danger">确认取消</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+{{ super() }}
+<script>
+    // 存储当前任务ID和当前用户ID
+    const taskId = "{{ task.id }}";
+    const currentUserId = "{{ current_user.id }}";
+    
+    // 添加全局错误处理
+    window.addEventListener('error', function(event) {
+        console.error('全局错误:', event.error.message);
+        console.error('错误堆栈:', event.error.stack);
+    });
+
+    // 添加调试日志函数
+    function logDebug(message, data) {
+        console.log(`[DEBUG] ${message}`, data || '');
+    }
+
+    function logError(message, error) {
+        console.error(`[ERROR] ${message}`, error || '');
+        if (error && error.stack) {
+            console.error(`[ERROR STACK] ${error.stack}`);
+        }
+    }
+    
+    // 初始化日志
+    logDebug('页面初始化', {taskId, currentUserId});
+    
+    // 处理聊天列表点击事件
+    document.querySelectorAll('.chat-item').forEach(item => {
+        item.addEventListener('click', function() {
+            try {
+                const conversationId = this.getAttribute('data-conversation-id');
+                logDebug('点击对话项', {conversationId, taskId});
+                
+                // 加载对话内容
+                loadConversation(conversationId);
+                
+                // 高亮选中的聊天
+                document.querySelectorAll('.chat-item').forEach(i => i.classList.remove('bg-primary', 'text-white'));
+                this.classList.add('bg-primary', 'text-white');
+                
+                // 显示聊天窗口
+                document.querySelector('.chat-placeholder').classList.add('d-none');
+                document.querySelector('.chat-messages').classList.remove('d-none');
+                document.querySelector('.chat-input-area').classList.remove('d-none');
+            } catch (error) {
+                logError('处理聊天项点击事件出错', error);
+            }
+        });
+    });
+    
+    // 处理专业人士列表点击事件
+    document.querySelectorAll('.pro-item').forEach(item => {
+        item.addEventListener('click', function() {
+            try {
+                const proId = this.getAttribute('data-pro-id');
+                const tabId = this.closest('.tab-pane').id;
+                logDebug('点击专业人士项', {proId, tabId});
+                
+                // 加载专业人士详情
+                loadProDetails(proId, tabId);
+                
+                // 高亮选中的专业人士
+                this.closest('.pros-list').querySelectorAll('.pro-item').forEach(i => 
+                    i.classList.remove('bg-primary', 'text-white'));
+                this.classList.add('bg-primary', 'text-white');
+                
+                // 显示专业人士详情
+                if (tabId === 'interestedPros') {
+                    document.querySelector('.pro-placeholder').classList.add('d-none');
+                    document.querySelector('.pro-profile').classList.remove('d-none');
+                } else if (tabId === 'matchingPros') {
+                    document.querySelector('#matching-pro-details .pro-placeholder').classList.add('d-none');
+                    document.querySelector('.matching-pro-profile').classList.remove('d-none');
+                }
+            } catch (error) {
+                logError('处理专业人士项点击事件出错', error);
+            }
+        });
+    });
+    
+    // 加载对话内容的函数
+    function loadConversation(conversationId) {
+        logDebug('开始加载对话', {conversationId});
+        const url = `/api/conversations/${conversationId}/messages?task_id=${taskId}`;
+        const messagesContainer = document.querySelector('.chat-messages');
+        
+        // 显示加载状态
+        messagesContainer.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-3">加载聊天记录中...</p></div>';
+        
+        // 发送AJAX请求
+        logDebug('发送API请求', {url});
+        fetch(url)
+            .then(response => {
+                logDebug('获取API响应', {status: response.status, ok: response.ok});
+                if (!response.ok) {
+                    throw new Error(`请求失败，状态码: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                logDebug('解析API响应数据', {messagesCount: data.messages.length, unreadCount: data.unread_count});
+                
+                // 清空容器
+                messagesContainer.innerHTML = '';
+                
+                // 渲染消息
+                data.messages.forEach((message, index) => {
+                    try {
+                        const isCurrentUser = message.sender_id === parseInt(currentUserId);
+                        const messageHtml = `
+                            <div class="message ${isCurrentUser ? 'message-outgoing' : 'message-incoming'} mb-3">
+                                <div class="message-content ${isCurrentUser ? 'bg-primary text-white' : 'bg-light'} p-3 rounded">
+                                    ${message.content}
+                                    <div class="message-time small ${isCurrentUser ? 'text-light' : 'text-muted'} mt-1">
+                                        ${formatDateTime(message.created_at)}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        messagesContainer.insertAdjacentHTML('beforeend', messageHtml);
+                    } catch (error) {
+                        logError(`渲染消息出错 (索引: ${index})`, error);
+                    }
+                });
+                
+                // 滚动到底部
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // 标记为已读
+                if (data.unread_count > 0) {
+                    markConversationAsRead(conversationId);
+                }
+            })
+            .catch(error => {
+                logError('加载对话失败', error);
+                messagesContainer.innerHTML = `<div class="alert alert-danger">加载聊天记录失败: ${error.message}</div>`;
+            });
+    }
+    
+    // 加载专业人士详情的函数
+    function loadProDetails(proId, tabId) {
+        logDebug('开始加载专业人士详情', {proId, tabId});
+        const url = `/api/professionals/${proId}`;
+        const containerSelector = tabId === 'interestedPros' ? '.pro-profile' : '.matching-pro-profile';
+        const container = document.querySelector(containerSelector);
+        
+        // 显示加载状态
+        container.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-3">加载专业人士资料中...</p></div>';
+        container.classList.remove('d-none');
+        
+        // 发送AJAX请求
+        logDebug('发送专业人士API请求', {url});
+        fetch(url)
+            .then(response => {
+                logDebug('获取专业人士API响应', {status: response.status, ok: response.ok});
+                if (!response.ok) {
+                    throw new Error(`请求失败，状态码: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                logDebug('解析专业人士数据', {name: data.name, rating: data.rating, reviews: data.reviews.length});
+                // 渲染专业人士资料
+                try {
+                    container.innerHTML = `
+                        <div class="pro-header d-flex align-items-center mb-4">
+                            <img src="${data.avatar}" alt="${data.name}的头像" class="rounded-circle" width="80">
+                            <div class="ms-3">
+                                <h4 class="mb-1">${data.name}</h4>
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="me-3">
+                                        <i class="fas fa-star text-warning"></i> ${data.rating.toFixed(1)}
+                                    </div>
+                                    <div>
+                                        <i class="fas fa-briefcase text-primary"></i> ${data.completed_jobs} 个完成的任务
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-primary" onclick="sendMessage(${data.id})">
+                                    <i class="fas fa-envelope me-1"></i>发送消息
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-success ms-2" onclick="hirePro(${data.id})">
+                                    <i class="fas fa-handshake me-1"></i>雇佣TA
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="pro-info mb-4">
+                            <h5 class="mb-3">关于TA</h5>
+                            <p>${data.bio || '该用户尚未填写简介'}</p>
+                        </div>
+                        
+                        <div class="pro-skills mb-4">
+                            <h5 class="mb-3">专业技能</h5>
+                            <div class="d-flex flex-wrap">
+                                ${data.skills.map(skill => `
+                                    <span class="badge bg-light text-dark me-2 mb-2 p-2">${skill}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="pro-reviews">
+                            <h5 class="mb-3">客户评价 (${data.reviews.length})</h5>
+                            ${data.reviews.length > 0 ? data.reviews.map(review => `
+                                <div class="review-item mb-3 p-3 border-bottom">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <div>
+                                            <strong>${review.reviewer_name}</strong>
+                                            <small class="text-muted ms-2">${formatDateTime(review.created_at)}</small>
+                                        </div>
+                                        <div>
+                                            ${Array(5).fill().map((_, i) => `
+                                                <i class="fas fa-star ${i < review.rating ? 'text-warning' : 'text-muted'}"></i>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                    <p class="mb-0">${review.content}</p>
+                                </div>
+                            `).join('') : '<div class="alert alert-light">此专业人士尚未收到评价</div>'}
+                        </div>
+                    `;
+                } catch (error) {
+                    logError('渲染专业人士资料出错', error);
+                    container.innerHTML = `<div class="alert alert-danger">渲染专业人士资料失败: ${error.message}</div>`;
+                }
+            })
+            .catch(error => {
+                logError('加载专业人士资料失败', error);
+                container.innerHTML = `<div class="alert alert-danger">加载专业人士资料失败: ${error.message}</div>`;
+            });
+    }
+    
+    // 标记对话为已读的函数
+    function markConversationAsRead(conversationId) {
+        logDebug('开始标记对话为已读', {conversationId});
+        const url = `/api/conversations/${conversationId}/read`;
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            }
+        })
+        .then(response => {
+            logDebug('标记为已读API响应', {status: response.status, ok: response.ok});
+            if (!response.ok) {
+                throw new Error(`请求失败，状态码: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            logDebug('标记为已读成功', data);
+            // 更新UI，移除未读标记
+            try {
+                const chatItem = document.querySelector(`.chat-item[data-conversation-id="${conversationId}"]`);
+                if (chatItem) {
+                    chatItem.classList.remove('bg-light');
+                    const badge = chatItem.querySelector('.badge');
+                    if (badge) badge.remove();
+                    
+                    // 更新总未读消息数
+                    updateUnreadCount();
+                }
+            } catch (error) {
+                logError('更新UI标记为已读状态出错', error);
+            }
+        })
+        .catch(error => {
+            logError('标记为已读请求失败', error);
+        });
+    }
+    
+    // 更新未读消息总数的函数
+    function updateUnreadCount() {
+        try {
+            const unreadBadges = document.querySelectorAll('.chat-item .badge');
+            let totalUnread = 0;
+            unreadBadges.forEach(badge => {
+                totalUnread += parseInt(badge.textContent);
+            });
+            
+            logDebug('更新未读消息数', {totalUnread});
+            
+            const navBadge = document.querySelector('#myChats-tab .badge');
+            if (navBadge) {
+                if (totalUnread === 0) {
+                    navBadge.textContent = '';
+                    navBadge.classList.add('d-none');
+                } else {
+                    navBadge.textContent = totalUnread;
+                    navBadge.classList.remove('d-none');
+                }
+            }
+        } catch (error) {
+            logError('更新未读消息数出错', error);
+        }
+    }
+    
+    // 发送聊天消息的函数
+    document.getElementById('chat-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        try {
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            const conversationId = document.querySelector('.chat-item.bg-primary')?.getAttribute('data-conversation-id');
+            if (!conversationId) {
+                logError('无法获取会话ID');
+                return;
+            }
+            
+            logDebug('准备发送消息', {message, conversationId, taskId});
+            
+            // 使用task_conversation路由发送消息
+            const url = `/task/${taskId}/conversation`;
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: new URLSearchParams({
+                    'content': message,
+                    'recipient_id': conversationId
+                })
+            })
+            .then(response => {
+                logDebug('发送消息API响应', {status: response.status, ok: response.ok});
+                if (!response.ok) {
+                    throw new Error(`请求失败，状态码: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                logDebug('发送消息成功', data);
+                if (data.success) {
+                    // 清空输入框
+                    messageInput.value = '';
+                    
+                    // 添加新消息到聊天窗口
+                    const messagesContainer = document.querySelector('.chat-messages');
+                    const messageHtml = `
+                        <div class="message message-outgoing mb-3">
+                            <div class="message-content bg-primary text-white p-3 rounded">
+                                ${message}
+                                <div class="message-time small text-light mt-1">
+                                    刚刚
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    messagesContainer.insertAdjacentHTML('beforeend', messageHtml);
+                    
+                    // 滚动到底部
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    
+                    // 更新对话列表中的最新消息预览
+                    const chatItem = document.querySelector(`.chat-item[data-conversation-id="${conversationId}"]`);
+                    if (chatItem) {
+                        const preview = chatItem.querySelector('p.text-muted');
+                        if (preview) {
+                            preview.textContent = message.length > 30 ? message.substring(0, 30) + '...' : message;
+                        }
+                        const time = chatItem.querySelector('small.text-muted');
+                        if (time) {
+                            time.textContent = '刚刚';
+                        }
+                        
+                        // 将这个对话移到列表顶部
+                        const chatList = chatItem.parentElement;
+                        chatList.insertBefore(chatItem, chatList.firstChild);
+                    }
+                } else {
+                    throw new Error(data.error || '发送消息失败');
+                }
+            })
+            .catch(error => {
+                logError('发送消息失败', error);
+                alert('发送消息失败: ' + error.message);
+            });
+        } catch (error) {
+            logError('处理发送消息表单提交出错', error);
+        }
+    });
+    
+    // 发送消息给专业人士的函数
+    function sendMessage(proId) {
+        try {
+            logDebug('开始跳转到聊天页面', {proId, taskId});
+            window.location.href = `/task/${taskId}/conversation?pro_id=${proId}`;
+        } catch (error) {
+            logError('跳转到聊天页面出错', error);
+        }
+    }
+    
+    // 雇佣专业人士的函数
+    function hirePro(proId) {
+        try {
+            if (!confirm('您确定要雇佣这位专业人士吗？')) return;
+            
+            logDebug('准备雇佣专业人士', {proId, taskId});
+            const url = `/task/${taskId}/hire/${proId}`;
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                }
+            })
+            .then(response => {
+                logDebug('雇佣专业人士API响应', {status: response.status, ok: response.ok});
+                if (!response.ok) {
+                    throw new Error(`请求失败，状态码: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                logDebug('雇佣专业人士成功', data);
+                if (data.success) {
+                    alert('已成功雇佣专业人士！');
+                    // 刷新页面
+                    window.location.reload();
+                } else {
+                    alert(data.message || '雇佣专业人士失败');
+                }
+            })
+            .catch(error => {
+                logError('雇佣专业人士失败', error);
+                alert('雇佣专业人士失败: ' + error.message);
+            });
+        } catch (error) {
+            logError('处理雇佣专业人士操作出错', error);
+        }
+    }
+    
+    // 格式化日期时间的辅助函数
+    function formatDateTime(datetime) {
+        try {
+            const date = new Date(datetime);
+            const now = new Date();
+            
+            // 今天的日期
+            if (date.toDateString() === now.toDateString()) {
+                return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            }
+            
+            // 昨天的日期
+            const yesterday = new Date(now);
+            yesterday.setDate(now.getDate() - 1);
+            if (date.toDateString() === yesterday.toDateString()) {
+                return '昨天 ' + date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            }
+            
+            // 一周内的日期
+            const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const dayDiff = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+            if (dayDiff < 7) {
+                return weekDays[date.getDay()] + ' ' + date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            }
+            
+            // 其他日期
+            return date.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+        } catch (error) {
+            logError('格式化日期时间出错', {datetime, error});
+            return '未知时间';
+        }
+    }
+    
+    // 获取CSRF令牌的函数
+    function getCsrfToken() {
+        try {
+            const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (!token) {
+                logError('无法获取CSRF令牌');
+            }
+            return token;
+        } catch (error) {
+            logError('获取CSRF令牌出错', error);
+            return '';
+        }
+    }
+    
+    // 模拟数据准备就绪时，默认选中第一个聊天（如果有）
+    document.addEventListener('DOMContentLoaded', function() {
+        try {
+            logDebug('DOM内容加载完成');
+            const firstChatItem = document.querySelector('.chat-item');
+            if (firstChatItem) {
+                logDebug('自动选中第一个聊天项');
+                firstChatItem.click();
+            }
+            
+            // 设置当前用户ID（用于判断消息方向）
+            window.currentUserId = "{{ current_user.id }}";
+        } catch (error) {
+            logError('DOMContentLoaded事件处理器出错', error);
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}
