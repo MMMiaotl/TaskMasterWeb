@@ -484,23 +484,67 @@
             <!-- 任务进度条 -->
             <div id="task-progress" class="progress-module my-5">
                 <h5 class="mb-3 border-bottom pb-2"><i class="fas fa-tasks me-2"></i>任务进度</h5>
-                <div class="progress-bar">
+                <div class="progress-timeline">
                     <div class="progress-line"></div>
-                    <div class="progress-step {% if task.status >= 0 %}active{% endif %}" style="left: 0%;">
-                        <span class="step-marker">1</span>
-                        <span class="step-label">等待接单</span>
+                    <div class="progress-step {% if task.status >= 0 %}active{% endif %} {% if task.status > 0 %}completed{% endif %}" style="left: 0%;">
+                        <div class="step-marker-outer">
+                            <div class="step-marker">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                        </div>
+                        <span class="step-label">任务已发布</span>
                     </div>
-                    <div class="progress-step {% if task.status >= 1 %}active{% endif %}" style="left: 33%;">
-                        <span class="step-marker">2</span>
+                    <div class="progress-step {% if task.status >= 1 %}active{% endif %} {% if task.status > 1 %}completed{% endif %}" style="left: 25%;">
+                        <div class="step-marker-outer">
+                            <div class="step-marker">
+                                <i class="fas fa-handshake"></i>
+                            </div>
+                        </div>
+                        <span class="step-label">有人接单</span>
+                    </div>
+                    <div class="progress-step {% if task.status >= 2 %}active{% endif %} {% if task.status > 2 %}completed{% endif %}" style="left: 50%;">
+                        <div class="step-marker-outer">
+                            <div class="step-marker">
+                                <i class="fas fa-hourglass-half"></i>
+                            </div>
+                        </div>
                         <span class="step-label">等待执行</span>
                     </div>
-                    <div class="progress-step {% if task.status >= 2 %}active{% endif %}" style="left: 66%;">
-                        <span class="step-marker">3</span>
+                    <div class="progress-step {% if task.status >= 3 %}active{% endif %} {% if task.status > 3 %}completed{% endif %}" style="left: 75%;">
+                        <div class="step-marker-outer">
+                            <div class="step-marker">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
                         <span class="step-label">任务完成</span>
                     </div>
-                    <div class="progress-step {% if task.status >= 3 %}active{% endif %}" style="left: 100%;">
-                        <span class="step-marker">4</span>
+                    <div class="progress-step {% if task.status >= 4 %}active{% endif %}" style="left: 100%;">
+                        <div class="step-marker-outer">
+                            <div class="step-marker">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                        </div>
                         <span class="step-label">付款完成</span>
+                    </div>
+                </div>
+                
+                <!-- 当前状态提示 -->
+                <div class="current-status-indicator mt-5 text-center">
+                    <div class="current-status-badge 
+                        {% if task.status == 0 %}bg-info{% elif task.status == 1 %}bg-primary{% elif task.status == 2 %}bg-warning{% elif task.status == 3 %}bg-success{% elif task.status == 4 %}bg-success{% else %}bg-secondary{% endif %}">
+                        {% if task.status == 0 %}
+                            <i class="fas fa-paper-plane me-2"></i>任务刚刚发布
+                        {% elif task.status == 1 %}
+                            <i class="fas fa-handshake me-2"></i>已有服务提供者接单
+                        {% elif task.status == 2 %}
+                            <i class="fas fa-hourglass-half me-2"></i>任务正在执行中
+                        {% elif task.status == 3 %}
+                            <i class="fas fa-check-circle me-2"></i>任务已完成，等待付款
+                        {% elif task.status == 4 %}
+                            <i class="fas fa-money-bill-wave me-2"></i>付款已完成
+                        {% else %}
+                            <i class="fas fa-question-circle me-2"></i>状态未知
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -774,12 +818,15 @@
 .progress-module {
     padding: 2rem 0;
     position: relative;
+    background-color: #f8fafc;
+    border-radius: 12px;
 }
 
 /* 进度条容器 */
-.progress-bar {
+.progress-timeline {
     position: relative;
-    height: 80px;  /* 为状态点留出空间 */
+    height: 120px;
+    margin: 0 40px;
 }
 
 /* 进度条横线 */
@@ -788,10 +835,11 @@
     top: 50%;
     left: 0;
     right: 0;
-    height: 2px;
+    height: 4px;
     background: #e2e8f0;
     transform: translateY(-50%);
     z-index: 0;
+    border-radius: 2px;
 }
 
 /* 进度步骤 */
@@ -805,60 +853,143 @@
     z-index: 1;
 }
 
+/* 步骤外圈 */
+.step-marker-outer {
+    width: 40px;
+    height: 40px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+    border: 2px solid #e2e8f0;
+    transition: all 0.4s ease;
+}
+
 /* 步骤标记 */
 .step-marker {
-    width: 16px;
-    height: 16px;
+    width: 30px;
+    height: 30px;
     background: #e2e8f0;
     border-radius: 50%;
-    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    font-size: 14px;
+    transition: all 0.4s ease;
+}
+
+.step-marker i {
+    font-size: 12px;
 }
 
 /* 步骤标签 */
 .step-label {
     position: absolute;
-    top: 20px;
+    top: 50px;
     font-size: 0.875rem;
     color: #64748b;
     text-align: center;
     white-space: nowrap;
+    font-weight: 500;
+    transition: all 0.3s ease;
 }
 
 /* 完成状态 */
 .progress-step.completed .step-marker {
     background: #4f46e5;
-    box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
+    color: white;
+}
+
+.progress-step.completed .step-marker-outer {
+    border-color: #4f46e5;
 }
 
 .progress-step.completed .step-label {
     color: #4f46e5;
-    font-weight: 500;
-}
-
-/* 当前状态 */
-.progress-step.current .step-marker {
-    transform: scale(1.2);
-    background: #4f46e5;
-    box-shadow: 0 4px 8px rgba(79, 70, 229, 0.3);
-}
-
-.progress-step.current .step-label {
-    color: #4f46e5;
     font-weight: 600;
+}
+
+/* 活跃状态 */
+.progress-step.active .step-marker {
+    background: #4f46e5;
+    color: white;
+    transform: scale(1.1);
+}
+
+.progress-step.active .step-marker-outer {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 5px rgba(79, 70, 229, 0.2);
+}
+
+.progress-step.active .step-label {
+    color: #4f46e5;
+    font-weight: 700;
+}
+
+/* 当前状态指示器 */
+.current-status-indicator {
+    margin-top: 30px;
+}
+
+.current-status-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 30px;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* 响应式设计 */
 @media (max-width: 640px) {
+    .progress-timeline {
+        margin: 0 20px;
+        height: 140px;
+    }
+    
+    .step-marker-outer {
+        width: 32px;
+        height: 32px;
+    }
+    
     .step-marker {
-        width: 12px;
-        height: 12px;
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+    
+    .step-marker i {
+        font-size: 10px;
     }
 
     .step-label {
         font-size: 0.75rem;
         white-space: normal;
-        width: 60px;
+        width: 70px;
         line-height: 1.2;
+        text-align: center;
+    }
+    
+    .current-status-badge {
+        font-size: 0.875rem;
+        padding: 6px 12px;
     }
 }
 
