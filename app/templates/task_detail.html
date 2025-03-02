@@ -560,21 +560,18 @@
             {% endif %}
 
             <!-- 操作按钮 -->
-            <div class="task-actions mt-4 d-flex flex-wrap gap-2">
-                <a href="{{ url_for('task.tasks') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-1"></i>返回任务列表
-                </a>
+            <div class="task-actions mt-4 d-flex flex-wrap gap-3 justify-content-center">
                 {% if current_user.is_authenticated and task.author == current_user %}
-                    <a href="{{ url_for('task.edit_task', task_id=task.id) }}" class="btn btn-primary">
-                        <i class="fas fa-edit me-1"></i>编辑任务
+                    <a href="{{ url_for('task.edit_task', task_id=task.id) }}" class="btn btn-outline-primary btn-lg px-4">
+                        <i class="fas fa-edit me-2"></i>编辑任务
                     </a>
                     
                     {% if task.status <= 1 %}
                     <!-- 取消任务按钮 -->
                     <form action="{{ url_for('task.cancel_task', task_id=task.id) }}" method="POST" class="d-inline" 
                           onsubmit="return confirm('确定要取消这个任务吗？此操作不可撤销。');">
-                        <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-times me-1"></i>取消任务
+                        <button type="submit" class="btn btn-outline-danger btn-lg px-4">
+                            <i class="fas fa-times me-2"></i>取消任务
                         </button>
                     </form>
                     {% endif %}
@@ -583,8 +580,8 @@
                 <!-- 如果有消息系统，可以添加发送消息按钮 -->
                 {% if current_user.is_authenticated and task.author != current_user %}
                     <a href="{{ url_for('message.send_message', recipient_id=task.author.id, task_id=task.id) }}" 
-                       class="btn btn-outline-primary">
-                        <i class="fas fa-comment me-1"></i>联系发布者
+                       class="btn btn-outline-primary btn-lg px-4">
+                        <i class="fas fa-comment me-2"></i>联系发布者
                     </a>
                 {% endif %}
 
@@ -592,15 +589,15 @@
                 {% if task.status == 1 and current_user.id == task.executor_id %}
                     <form action="{{ url_for('task.update_task_status', task_id=task.id) }}" method="POST" class="d-inline">
                         <input type="hidden" name="status" value="2">
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-check-circle me-1"></i>任务已完成
+                        <button type="submit" class="btn btn-outline-success btn-lg px-4">
+                            <i class="fas fa-check-circle me-2"></i>任务已完成
                         </button>
                     </form>
                 {% elif task.status == 2 and current_user.id == task.user_id %}
                     <form action="{{ url_for('task.update_task_status', task_id=task.id) }}" method="POST" class="d-inline">
                         <input type="hidden" name="status" value="3">
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-money-bill-wave me-1"></i>付款已完成
+                        <button type="submit" class="btn btn-outline-success btn-lg px-4">
+                            <i class="fas fa-money-bill-wave me-2"></i>付款已完成
                         </button>
                     </form>
                 {% endif %}
