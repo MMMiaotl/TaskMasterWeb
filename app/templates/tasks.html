@@ -37,6 +37,22 @@
                         </span>
                         <span class="mx-2">|</span>
                         <span>发布时间: {{ task.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                        <span class="mx-2">|</span>
+                        <span>状态: 
+                            {% if task.status == 0 %}
+                                <span class="badge bg-warning">等待接单</span>
+                            {% elif task.status == 1 %}
+                                <span class="badge bg-info">等待执行</span>
+                            {% elif task.status == 2 %}
+                                <span class="badge bg-primary">任务完成</span>
+                            {% elif task.status == 3 %}
+                                <span class="badge bg-success">付款完成</span>
+                            {% elif task.status == 4 %}
+                                <span class="badge bg-danger">已取消</span>
+                            {% else %}
+                                <span class="badge bg-secondary">未知状态</span>
+                            {% endif %}
+                        </span>
                     </div>
                 </div>
             </div>

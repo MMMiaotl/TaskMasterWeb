@@ -8,7 +8,8 @@ class Task(db.Model):
         0: '等待接单',
         1: '等待执行',
         2: '任务完成',
-        3: '付款完成'
+        3: '付款完成',
+        4: '已取消'
     }
     
     id = db.Column(db.Integer, primary_key=True)

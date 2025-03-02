@@ -27,6 +27,21 @@
                         <h5 class="text-muted">
                             {% if messages[0].task %}
                                 任务：<a href="{{ url_for('task.task_detail', task_id=messages[0].task.id) }}">{{ messages[0].task.title }}</a>
+                                {% if messages[0].task.status is defined %}
+                                    {% if messages[0].task.status == 0 %}
+                                        <span class="badge bg-warning">等待接单</span>
+                                    {% elif messages[0].task.status == 1 %}
+                                        <span class="badge bg-info">等待执行</span>
+                                    {% elif messages[0].task.status == 2 %}
+                                        <span class="badge bg-primary">任务完成</span>
+                                    {% elif messages[0].task.status == 3 %}
+                                        <span class="badge bg-success">付款完成</span>
+                                    {% elif messages[0].task.status == 4 %}
+                                        <span class="badge bg-danger">已取消</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">未知状态</span>
+                                    {% endif %}
+                                {% endif %}
                             {% else %}
                                 未关联任务
                             {% endif %}

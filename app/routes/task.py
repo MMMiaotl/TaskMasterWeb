@@ -217,6 +217,28 @@ def delete_task(task_id):
     flash('Your task has been deleted.')
     return redirect(url_for('task.tasks'))
 
+@task_bp.route('/task/<int:task_id>/cancel', methods=['POST'])
+@login_required
+def cancel_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    
+    # 检查是否是任务发布者
+    if task.user_id != current_user.id:
+        flash('您没有权限取消这个任务', 'danger')
+        return redirect(url_for('task.task_detail', task_id=task.id))
+    
+    # 检查任务状态是否允许取消
+    if task.status > 1:  # 如果任务已经开始执行或已完成，不允许取消
+        flash('任务已经开始执行或已完成，无法取消', 'warning')
+        return redirect(url_for('task.task_detail', task_id=task.id))
+    
+    # 更新任务状态为已取消
+    task.status = 4  # 已取消状态
+    db.session.commit()
+    
+    flash('任务已成功取消', 'success')
+    return redirect(url_for('task.tasks'))
+
 @task_bp.route('/task/<int:task_id>/conversation', methods=['GET', 'POST'])
 @login_required
 def task_conversation(task_id):

@@ -24,6 +24,22 @@
                 {% if task.updated_at != task.created_at %}
                     <p><strong>最后更新:</strong> {{ task.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
                 {% endif %}
+                <p>
+                    <strong>任务状态:</strong> 
+                    {% if task.status == 0 %}
+                        <span class="badge bg-warning">等待接单</span>
+                    {% elif task.status == 1 %}
+                        <span class="badge bg-info">等待执行</span>
+                    {% elif task.status == 2 %}
+                        <span class="badge bg-primary">任务完成</span>
+                    {% elif task.status == 3 %}
+                        <span class="badge bg-success">付款完成</span>
+                    {% elif task.status == 4 %}
+                        <span class="badge bg-danger">已取消</span>
+                    {% else %}
+                        <span class="badge bg-secondary">未知状态</span>
+                    {% endif %}
+                </p>
             </div>
             
             <!-- 任务基本信息 -->
@@ -408,6 +424,14 @@
                 <a href="{{ url_for('task.tasks') }}" class="btn btn-secondary">返回任务列表</a>
                 {% if current_user.is_authenticated and task.author == current_user %}
                     <a href="{{ url_for('task.edit_task', task_id=task.id) }}" class="btn btn-primary">编辑任务</a>
+                    
+                    {% if task.status <= 1 %}
+                    <!-- 取消任务按钮 -->
+                    <form action="{{ url_for('task.cancel_task', task_id=task.id) }}" method="POST" class="d-inline" 
+                          onsubmit="return confirm('确定要取消这个任务吗？此操作不可撤销。');">
+                        <button type="submit" class="btn btn-danger">取消任务</button>
+                    </form>
+                    {% endif %}
                 {% endif %}
             </div>
 

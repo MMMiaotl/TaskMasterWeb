@@ -19,12 +19,18 @@
                                         <strong>{{ user_task.title }}</strong>
                                         <small class="d-block text-muted">{{ user_task.created_at|datetimeformat }}</small>
                                     </div>
-                                    {% if user_task.status == 'completed' %}
-                                    <span class="badge bg-success">已完成</span>
-                                    {% elif user_task.status == 'in_progress' %}
-                                    <span class="badge bg-warning">进行中</span>
+                                    {% if user_task.status == 0 %}
+                                    <span class="badge bg-warning">等待接单</span>
+                                    {% elif user_task.status == 1 %}
+                                    <span class="badge bg-info">等待执行</span>
+                                    {% elif user_task.status == 2 %}
+                                    <span class="badge bg-primary">任务完成</span>
+                                    {% elif user_task.status == 3 %}
+                                    <span class="badge bg-success">付款完成</span>
+                                    {% elif user_task.status == 4 %}
+                                    <span class="badge bg-danger">已取消</span>
                                     {% else %}
-                                    <span class="badge bg-primary">未开始</span>
+                                    <span class="badge bg-secondary">未知状态</span>
                                     {% endif %}
                                 </div>
                             </a>
@@ -43,7 +49,20 @@
                         <div>
                             <h2>{{ task.title }}</h2>
                             <p class="text-muted mb-0">
-                                Status: {{ task.status | status_translate }}
+                                状态: 
+                                {% if task.status == 0 %}
+                                    <span class="badge bg-warning">等待接单</span>
+                                {% elif task.status == 1 %}
+                                    <span class="badge bg-info">等待执行</span>
+                                {% elif task.status == 2 %}
+                                    <span class="badge bg-primary">任务完成</span>
+                                {% elif task.status == 3 %}
+                                    <span class="badge bg-success">付款完成</span>
+                                {% elif task.status == 4 %}
+                                    <span class="badge bg-danger">已取消</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">未知状态</span>
+                                {% endif %}
                             </p>
                         </div>
                         <div class="text-end">
