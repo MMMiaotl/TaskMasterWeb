@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_babel import Babel
 from flask_migrate import Migrate
+from flask_wtf.csrf import CSRFProtect
 from app.filters import status_translate
 from config import Config
 
@@ -11,6 +12,7 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 migrate = Migrate()
 babel = Babel()
+csrf = CSRFProtect()
 
 def get_locale():
     # 添加调试日志
@@ -35,13 +37,16 @@ def create_app():
     login_manager.init_app(app)
     babel.init_app(app, locale_selector=get_locale)
     migrate.init_app(app, db)
+    csrf.init_app(app)
     
     # 添加模板上下文
     @app.context_processor
     def inject_template_globals():
+        from flask_wtf.csrf import generate_csrf
         return {
             'get_locale': get_locale,
-            'current_language': session.get('language', 'zh')
+            'current_language': session.get('language', 'zh'),
+            'csrf_token': generate_csrf()
         }
     
     # 设置登录视图

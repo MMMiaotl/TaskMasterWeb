@@ -682,6 +682,11 @@ def task_responses(task_id):
             matching_count = len(matching_pros)
             current_app.logger.info(f"未读消息数: {unread_count}, 感兴趣专业人士数: {interested_count}, 匹配专业人士数: {matching_count}")
             
+            # 从会话中获取CSRF令牌
+            from flask import session
+            csrf_token = session.get('csrf_token', '')
+            current_app.logger.info(f"CSRF令牌: {csrf_token[:10]}...")
+
             return render_template('task_responses.html', 
                                task=task,
                                conversations=conversations_list,
@@ -689,7 +694,8 @@ def task_responses(task_id):
                                matching_pros=matching_pros,
                                unread_messages_count=unread_count,
                                interested_pros_count=interested_count,
-                               matching_pros_count=matching_count)
+                               matching_pros_count=matching_count,
+                               csrf_token=csrf_token)
         except Exception as render_e:
             current_app.logger.error(f"渲染模板时出错: {str(render_e)}, 错误类型: {type(render_e).__name__}")
             raise
@@ -868,4 +874,21 @@ def hire_professional(task_id, pro_id):
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error in hire_professional: {str(e)}")
-        return jsonify({"success": False, "message": str(e)}), 500 
+        return jsonify({"error": str(e)}), 500
+
+@task_bp.route('/api/csrf-token')
+@login_required
+def get_csrf_token():
+    """获取CSRF令牌的API端点"""
+    try:
+        from flask import session
+        from flask_wtf.csrf import generate_csrf
+        
+        # 生成CSRF令牌
+        csrf_token = generate_csrf()
+        session['csrf_token'] = csrf_token
+        
+        return jsonify({"csrf_token": csrf_token})
+    except Exception as e:
+        current_app.logger.error(f"Error in get_csrf_token: {str(e)}")
+        return jsonify({"error": str(e)}), 500 
