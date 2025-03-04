@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container py-4">
     <div class="task-detail card shadow-sm border-0 rounded-lg mb-4">
-        <div class="card-header bg-gradient-info text-dark py-3">
+        <div class="card-header bg-light text-dark py-3">
             <div class="d-flex justify-content-between align-items-center">
                 <h1 class="card-title h3 mb-0">{{ task.title }}</h1>
                 <div>
@@ -131,14 +131,11 @@
 
     <!-- 平台推荐部分 -->
     <div class="card shadow-sm border-0 rounded-lg position-relative recommended-section">
-        <!-- 添加突出显示标签 -->
-        <div class="recommend-ribbon">
-            <span>推荐</span>
-        </div>
-        <div class="card-header bg-gradient-info text-dark">
+        <!-- 移除推荐标签 -->
+        <div class="card-header bg-light">
             <h5 class="card-title mb-0">
                 <i class="fas fa-crown me-2"></i>平台推荐专业人士
-                <span class="badge bg-warning text-dark ms-2">精选</span>
+                <!-- 移除精选标签 -->
             </h5>
         </div>
         <div class="card-body">
@@ -221,15 +218,12 @@
 <style>
 /* 平台推荐用户样式 */
 .bg-gradient-primary {
-    background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
-}
-
-.bg-gradient-info {
     background: linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%);
 }
 
 .recommended-user-card {
     transition: all 0.3s ease;
+    border-radius: 6px;
 }
 
 .recommended-user-card:hover {
@@ -237,22 +231,15 @@
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
+/* 移除三角形背景色块 */
 .recommended-users .recommended-user-card:first-child::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 0 40px 40px 0;
-    border-color: transparent #4f46e5 transparent transparent;
-    z-index: 1;
+    display: none;
 }
 
 .user-tags .badge {
     font-weight: 500;
     padding: 0.35em 0.65em;
+    border-radius: 15px;
 }
 
 .rating-stars {
@@ -264,45 +251,27 @@
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
     border: 1px solid rgba(14, 165, 233, 0.1) !important;
+    border-radius: 8px;
 }
 
-.recommend-ribbon {
-    position: absolute;
-    top: -10px;
-    right: -40px;
-    width: 120px;
-    height: 40px;
-    text-align: center;
-    background-color: #4f46e5;
-    color: white;
-    font-weight: bold;
-    z-index: 5;
-    transform: rotate(45deg);
-    font-size: 14px;
-    line-height: 36px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-}
-
-.recommend-ribbon span {
-    display: inline-block;
-    transform: translateY(2px);
-}
+/* 移除推荐标签 */
 
 .highlight-card {
     position: relative;
     animation: pulse 2s infinite;
-    box-shadow: 0 5px 15px rgba(79, 70, 229, 0.2) !important;
+    box-shadow: 0 5px 15px rgba(14, 165, 233, 0.2) !important;
+    border-radius: 6px;
 }
 
 @keyframes pulse {
     0% {
-        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+        box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4);
     }
     70% {
-        box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
+        box-shadow: 0 0 0 10px rgba(14, 165, 233, 0);
     }
     100% {
-        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+        box-shadow: 0 0 0 0 rgba(14, 165, 233, 0);
     }
 }
 
@@ -311,7 +280,7 @@
     padding: 2rem 0;
     position: relative;
     background-color: #f8fafc;
-    border-radius: 12px;
+    border-radius: 8px;
 }
 
 /* 进度条容器 */
@@ -392,33 +361,33 @@
 
 /* 完成状态 */
 .progress-step.completed .step-marker {
-    background: #4f46e5;
+    background: #0ea5e9;
     color: white;
 }
 
 .progress-step.completed .step-marker-outer {
-    border-color: #4f46e5;
+    border-color: #0ea5e9;
 }
 
 .progress-step.completed .step-label {
-    color: #4f46e5;
+    color: #0ea5e9;
     font-weight: 600;
 }
 
 /* 活跃状态 */
 .progress-step.active .step-marker {
-    background: #4f46e5;
+    background: #0ea5e9;
     color: white;
     transform: scale(1.1);
 }
 
 .progress-step.active .step-marker-outer {
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 5px rgba(79, 70, 229, 0.2);
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 5px rgba(14, 165, 233, 0.2);
 }
 
 .progress-step.active .step-label {
-    color: #4f46e5;
+    color: #0ea5e9;
     font-weight: 700;
 }
 
@@ -436,6 +405,43 @@
     font-size: 1rem;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     animation: fadeInUp 0.5s ease;
+}
+
+/* 按钮样式优化 */
+.btn {
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary {
+    border-color: #0ea5e9;
+    color: #0ea5e9;
+}
+
+.btn-outline-primary:hover {
+    background-color: #0ea5e9;
+    color: white;
+}
+
+.btn-primary {
+    background-color: #0ea5e9;
+    border-color: #0ea5e9;
+}
+
+.btn-primary:hover {
+    background-color: #0284c7;
+    border-color: #0284c7;
+}
+
+.btn-success {
+    background-color: #10b981;
+    border-color: #10b981;
+}
+
+.btn-success:hover {
+    background-color: #059669;
+    border-color: #059669;
 }
 
 @keyframes fadeInUp {
