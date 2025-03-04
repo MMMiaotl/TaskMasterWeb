@@ -66,19 +66,17 @@
             <!-- 简化后的导航菜单 -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.contact') }}">联系我们</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.professionals') }}">
-                            <i class="fas fa-briefcase me-1"></i>专业人士
-                        </a>
-                    </li>
+                    <!-- 移除了"联系我们"导航项 -->
                 </ul>
 
                 <!-- 右侧用户功能 -->
                 <div class="right-section ms-auto">
                     <div class="d-flex align-items-center gap-3">
+                        <!-- 专业人士链接移到这里 -->
+                        <a class="nav-link" href="{{ url_for('main.professionals') }}">
+                            <i class="fas fa-briefcase me-1"></i>专业人士
+                        </a>
+                        
                         <!-- 语言切换 -->
                         <div class="language-switcher">
                             <a href="{{ url_for('main.set_language', language='en') }}" class="text-dark">EN</a> | 
