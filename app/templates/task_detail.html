@@ -143,18 +143,13 @@
                 <div class="recommended-users row">
                     {% for user in recommended_users %}
                     <div class="col-md-6 mb-3">
-                        <div class="recommended-user-card h-100 p-3 rounded-lg border {% if loop.index == 1 %}border-primary border-2 bg-light highlight-card{% else %}border-light{% endif %}">
+                        <div class="recommended-user-card h-100 p-3 rounded-lg border border-light-gray">
                             <div class="d-flex align-items-center">
                                 <div class="position-relative">
                                     <img src="{{ user.avatar_url or url_for('static', filename='images/default-avatar.jpg') }}" 
-                                         class="rounded-circle border {% if loop.index == 1 %}border-primary border-3{% endif %}" 
+                                         class="rounded-circle border" 
                                          alt="{{ user.username }}"
                                          style="width: 60px; height: 60px; object-fit: cover;">
-                                    {% if loop.index == 1 %}
-                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
-                                        <i class="fas fa-star"></i>
-                                    </span>
-                                    {% endif %}
                                 </div>
                                 <div class="ms-3 flex-grow-1">
                                     <div class="d-flex justify-content-between align-items-center">
@@ -174,9 +169,6 @@
                                         </div>
                                     </div>
                                     <div class="user-tags mt-2">
-                                        {% if loop.index == 1 %}
-                                        <span class="badge bg-success me-1">最佳匹配</span>
-                                        {% endif %}
                                         <span class="badge bg-info me-1">完成任务: {{ user.completed_tasks_count|default(0) }}</span>
                                         <span class="badge bg-secondary">匹配度: {{ user.match_score|default(0) }}%</span>
                                     </div>
@@ -226,6 +218,11 @@
     border-radius: 6px;
 }
 
+/* 添加浅灰色边框样式 */
+.border-light-gray {
+    border-color: #e2e8f0 !important;
+}
+
 .recommended-user-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
@@ -258,11 +255,10 @@
 
 .highlight-card {
     position: relative;
-    animation: pulse 2s infinite;
-    box-shadow: 0 5px 15px rgba(14, 165, 233, 0.2) !important;
     border-radius: 6px;
 }
 
+/* 移除脉冲动画 */
 @keyframes pulse {
     0% {
         box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4);
