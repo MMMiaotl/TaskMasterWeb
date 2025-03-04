@@ -28,7 +28,7 @@ def send_message(recipient_id, task_id=None):
             sender_id=current_user.id,
             recipient_id=recipient_id,
             content=form.content.data,
-            task_id=task_id if task else None
+            task_id=task_id if task_id else None
         )
         db.session.add(message)
         db.session.commit()

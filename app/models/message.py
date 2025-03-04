@@ -18,7 +18,7 @@ class Message(db.Model):
     task_id = db.Column(
         db.Integer, 
         db.ForeignKey('tasks.id'),
-        nullable=False
+        nullable=True
     )
     is_read = db.Column(db.Boolean, default=False)
     is_invitation = db.Column(db.Boolean, default=False)
