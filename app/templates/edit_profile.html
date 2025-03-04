@@ -12,14 +12,6 @@
                     
                     <form method="post">
                         {{ form.hidden_tag() }}
-                        
-                        <div class="mb-3">
-                            {{ form.phone.label(class="form-label") }}
-                            {{ form.phone(class="form-control") }}
-                            {% for error in form.phone.errors %}
-                                <span class="text-danger">{{ error }}</span>
-                            {% endfor %}
-                        </div>
 
                         <div class="mb-3">
                             {{ form.bio.label(class="form-label") }}
@@ -38,12 +30,22 @@
                         </div>
 
                         <div class="mb-3">
+                            {{ form.phone.label(class="form-label") }}
+                            {{ form.phone(class="form-control") }}
+                            {% for error in form.phone.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
                             {{ form.website.label(class="form-label") }}
                             {{ form.website(class="form-control") }}
                             {% for error in form.website.errors %}
                                 <span class="text-danger">{{ error }}</span>
                             {% endfor %}
                         </div>
+
+                        
 
                         <div class="d-flex justify-content-between">
                             {{ form.submit(class="btn btn-primary") }}
