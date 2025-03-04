@@ -1,7 +1,13 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, IntegerField, FloatField, SelectField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, IntegerField, FloatField, SelectField, SelectMultipleField, widgets
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, Optional, NumberRange
 from app.models import User
+from app.utils.constants import SERVICE_CATEGORIES, SERVICE_CHOICES
+
+class MultiCheckboxField(SelectMultipleField):
+    """多选复选框字段"""
+    widget = widgets.ListWidget(prefix_label=False)
+    option_widget = widgets.CheckboxInput()
 
 class LoginForm(FlaskForm):
     """用户登录表单"""
@@ -67,4 +73,29 @@ class ProfessionalRegistrationForm(FlaskForm):
         """验证邮箱是否已存在"""
         user = User.query.filter_by(email=email.data).first()
         if user:
-            raise ValidationError('该邮箱已被注册，请使用其他邮箱') 
+            raise ValidationError('该邮箱已被注册，请使用其他邮箱')
+
+class BecomeProfessionalForm(FlaskForm):
+    """现有用户成为专业人士的表单"""
+    professional_summary = TextAreaField('专业简介', validators=[DataRequired(), Length(min=30, max=500)])
+    hourly_rate = FloatField('每小时费率 (€)', validators=[DataRequired(), NumberRange(min=5)])
+    certifications = TextAreaField('资质/证书', validators=[Optional()])
+    phone = StringField('电话号码', validators=[DataRequired(), Length(max=20)])
+    location = StringField('所在地区', validators=[DataRequired(), Length(max=64)])
+    
+    # 创建服务类别选项
+    service_categories = MultiCheckboxField('服务类别', choices=[])
+    
+    terms_agree = BooleanField('我同意服务条款和隐私政策', validators=[DataRequired()])
+    submit = SubmitField('成为专业人士')
+    
+    def __init__(self, *args, **kwargs):
+        super(BecomeProfessionalForm, self).__init__(*args, **kwargs)
+        # 动态生成服务类别选项
+        choices = []
+        for category in SERVICE_CATEGORIES:
+            for subcategory in category['subcategories']:
+                category_id = f"{category['id']}.{subcategory[0]}"
+                category_name = f"{category['name']} - {subcategory[1]}"
+                choices.append((category_id, category_name))
+        self.service_categories.choices = choices 

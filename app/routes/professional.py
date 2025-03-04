@@ -116,7 +116,7 @@ def tasks():
 
 @professional_bp.route('/profile')
 @login_required
-def profile():
+def professional_profile():
     """显示和编辑专业人士档案"""
     # 获取专业人士的评价
     reviews = Review.query.filter_by(reviewee_id=current_user.id).all()

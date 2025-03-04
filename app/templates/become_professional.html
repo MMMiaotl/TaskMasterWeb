@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}成为专业人士 - TaskMaster{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-gradient-primary text-dark py-3">
+                    <h1 class="h3 mb-0">成为专业人士</h1>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        成为专业人士后，您将能够接收任务邀请，并在相关服务类别中被推荐给用户。
+                    </div>
+
+                    <form method="post" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <h4 class="mb-3">服务类别</h4>
+                                <p class="text-muted">请选择您能够提供的服务类别（可多选）</p>
+                            </div>
+                            
+                            <div class="col-md-12">
+                                <div class="service-categories-container">
+                                    {% for category in service_categories %}
+                                    <div class="category-section mb-4">
+                                        <h5 class="mb-2">{{ category.name }}</h5>
+                                        <div class="row">
+                                            {% for subcategory in category.subcategories %}
+                                            <div class="col-md-6 mb-2">
+                                                <div class="form-check">
+                                                    {% set category_id = category.id + '.' + subcategory[0] %}
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           name="service_categories" 
+                                                           id="category_{{ category_id }}" 
+                                                           value="{{ category_id }}">
+                                                    <label class="form-check-label" for="category_{{ category_id }}">
+                                                        {{ subcategory[1] }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% for error in form.service_categories.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <h4 class="mb-3">基本信息</h4>
+                            </div>
+                            
+                            <div class="col-md-12 mb-3">
+                                {{ form.professional_summary.label(class="form-label") }}
+                                {{ form.professional_summary(class="form-control", rows=4) }}
+                                {% for error in form.professional_summary.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                                <div class="form-text">简要描述您的专业背景和服务内容（30-500字）</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.hourly_rate.label(class="form-label") }}
+                                <div class="input-group">
+                                    <span class="input-group-text">€</span>
+                                    {{ form.hourly_rate(class="form-control") }}
+                                </div>
+                                {% for error in form.hourly_rate.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.phone.label(class="form-label") }}
+                                {{ form.phone(class="form-control") }}
+                                {% for error in form.phone.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.location.label(class="form-label") }}
+                                {{ form.location(class="form-control") }}
+                                {% for error in form.location.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-12 mb-3">
+                                {{ form.certifications.label(class="form-label") }}
+                                {{ form.certifications(class="form-control", rows=3) }}
+                                {% for error in form.certifications.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="form-check">
+                                {{ form.terms_agree(class="form-check-input") }}
+                                {{ form.terms_agree.label(class="form-check-label") }}
+                                {% for error in form.terms_agree.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.service-categories-container {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #f8fafc;
+}
+
+.category-section {
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.category-section:last-child {
+    border-bottom: none;
+}
+</style>
+{% endblock %} 

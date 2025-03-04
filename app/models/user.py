@@ -3,6 +3,13 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
+# 用户与专业类别的多对多关系表
+user_categories = db.Table('user_categories',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('category_id', db.String(50), primary_key=True),
+    db.Column('created_at', db.DateTime, default=datetime.utcnow)
+)
+
 class User(UserMixin, db.Model):
     __tablename__ = 'user'
     
@@ -28,6 +35,9 @@ class User(UserMixin, db.Model):
     hourly_rate = db.Column(db.Float)  # 每小时费率
     skills = db.Column(db.String(200))  # 技能列表，以逗号分隔
     certifications = db.Column(db.Text)  # 资质证书
+    
+    # 专业类别关系
+    categories = db.relationship('UserCategory', back_populates='user', cascade='all, delete-orphan')
     
     # 关系
     tasks = db.relationship('Task', foreign_keys='Task.user_id', backref='author', lazy='dynamic')
@@ -71,5 +81,23 @@ class User(UserMixin, db.Model):
         self.last_seen = datetime.utcnow()
         db.session.commit()
     
+    # 检查用户是否有特定类别的专业资格
+    def has_category(self, category_id):
+        return any(cat.category_id == category_id for cat in self.categories)
+    
+    # 获取用户的所有专业类别ID
+    def get_category_ids(self):
+        return [cat.category_id for cat in self.categories]
+    
     def __repr__(self):
-        return f'<User {self.username}>' 
+        return f'<User {self.username}>'
+
+class UserCategory(db.Model):
+    __tablename__ = 'user_category'
+    
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    category_id = db.Column(db.String(50), primary_key=True)  # 存储格式为 "main_category.sub_category"
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # 关系
+    user = db.relationship('User', back_populates='categories') 

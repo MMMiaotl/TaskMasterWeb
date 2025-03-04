@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, flash, redirect, url_for, request, jsonify
 from flask_login import current_user, login_required
 from app import db
-from app.models import Task, Message, User, Review
+from app.models import Task, Message, User, Review, UserCategory
 from app.forms import TaskForm, ReviewForm
 from sqlalchemy import or_
 from datetime import datetime
@@ -18,6 +18,10 @@ def tasks():
         
         # 基本查询
         base_query = Task.query.order_by(Task.created_at.desc())
+        
+        # 如果用户已登录但不是专业人士，只显示自己发布的任务
+        if current_user.is_authenticated and not current_user.is_professional:
+            base_query = base_query.filter(Task.user_id == current_user.id)
         
         # 如果有搜索词，添加搜索条件
         if search_query:
@@ -163,12 +167,49 @@ def task_detail(task_id):
         if message.sender_id != task.author.id:
             interested_users.add(message.sender)
     
-    # 获取平台推荐用户（这里可以根据你的推荐算法实现）
-    recommended_users = User.query.filter(
-        User.id != task.author.id
-    ).order_by(
-        db.func.random()
-    ).limit(5).all()
+    # 获取平台推荐用户（只推荐专业人士）
+    # 1. 只选择已注册为专业人士的用户
+    # 2. 排除任务发布者自己
+    # 3. 优先推荐与任务类别匹配的专业人士
+    if task.service_category:
+        main_cat, sub_cat = task.service_category.split('.')
+        category_id = task.service_category
+        
+        # 查找与任务类别匹配的专业人士
+        matching_pros = User.query.join(UserCategory).filter(
+            User.is_professional == True,
+            User.id != task.author.id,
+            UserCategory.category_id == category_id
+        ).all()
+        
+        # 如果匹配的专业人士不足5人，再查找同一主类别下的专业人士
+        if len(matching_pros) < 5:
+            more_pros = User.query.join(UserCategory).filter(
+                User.is_professional == True,
+                User.id != task.author.id,
+                UserCategory.category_id.like(f"{main_cat}.%"),
+                ~User.id.in_([pro.id for pro in matching_pros])
+            ).limit(5 - len(matching_pros)).all()
+            
+            matching_pros.extend(more_pros)
+        
+        # 如果仍然不足5人，再随机推荐其他专业人士
+        if len(matching_pros) < 5:
+            random_pros = User.query.filter(
+                User.is_professional == True,
+                User.id != task.author.id,
+                ~User.id.in_([pro.id for pro in matching_pros])
+            ).order_by(db.func.random()).limit(5 - len(matching_pros)).all()
+            
+            matching_pros.extend(random_pros)
+        
+        recommended_users = matching_pros
+    else:
+        # 如果任务没有指定类别，随机推荐专业人士
+        recommended_users = User.query.filter(
+            User.is_professional == True,
+            User.id != task.author.id
+        ).order_by(db.func.random()).limit(5).all()
     
     # 计算任务的响应数量（不同的消息发送者数量）
     senders = set()
