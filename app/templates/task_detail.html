@@ -38,7 +38,9 @@
             <!-- 任务进度条 -->
             <div id="task-progress" class="progress-module my-4">
                 <div class="progress-timeline">
-                    <div class="progress-line"></div>
+                    <div class="progress-line">
+                        <div class="progress-line-fill status-{{ task.status }}"></div>
+                    </div>
                     <div class="progress-step {% if task.status >= 0 %}active{% endif %} {% if task.status > 0 %}completed{% endif %}" style="left: 0%;">
                         <div class="step-marker-outer">
                             <div class="step-marker">
@@ -80,7 +82,6 @@
                         <span class="step-label">付款完成</span>
                     </div>
                 </div>
-                
             </div>
 
             <!-- 操作按钮 -->
@@ -284,6 +285,7 @@
     position: relative;
     height: 120px;
     margin: 0 40px;
+    width: calc(100% - 80px);
 }
 
 /* 进度条横线 */
@@ -297,6 +299,35 @@
     transform: translateY(-50%);
     z-index: 0;
     border-radius: 2px;
+    width: 100%;
+}
+
+/* 进度条填充部分 */
+.progress-line-fill {
+    position: absolute;
+    height: 100%;
+    background: #0ea5e9;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+    left: 0;
+    top: 0;
+}
+
+/* 不同状态的进度条宽度 */
+.progress-line-fill.status-0 {
+    width: 0%;
+}
+.progress-line-fill.status-1 {
+    width: 25%;
+}
+.progress-line-fill.status-2 {
+    width: 50%;
+}
+.progress-line-fill.status-3 {
+    width: 75%;
+}
+.progress-line-fill.status-4, .progress-line-fill.status-5 {
+    width: 100%;
 }
 
 /* 进度步骤 */
