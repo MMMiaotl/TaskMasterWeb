@@ -2,6 +2,7 @@ from app import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from sqlalchemy import func
 
 # 用户与专业类别的多对多关系表
 user_categories = db.Table('user_categories',
@@ -88,6 +89,26 @@ class User(UserMixin, db.Model):
     # 获取用户的所有专业类别ID
     def get_category_ids(self):
         return [cat.category_id for cat in self.categories]
+    
+    @property
+    def rating(self):
+        """计算用户的平均评分"""
+        from app.models import Review
+        result = db.session.query(func.avg(Review.rating)).filter(
+            Review.reviewee_id == self.id
+        ).scalar()
+        return round(result, 1) if result else 0
+    
+    @property
+    def completed_tasks(self):
+        """获取用户完成的任务数量"""
+        from app.models import Task
+        if self.is_professional:
+            # 作为执行者完成的任务
+            return Task.query.filter_by(executor_id=self.id, status=2).count()
+        else:
+            # 作为发布者完成的任务
+            return Task.query.filter_by(user_id=self.id, status=2).count()
     
     def __repr__(self):
         return f'<User {self.username}>'
