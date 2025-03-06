@@ -303,7 +303,17 @@ def get_messages():
         
         return jsonify({
             'messages': messages_json,
-            'unread_count': unread_count
+            'unread_count': unread_count,
+            'other_user': {
+                'id': other_user.id,
+                'name': other_user.username,
+                'avatar': other_user.avatar_url or url_for('static', filename='images/default-avatar.jpg')
+            },
+            'current_user': {
+                'id': current_user.id,
+                'name': current_user.username,
+                'avatar': current_user.avatar_url or url_for('static', filename='images/default-avatar.jpg')
+            }
         })
     except Exception as e:
         current_app.logger.error(f"获取消息时出错: {str(e)}")

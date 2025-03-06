@@ -217,7 +217,7 @@
                                         <div class="input-group">
                                             <input type="text" id="message-input" class="form-control" placeholder="输入消息...">
                                             <button class="btn btn-primary" id="send-message-btn">
-                                                <i class="fas fa-paper-plane"></i> 发送
+                                                <i class="fas fa-paper-plane"></i>
                                             </button>
                                         </div>
                                     </div>
@@ -777,11 +777,15 @@
                             
                             const messageHtml = `
                                 <div class="message ${isCurrentUser ? 'message-outgoing' : 'message-incoming'} mb-3">
-                                    <div class="message-content ${isCurrentUser ? 'bg-primary text-white' : 'bg-light'} p-3 rounded">
-                                        ${message.content}
-                                        <div class="message-time small ${isCurrentUser ? 'text-light' : 'text-muted'} mt-1">
-                                            ${formatDateTime(message.created_at)}
+                                    <div class="d-flex align-items-end ${isCurrentUser ? 'justify-content-end' : ''}">
+                                        ${!isCurrentUser ? `<img src="${data.other_user.avatar || '/static/images/default-avatar.jpg'}" class="avatar-sm rounded-circle me-2" alt="${data.other_user.name}">` : ''}
+                                        <div class="message-content ${isCurrentUser ? 'bg-primary text-white' : 'bg-light'} p-3 rounded">
+                                            ${message.content}
+                                            <div class="message-time small ${isCurrentUser ? 'text-light' : 'text-muted'} mt-1">
+                                                ${formatDateTime(message.created_at)}
+                                            </div>
                                         </div>
+                                        ${isCurrentUser ? `<img src="${data.current_user.avatar || '/static/images/default-avatar.jpg'}" class="avatar-sm rounded-circle ms-2" alt="${data.current_user.name}">` : ''}
                                     </div>
                                 </div>
                             `;
@@ -1830,7 +1834,7 @@
                 justify-content: flex-start;
             }
             .message-content {
-                max-width: 80%;
+                max-width: 70%; /* 从50%调整到70%，以便更好地容纳长文本 */
                 word-break: break-word;
             }
             .chat-messages {
@@ -1980,5 +1984,124 @@
             });
     }
 </script>
+
+<style>
+    /* 消息样式 */
+    .message {
+        clear: both;
+        margin-bottom: 15px;
+        transition: all 0.2s ease;
+    }
+    
+    .message-outgoing {
+        text-align: right;
+    }
+    
+    .message-incoming {
+        text-align: left;
+    }
+    
+    .message-content {
+        display: inline-block;
+        padding: 12px 16px;
+        max-width: 200%; /* 从50%调整到70%，以便更好地容纳长文本 */
+        min-width: 60px; /* 添加最小宽度，避免短消息气泡过窄 */
+        border-radius: 18px;
+        word-wrap: break-word;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+    }
+    
+    .message-outgoing .message-content {
+        background-color: #0084ff;
+        color: white;
+        border-bottom-right-radius: 6px;
+        margin-right: 2px;
+    }
+    
+    .message-incoming .message-content {
+        background-color: #f0f2f5;
+        color: #1c1e21;
+        border-bottom-left-radius: 6px;
+        margin-left: 2px;
+    }
+    
+    .message-time {
+        font-size: 0.7rem;
+        margin-top: 5px;
+        opacity: 0.8;
+    }
+    
+    /* 头像样式 */
+    .avatar-sm {
+        width: 30px;
+        height: 30px;
+        object-fit: cover;
+        border-radius: 50%;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* 消息容器样式调整 */
+    .chat-messages {
+        padding: 15px;
+        background-color: #ffffff;
+        scroll-behavior: smooth; /* 添加平滑滚动效果 */
+    }
+    
+    /* 悬停效果 */
+    .message:hover .message-time {
+        opacity: 1;
+    }
+    
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .message-content {
+            max-width: 80%; /* 在小屏幕上增加气泡最大宽度 */
+            padding: 10px 14px;
+        }
+        
+        .chat-messages {
+            padding: 10px;
+            height: calc(100vh - 350px) !important; /* 调整高度 */
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .message-content {
+            max-width: 90%; /* 在更小的屏幕上进一步增加气泡宽度 */
+            padding: 8px 12px;
+        }
+    }
+    
+    /* 消息输入区域样式调整 */
+    .chat-input-area {
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        background-color: #f8f9fa;
+        padding: 12px !important;
+    }
+    
+    /* 美化输入框 */
+    #message-input {
+        border-radius: 20px;
+        padding-left: 15px;
+        transition: all 0.2s ease;
+    }
+    
+    #message-input:focus {
+        box-shadow: 0 0 0 0.2rem rgba(0, 132, 255, 0.15);
+    }
+    
+    /* 美化发送按钮 */
+    #send-message-btn {
+        border-radius: 50%;
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 8px;
+    }
+</style>
 {% endblock %}
 {% endblock %}
