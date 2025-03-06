@@ -78,10 +78,12 @@
                         </a>
                         
                         <!-- 语言切换 -->
+                        <!-- 暂时隐藏语言切换功能
                         <div class="language-switcher">
                             <a href="{{ url_for('main.set_language', language='en') }}" class="text-dark">EN</a> | 
                             <a href="{{ url_for('main.set_language', language='zh') }}" class="text-dark">中文</a>
                         </div>
+                        -->
                         
                         <!-- 用户相关功能 -->
                         {% if current_user.is_authenticated %}
