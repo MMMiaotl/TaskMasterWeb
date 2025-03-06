@@ -97,6 +97,10 @@
                                     <i class="fas fa-user me-2"></i>个人资料</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('message.messages') }}">
                                     <i class="fas fa-envelope me-2"></i>消息</a></li>
+                                {% if current_user.is_admin() %}
+                                <li><a class="dropdown-item" href="{{ url_for('admin.dashboard') }}">
+                                    <i class="fas fa-tachometer-alt me-2"></i>管理后台</a></li>
+                                {% endif %}
                                 <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
                                     <i class="fas fa-sign-out-alt me-2"></i>登出</a></li>
                             </ul>

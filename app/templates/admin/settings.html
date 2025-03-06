@@ -1,0 +1,363 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}系统设置{% endblock %}
+
+{% block page_title %}系统设置{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-cog me-1"></i>
+                基本设置
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('admin.settings') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="mb-3">
+                        <label for="site_name" class="form-label">网站名称</label>
+                        <input type="text" class="form-control" id="site_name" name="site_name" value="TaskMaster">
+                    </div>
+                    <div class="mb-3">
+                        <label for="site_description" class="form-label">网站描述</label>
+                        <textarea class="form-control" id="site_description" name="site_description" rows="3">专业人士与任务发布者的桥梁，让专业服务更简单。</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contact_email" class="form-label">联系邮箱</label>
+                        <input type="email" class="form-control" id="contact_email" name="contact_email" value="contact@taskmaster.com">
+                    </div>
+                    <div class="mb-3">
+                        <label for="items_per_page" class="form-label">每页显示数量</label>
+                        <input type="number" class="form-control" id="items_per_page" name="items_per_page" value="20">
+                    </div>
+                    <button type="submit" class="btn btn-primary">保存设置</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-shield-alt me-1"></i>
+                安全设置
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('admin.settings') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="setting_type" value="security">
+                    <div class="mb-3">
+                        <label for="enable_registration" class="form-label">允许新用户注册</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="enable_registration" name="enable_registration" checked>
+                            <label class="form-check-label" for="enable_registration">启用</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="require_email_verification" class="form-label">要求邮箱验证</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="require_email_verification" name="require_email_verification" checked>
+                            <label class="form-check-label" for="require_email_verification">启用</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="session_lifetime" class="form-label">会话有效期（分钟）</label>
+                        <input type="number" class="form-control" id="session_lifetime" name="session_lifetime" value="1440">
+                    </div>
+                    <button type="submit" class="btn btn-primary">保存设置</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-dollar-sign me-1"></i>
+                支付设置
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('admin.settings') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="setting_type" value="payment">
+                    <div class="mb-3">
+                        <label for="platform_fee_percentage" class="form-label">平台服务费比例（%）</label>
+                        <input type="number" class="form-control" id="platform_fee_percentage" name="platform_fee_percentage" value="5" min="0" max="100" step="0.1">
+                    </div>
+                    <div class="mb-3">
+                        <label for="min_withdrawal_amount" class="form-label">最低提现金额（元）</label>
+                        <input type="number" class="form-control" id="min_withdrawal_amount" name="min_withdrawal_amount" value="100" min="0" step="1">
+                    </div>
+                    <div class="mb-3">
+                        <label for="payment_methods" class="form-label">支付方式</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="payment_alipay" name="payment_methods[]" value="alipay" checked>
+                            <label class="form-check-label" for="payment_alipay">支付宝</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="payment_wechat" name="payment_methods[]" value="wechat" checked>
+                            <label class="form-check-label" for="payment_wechat">微信支付</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="payment_bank" name="payment_methods[]" value="bank" checked>
+                            <label class="form-check-label" for="payment_bank">银行转账</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">保存设置</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-database me-1"></i>
+                系统维护
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">数据库备份</h5>
+                                <p class="card-text">创建数据库的完整备份，以防数据丢失。</p>
+                                <button type="button" class="btn btn-primary" id="backup-db-btn">
+                                    <i class="fas fa-download me-1"></i> 创建备份
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">清理缓存</h5>
+                                <p class="card-text">清除系统缓存，可能会暂时影响系统性能。</p>
+                                <button type="button" class="btn btn-warning" id="clear-cache-btn">
+                                    <i class="fas fa-broom me-1"></i> 清理缓存
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">系统日志</h5>
+                                <p class="card-text">查看系统日志，帮助排查问题。</p>
+                                <button type="button" class="btn btn-info" id="view-logs-btn">
+                                    <i class="fas fa-file-alt me-1"></i> 查看日志
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">系统信息</h5>
+                                <p class="card-text">查看系统运行状态和版本信息。</p>
+                                <button type="button" class="btn btn-secondary" id="system-info-btn">
+                                    <i class="fas fa-info-circle me-1"></i> 系统信息
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 系统日志模态框 -->
+<div class="modal fade" id="logsModal" tabindex="-1" aria-labelledby="logsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logsModalLabel">系统日志</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <select class="form-select" id="log-type">
+                        <option value="error">错误日志</option>
+                        <option value="access">访问日志</option>
+                        <option value="system">系统日志</option>
+                    </select>
+                </div>
+                <div class="log-container bg-dark text-light p-3" style="height: 400px; overflow-y: auto;">
+                    <pre id="log-content">正在加载日志...</pre>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="download-log-btn">
+                    <i class="fas fa-download me-1"></i> 下载日志
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 系统信息模态框 -->
+<div class="modal fade" id="systemInfoModal" tabindex="-1" aria-labelledby="systemInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="systemInfoModalLabel">系统信息</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>系统版本</th>
+                            <td>TaskMaster v1.0.0</td>
+                        </tr>
+                        <tr>
+                            <th>Python 版本</th>
+                            <td>3.9.5</td>
+                        </tr>
+                        <tr>
+                            <th>Flask 版本</th>
+                            <td>2.0.1</td>
+                        </tr>
+                        <tr>
+                            <th>数据库</th>
+                            <td>SQLite 3.36.0</td>
+                        </tr>
+                        <tr>
+                            <th>操作系统</th>
+                            <td>Linux Ubuntu 20.04</td>
+                        </tr>
+                        <tr>
+                            <th>服务器时间</th>
+                            <td id="server-time">加载中...</td>
+                        </tr>
+                        <tr>
+                            <th>运行时间</th>
+                            <td>3天 5小时 12分钟</td>
+                        </tr>
+                        <tr>
+                            <th>内存使用</th>
+                            <td>512MB / 2GB</td>
+                        </tr>
+                        <tr>
+                            <th>CPU 使用率</th>
+                            <td>23%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 备份数据库
+        document.getElementById('backup-db-btn').addEventListener('click', function() {
+            if (confirm('确定要创建数据库备份吗？')) {
+                alert('数据库备份已开始，完成后将通知您。');
+                // 这里可以添加实际的备份逻辑
+            }
+        });
+        
+        // 清理缓存
+        document.getElementById('clear-cache-btn').addEventListener('click', function() {
+            if (confirm('确定要清理系统缓存吗？这可能会暂时影响系统性能。')) {
+                alert('缓存清理成功！');
+                // 这里可以添加实际的缓存清理逻辑
+            }
+        });
+        
+        // 查看日志
+        document.getElementById('view-logs-btn').addEventListener('click', function() {
+            const logModal = new bootstrap.Modal(document.getElementById('logsModal'));
+            logModal.show();
+            
+            // 模拟加载日志
+            setTimeout(function() {
+                document.getElementById('log-content').textContent = `[2023-03-06 10:15:23] INFO: 系统启动成功
+[2023-03-06 10:15:25] INFO: 数据库连接成功
+[2023-03-06 10:16:12] INFO: 用户 admin 登录成功
+[2023-03-06 10:18:45] WARNING: 用户 user123 尝试访问未授权页面
+[2023-03-06 10:20:33] ERROR: 数据库查询超时
+[2023-03-06 10:22:15] INFO: 用户 user456 注册成功
+[2023-03-06 10:25:08] INFO: 任务 #123 状态更新为 "已完成"
+[2023-03-06 10:30:42] WARNING: 系统负载过高
+[2023-03-06 10:35:19] INFO: 缓存清理完成
+[2023-03-06 10:40:56] INFO: 用户 user789 发布了新任务 #124`;
+            }, 500);
+        });
+        
+        // 日志类型切换
+        document.getElementById('log-type').addEventListener('change', function() {
+            const logType = this.value;
+            const logContent = document.getElementById('log-content');
+            
+            // 根据选择的日志类型显示不同内容
+            if (logType === 'error') {
+                logContent.textContent = `[2023-03-06 10:20:33] ERROR: 数据库查询超时
+[2023-03-06 11:05:12] ERROR: 文件上传失败
+[2023-03-06 12:30:45] ERROR: 邮件发送失败
+[2023-03-06 14:22:18] ERROR: API 请求超时
+[2023-03-06 16:45:33] ERROR: 内存不足`;
+            } else if (logType === 'access') {
+                logContent.textContent = `[2023-03-06 10:15:30] 127.0.0.1 - GET /admin 200
+[2023-03-06 10:16:05] 192.168.1.5 - GET /login 200
+[2023-03-06 10:16:10] 192.168.1.5 - POST /login 302
+[2023-03-06 10:16:12] 192.168.1.5 - GET /dashboard 200
+[2023-03-06 10:18:40] 192.168.1.8 - GET /admin 403
+[2023-03-06 10:22:10] 192.168.1.10 - POST /register 302
+[2023-03-06 10:22:15] 192.168.1.10 - GET /dashboard 200`;
+            } else {
+                logContent.textContent = `[2023-03-06 10:15:23] INFO: 系统启动成功
+[2023-03-06 10:15:25] INFO: 数据库连接成功
+[2023-03-06 10:30:42] WARNING: 系统负载过高
+[2023-03-06 10:35:19] INFO: 缓存清理完成
+[2023-03-06 11:00:00] INFO: 定时任务开始执行
+[2023-03-06 11:05:00] INFO: 定时任务执行完成
+[2023-03-06 12:00:00] INFO: 系统状态检查正常`;
+            }
+        });
+        
+        // 系统信息
+        document.getElementById('system-info-btn').addEventListener('click', function() {
+            const infoModal = new bootstrap.Modal(document.getElementById('systemInfoModal'));
+            infoModal.show();
+            
+            // 更新服务器时间
+            setInterval(function() {
+                const now = new Date();
+                document.getElementById('server-time').textContent = now.toLocaleString();
+            }, 1000);
+        });
+        
+        // 下载日志
+        document.getElementById('download-log-btn').addEventListener('click', function() {
+            const logType = document.getElementById('log-type').value;
+            const logContent = document.getElementById('log-content').textContent;
+            
+            // 创建一个 Blob 对象
+            const blob = new Blob([logContent], { type: 'text/plain' });
+            
+            // 创建一个下载链接
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${logType}_log_${new Date().toISOString().slice(0, 10)}.txt`;
+            
+            // 触发下载
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+    });
+</script>
+{% endblock %} 

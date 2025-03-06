@@ -5,6 +5,7 @@ from .message import message_bp
 from .main import main_bp
 from .service import service_bp
 from .professional import professional_bp
+from .admin import admin_bp
 from ..errors import errors_bp
 
 def init_app(app):
@@ -15,4 +16,5 @@ def init_app(app):
     app.register_blueprint(main_bp)
     app.register_blueprint(service_bp, url_prefix='/service')
     app.register_blueprint(professional_bp)
+    app.register_blueprint(admin_bp)
     app.register_blueprint(errors_bp) 
