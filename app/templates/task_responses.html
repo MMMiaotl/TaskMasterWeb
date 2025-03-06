@@ -526,17 +526,13 @@
                 document.getElementById('content-area-title').textContent = '专业人士详情';
                 document.getElementById('back-to-chat').style.display = 'block';
                 
-                // 加载专业人士详情
-                loadProDetails(proId, tabType);
-                
                 // 高亮选中的专业人士
                 document.querySelectorAll('.pro-item').forEach(i => 
                     i.classList.remove('bg-primary', 'text-white'));
                 this.classList.add('bg-primary', 'text-white');
                 
-                // 显示专业人士详情
-                document.querySelector('.pro-placeholder').classList.add('d-none');
-                document.querySelector('.pro-profile').classList.remove('d-none');
+                // 加载专业人士详情
+                loadProDetails(proId, tabType);
             } catch (error) {
                 logError('处理专业人士项点击事件出错', error);
             }
@@ -753,77 +749,235 @@
     // 加载专业人士详情的函数
     function loadProDetails(proId, tabType) {
         logDebug('开始加载专业人士详情', {proId, tabType});
-        const url = `/api/professionals/${proId}`;
+        
+        // 尝试不同的API路径
+        // 首先尝试从页面数据中获取专业人士信息
+        let proData = null;
+        
+        // 对于感兴趣的专业人士，尝试从页面数据中获取
+        if (tabType === 'interestedPros') {
+            const proElements = document.querySelectorAll(`.pro-item[data-pro-id="${proId}"][data-tab-id="interestedPros"]`);
+            if (proElements.length > 0) {
+                const proElement = proElements[0];
+                const nameElement = proElement.querySelector('h6.mb-0');
+                const ratingElement = proElement.querySelector('.fas.fa-star.text-warning').parentElement;
+                const jobsElement = proElement.querySelector('.fas.fa-briefcase').parentElement;
+                
+                proData = {
+                    id: proId,
+                    name: nameElement ? nameElement.textContent.trim() : '未知专业人士',
+                    rating: ratingElement ? parseFloat(ratingElement.textContent.trim()) : 0,
+                    completed_jobs: jobsElement ? parseInt(jobsElement.textContent.trim()) : 0,
+                    profession: '',
+                    skills: [],
+                    contact: '',
+                    description: '此信息来自页面缓存，可能不完整。'
+                };
+                
+                logDebug('从页面元素获取专业人士数据', proData);
+            }
+        } else if (tabType === 'matchingPros') {
+            const proElements = document.querySelectorAll(`.pro-item[data-pro-id="${proId}"][data-tab-id="matchingPros"]`);
+            if (proElements.length > 0) {
+                const proElement = proElements[0];
+                const nameElement = proElement.querySelector('h6.mb-0');
+                const ratingElement = proElement.querySelector('.fas.fa-star.text-warning').parentElement;
+                const distanceElement = proElement.querySelector('.fas.fa-map-marker-alt').parentElement;
+                const matchScoreElement = proElement.querySelector('.badge.bg-success');
+                
+                proData = {
+                    id: proId,
+                    name: nameElement ? nameElement.textContent.trim() : '未知专业人士',
+                    rating: ratingElement ? parseFloat(ratingElement.textContent.trim()) : 0,
+                    distance: distanceElement ? parseFloat(distanceElement.textContent.trim()) : 0,
+                    match_score: matchScoreElement ? parseInt(matchScoreElement.textContent.replace(/\D/g, '')) : 0,
+                    profession: '',
+                    skills: [],
+                    contact: '',
+                    description: '此信息来自页面缓存，可能不完整。'
+                };
+                
+                logDebug('从页面元素获取专业人士数据', proData);
+            }
+        }
+        
         const profileContainer = document.querySelector('.pro-profile');
+        const placeholderContainer = document.querySelector('.pro-placeholder');
         
         // 显示加载状态
-        profileContainer.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-3">加载专业人士资料中...</p></div>';
+        placeholderContainer.classList.remove('d-none');
+        profileContainer.classList.add('d-none');
+        placeholderContainer.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-3">加载专业人士资料中...</p></div>';
         
-        // 发送AJAX请求
-        logDebug('发送API请求', {url});
-        fetchWithCsrf(url)
-            .then(response => {
-                logDebug('获取API响应', {status: response.status, ok: response.ok});
-                if (!response.ok) {
-                    throw new Error(`请求失败，状态码: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                logDebug('解析专业人士数据', data);
-                
-                // 创建专业人士档案HTML
-                const profileHtml = `
-                    <div class="card mb-3">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">${data.name}</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row mb-3">
-                                <div class="col-md-4 fw-bold">职业:</div>
-                                <div class="col-md-8">${data.profession || '未提供'}</div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-4 fw-bold">技能:</div>
-                                <div class="col-md-8">${data.skills ? data.skills.join(', ') : '未提供'}</div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-4 fw-bold">联系方式:</div>
-                                <div class="col-md-8">${data.contact || '未提供'}</div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-4 fw-bold">评分:</div>
-                                <div class="col-md-8">${renderStars(data.rating || 0)}</div>
-                            </div>
-                        </div>
-                        <div class="card-footer">
-                            <button class="btn btn-primary" onclick="sendMessageToPro(${data.id})">
+        // 尝试不同的API路径
+        const urls = [
+            `/task/api/professionals/${proId}?task_id=${taskId}`,
+            `/api/professionals/${proId}?task_id=${taskId}`,
+            `/api/tasks/${taskId}/professionals/${proId}`
+        ];
+        
+        // 如果已经从页面获取了数据，直接显示
+        if (proData) {
+            setTimeout(() => {
+                displayProData(proData, tabType);
+            }, 500);
+            return;
+        }
+        
+        // 否则尝试API请求
+        tryNextUrl(0);
+        
+        function tryNextUrl(index) {
+            if (index >= urls.length) {
+                // 所有URL都尝试失败，显示错误
+                logError('所有API路径尝试失败');
+                placeholderContainer.classList.add('d-none');
+                profileContainer.classList.remove('d-none');
+                profileContainer.innerHTML = `
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i>无法加载完整资料</h5>
+                        <p>我们无法从服务器获取专业人士的详细资料。</p>
+                        <p>您仍然可以与该专业人士联系或接受申请。</p>
+                        <div class="mt-3">
+                            <button class="btn btn-primary" onclick="sendMessageToPro(${proId})">
                                 <i class="fas fa-comment-dots"></i> 发送消息
                             </button>
                             ${tabType === 'interestedPros' ? 
-                              `<button class="btn btn-success ms-2" onclick="acceptPro(${data.id})">
+                              `<button class="btn btn-success ms-2" onclick="acceptPro(${proId})">
                                   <i class="fas fa-check"></i> 接受申请
                               </button>` : ''}
+                            <button class="btn btn-outline-secondary ms-2" onclick="loadProDetails('${proId}', '${tabType}')">
+                                <i class="fas fa-sync-alt me-1"></i>重试
+                            </button>
                         </div>
                     </div>
-                    
-                    ${data.portfolio ? 
-                      `<div class="card mt-3">
-                          <div class="card-header bg-primary text-white">
-                              <h5 class="mb-0">作品集</h5>
-                          </div>
-                          <div class="card-body">
-                              ${data.portfolio}
-                          </div>
-                      </div>` : ''}
                 `;
+                return;
+            }
+            
+            const url = urls[index];
+            logDebug(`尝试API路径 ${index + 1}/${urls.length}`, {url});
+            
+            // 发送AJAX请求
+            fetchWithCsrf(url)
+                .then(response => {
+                    logDebug('获取API响应', {url, status: response.status, ok: response.ok});
+                    if (!response.ok) {
+                        // 尝试下一个URL
+                        return response.text().then(text => {
+                            logError(`API路径 ${index + 1} 失败`, {url, status: response.status, text});
+                            throw new Error('next');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    logDebug('解析专业人士数据成功', {url, data});
+                    displayProData(data, tabType);
+                })
+                .catch(error => {
+                    if (error.message === 'next') {
+                        // 尝试下一个URL
+                        tryNextUrl(index + 1);
+                    } else {
+                        logError('解析专业人士数据失败', error);
+                        // 尝试下一个URL
+                        tryNextUrl(index + 1);
+                    }
+                });
+        }
+        
+        // 显示专业人士数据的函数
+        function displayProData(data, tabType) {
+            // 隐藏加载状态，显示资料
+            placeholderContainer.classList.add('d-none');
+            profileContainer.classList.remove('d-none');
+            
+            // 创建专业人士档案HTML
+            const profileHtml = `
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">${data.name || '未知专业人士'}</h5>
+                    </div>
+                    <div class="card-body">
+                        ${data.profession ? `
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">职业:</div>
+                            <div class="col-md-8">${data.profession}</div>
+                        </div>` : ''}
+                        
+                        ${data.skills && data.skills.length > 0 ? `
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">技能:</div>
+                            <div class="col-md-8">${Array.isArray(data.skills) ? data.skills.join(', ') : data.skills}</div>
+                        </div>` : ''}
+                        
+                        ${data.contact ? `
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">联系方式:</div>
+                            <div class="col-md-8">${data.contact}</div>
+                        </div>` : ''}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">评分:</div>
+                            <div class="col-md-8">${renderStars(data.rating || 0)}</div>
+                        </div>
+                        
+                        ${data.completed_jobs !== undefined ? `
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">已完成工作:</div>
+                            <div class="col-md-8">${data.completed_jobs} 个</div>
+                        </div>` : ''}
+                        
+                        ${data.distance !== undefined ? `
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">距离:</div>
+                            <div class="col-md-8">${data.distance} km</div>
+                        </div>` : ''}
+                        
+                        ${data.match_score !== undefined ? `
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">匹配度:</div>
+                            <div class="col-md-8">
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: ${data.match_score}%;" 
+                                        aria-valuenow="${data.match_score}" aria-valuemin="0" aria-valuemax="100">
+                                        ${data.match_score}%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>` : ''}
+                        
+                        ${data.description ? `
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">简介:</div>
+                            <div class="col-md-8">${data.description}</div>
+                        </div>` : ''}
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-primary" onclick="sendMessageToPro(${data.id})">
+                            <i class="fas fa-comment-dots"></i> 发送消息
+                        </button>
+                        ${tabType === 'interestedPros' ? 
+                          `<button class="btn btn-success ms-2" onclick="acceptPro(${data.id})">
+                              <i class="fas fa-check"></i> 接受申请
+                          </button>` : ''}
+                    </div>
+                </div>
                 
-                profileContainer.innerHTML = profileHtml;
-            })
-            .catch(error => {
-                logError('加载专业人士详情失败', error);
-                profileContainer.innerHTML = `<div class="alert alert-danger">加载专业人士详情失败: ${error.message}</div>`;
-            });
+                ${data.portfolio ? 
+                  `<div class="card mt-3">
+                      <div class="card-header bg-primary text-white">
+                          <h5 class="mb-0">作品集</h5>
+                      </div>
+                      <div class="card-body">
+                          ${data.portfolio}
+                      </div>
+                  </div>` : ''}
+            `;
+            
+            profileContainer.innerHTML = profileHtml;
+        }
     }
     
     // 标记对话为已读的函数
@@ -1063,33 +1217,136 @@
         logDebug('接受专业人士申请', {proId, taskId});
         
         // 创建URL
-        const url = `/api/tasks/${taskId}/accept_pro/${proId}`;
+        const url = `/task/api/tasks/${taskId}/accept_pro/${proId}`;
         logDebug('构建接受专业人士申请API请求URL', {url});
         
-        fetchWithCsrf(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            logDebug('接受申请响应', {status: response.status, ok: response.ok});
-            if (!response.ok) {
-                throw new Error(`请求失败，状态码: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            logDebug('接受申请成功', data);
-            alert('已成功接受该专业人士的申请！');
+        // 显示加载状态
+        const acceptBtn = document.querySelector(`.btn-success[onclick="acceptPro(${proId})"]`);
+        if (acceptBtn) {
+            const originalText = acceptBtn.innerHTML;
+            acceptBtn.disabled = true;
+            acceptBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
             
-            // 刷新页面以更新状态
-            window.location.reload();
-        })
-        .catch(error => {
-            logError('接受专业人士申请失败', error);
-            alert(`接受申请失败: ${error.message}`);
-        });
+            // 恢复按钮状态的函数
+            const restoreButton = () => {
+                acceptBtn.disabled = false;
+                acceptBtn.innerHTML = originalText;
+            };
+            
+            fetchWithCsrf(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                logDebug('接受申请响应', {status: response.status, ok: response.ok});
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        logError('接受申请失败', {status: response.status, text});
+                        throw new Error(`请求失败，状态码: ${response.status}, 错误信息: ${text}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                logDebug('接受申请成功', data);
+                alert('已成功接受该专业人士的申请！');
+                
+                // 刷新页面以更新状态
+                window.location.reload();
+            })
+            .catch(error => {
+                logError('接受专业人士申请失败', error);
+                alert(`接受申请失败: ${error.message}`);
+                restoreButton();
+                
+                // 尝试备用API路径
+                const backupUrl = `/api/tasks/${taskId}/accept_pro/${proId}`;
+                logDebug('尝试备用API路径', {backupUrl});
+                
+                fetchWithCsrf(backupUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`备用请求失败，状态码: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    logDebug('通过备用API路径接受申请成功', data);
+                    alert('已成功接受该专业人士的申请！');
+                    
+                    // 刷新页面以更新状态
+                    window.location.reload();
+                })
+                .catch(backupError => {
+                    logError('备用API路径也失败', backupError);
+                    // 已经显示过错误提示，不再重复
+                });
+            });
+        } else {
+            // 如果找不到按钮，直接发送请求
+            fetchWithCsrf(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                logDebug('接受申请响应', {status: response.status, ok: response.ok});
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        logError('接受申请失败', {status: response.status, text});
+                        throw new Error(`请求失败，状态码: ${response.status}, 错误信息: ${text}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                logDebug('接受申请成功', data);
+                alert('已成功接受该专业人士的申请！');
+                
+                // 刷新页面以更新状态
+                window.location.reload();
+            })
+            .catch(error => {
+                logError('接受专业人士申请失败', error);
+                alert(`接受申请失败: ${error.message}`);
+                
+                // 尝试备用API路径
+                const backupUrl = `/api/tasks/${taskId}/accept_pro/${proId}`;
+                logDebug('尝试备用API路径', {backupUrl});
+                
+                fetchWithCsrf(backupUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`备用请求失败，状态码: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    logDebug('通过备用API路径接受申请成功', data);
+                    alert('已成功接受该专业人士的申请！');
+                    
+                    // 刷新页面以更新状态
+                    window.location.reload();
+                })
+                .catch(backupError => {
+                    logError('备用API路径也失败', backupError);
+                    // 已经显示过错误提示，不再重复
+                });
+            });
+        }
     }
     
     // 刷新聊天列表的函数
