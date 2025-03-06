@@ -46,7 +46,16 @@
                                         <div class="flex-grow-1 min-width-0">
                                             <div class="d-flex justify-content-between align-items-center mb-1">
                                                 <h6 class="mb-0 text-truncate">{{ conversation.other_user.username }}</h6>
-                                                <small class="text-muted">{{ conversation.last_message_time|time_ago }}</small>
+                                                <div class="text-end ms-2 flex-shrink-0">
+                                                    <small class="text-muted d-block">
+                                                        {% if conversation.last_message_time.year == now.year %}
+                                                            {{ conversation.last_message_time.strftime('%m-%d') }}
+                                                        {% else %}
+                                                            {{ conversation.last_message_time.strftime('%Y-%m-%d') }}
+                                                        {% endif %}
+                                                    </small>
+                                                    <small class="text-muted d-block">{{ conversation.last_message_time.strftime('%H:%M') }}</small>
+                                                </div>
                                             </div>
                                             <p class="mb-0 text-truncate text-muted small">
                                                 {% if conversation.last_message %}
@@ -376,6 +385,31 @@ document.addEventListener('DOMContentLoaded', function() {
     width: 48px;
     height: 48px;
     object-fit: cover;
+}
+
+/* 确保消息预览不会超出栏目宽度 */
+.flex-grow-1.min-width-0 {
+    overflow: hidden;
+    max-width: calc(100% - 65px); /* 留出头像和未读标记的空间 */
+}
+
+.text-truncate {
+    display: block;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 时间显示样式 */
+.text-end.ms-2.flex-shrink-0 {
+    min-width: 60px;
+    text-align: right;
+}
+
+.text-end.ms-2.flex-shrink-0 small {
+    line-height: 1.2;
+    font-size: 0.75rem;
 }
 
 .task-icon {

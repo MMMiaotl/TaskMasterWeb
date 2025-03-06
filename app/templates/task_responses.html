@@ -68,10 +68,17 @@
                                         <img src="{{ conv.pro_avatar }}" alt="{{ conv.pro_name }}" class="rounded-circle" width="40">
                                         <div class="ms-3 flex-grow-1">
                                             <h6 class="mb-1">{{ conv.pro_name }}</h6>
-                                            <p class="text-muted mb-0 text-truncate" style="max-width: 140px;">{{ conv.last_message_preview }}</p>
+                                            <p class="text-muted mb-0 text-truncate">{{ conv.last_message_preview }}</p>
                                         </div>
                                         <div class="text-end">
-                                            <small class="text-muted d-block">{{ conv.last_message_time | datetimeformat }}</small>
+                                            <small class="text-muted d-block">
+                                                {% if conv.last_message_time.year == now.year %}
+                                                    {{ conv.last_message_time.strftime('%m-%d') }}
+                                                {% else %}
+                                                    {{ conv.last_message_time.strftime('%Y-%m-%d') }}
+                                                {% endif %}
+                                            </small>
+                                            <small class="text-muted d-block">{{ conv.last_message_time.strftime('%H:%M') }}</small>
                                             {% if conv.has_unread %}
                                                 <span class="badge bg-danger rounded-pill mt-1">{{ conv.unread_count }}</span>
                                             {% endif %}
@@ -1642,7 +1649,7 @@
                                     <img src="${conv.other_user.avatar}" alt="${conv.other_user.name}" class="rounded-circle" width="40">
                                     <div class="ms-3 flex-grow-1">
                                         <h6 class="mb-1">${conv.other_user.name}</h6>
-                                        <p class="text-muted mb-0 text-truncate" style="max-width: 140px;">${conv.last_message_preview}</p>
+                                        <p class="text-muted mb-0 text-truncate">${conv.last_message_preview}</p>
                                     </div>
                                     <div class="text-end">
                                         <small class="text-muted d-block">${formatDateTime(conv.last_message_time)}</small>
@@ -1728,13 +1735,30 @@
     function formatDateTime(dateTimeString) {
         try {
             const date = new Date(dateTimeString);
-            return date.toLocaleString('zh-CN', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
+            const now = new Date();
+            
+            // 分成两行显示日期和时间
+            const timeStr = date.toLocaleTimeString('zh-CN', {
                 hour: '2-digit',
                 minute: '2-digit'
             });
+            
+            let dateStr;
+            // 当年的消息省略年份
+            if (date.getFullYear() === now.getFullYear()) {
+                dateStr = date.toLocaleDateString('zh-CN', {
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+            } else {
+                dateStr = date.toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+            }
+            
+            return `<span class="d-block">${dateStr}</span><span class="d-block">${timeStr}</span>`;
         } catch (error) {
             logError('格式化日期时间出错', error);
             return dateTimeString;
@@ -1834,7 +1858,7 @@
                 justify-content: flex-start;
             }
             .message-content {
-                max-width: 70%; /* 从50%调整到70%，以便更好地容纳长文本 */
+                max-width: 70%; 
                 word-break: break-word;
             }
             .chat-messages {
@@ -1843,6 +1867,19 @@
             }
             .chat-input-area {
                 display: block !important;
+            }
+            
+            /* 确保聊天列表中的消息预览正确截断 */
+            .chat-item .flex-grow-1 {
+                min-width: 0;
+                max-width: calc(100% - 100px);
+            }
+            
+            .chat-item .text-truncate {
+                width: 100%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             
             /* 添加专业人士资料卡片的过渡效果 */
@@ -2101,6 +2138,32 @@
         align-items: center;
         justify-content: center;
         margin-left: 8px;
+    }
+    
+    /* 聊天列表消息预览样式 */
+    .chat-item .flex-grow-1 {
+        min-width: 0; /* 确保flex项可以缩小到小于内容宽度 */
+        max-width: calc(100% - 100px); /* 留出时间戳和未读标记的空间 */
+    }
+    
+    .chat-item .text-truncate {
+        width: 100%;
+        display: inline-block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* 时间显示样式 */
+    .chat-item .text-end {
+        min-width: 60px;
+        text-align: right;
+        padding-left: 8px;
+    }
+    
+    .chat-item .text-end small {
+        line-height: 1.2;
+        font-size: 0.75rem;
     }
 </style>
 {% endblock %}

@@ -32,7 +32,14 @@
                                             <p class="text-muted mb-0 small text-truncate">{{ conv.last_message_preview }}</p>
                                         </div>
                                         <div class="text-end">
-                                            <small class="text-muted d-block">{{ conv.last_message_time|datetimeformat }}</small>
+                                            <small class="text-muted d-block">
+                                                {% if conv.last_message_time.year == now.year %}
+                                                    {{ conv.last_message_time.strftime('%m-%d') }}
+                                                {% else %}
+                                                    {{ conv.last_message_time.strftime('%Y-%m-%d') }}
+                                                {% endif %}
+                                            </small>
+                                            <small class="text-muted d-block">{{ conv.last_message_time.strftime('%H:%M') }}</small>
                                         </div>
                                     </a>
                                 </div>
@@ -187,6 +194,33 @@ document.addEventListener('DOMContentLoaded', function() {
     .message-content {
         max-width: 75%;
         word-wrap: break-word;
+    }
+    
+    /* 确保消息预览文本不会超出栏目宽度 */
+    .conversation-item .flex-grow-1 {
+        min-width: 0; /* 确保flex项可以缩小到小于内容宽度 */
+        max-width: calc(100% - 100px); /* 留出时间戳的空间 */
+        overflow: hidden;
+    }
+    
+    .conversation-item .text-truncate {
+        width: 100%;
+        display: inline-block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* 时间显示样式 */
+    .conversation-item .text-end {
+        min-width: 60px;
+        text-align: right;
+        padding-left: 8px;
+    }
+    
+    .conversation-item .text-end small {
+        line-height: 1.2;
+        font-size: 0.75rem;
     }
 </style>
 {% endblock %}

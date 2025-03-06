@@ -31,7 +31,7 @@ def dashboard():
     # 获取已完成的任务数量
     completed_tasks = Task.query.filter(
         Task.executor_id == current_user.id,
-        Task.status == 3  # 3: 已完成
+        Task.status == 3  # 已完成
     ).count()
     
     # 获取最近30天内的收入
@@ -161,8 +161,12 @@ def messages():
                 'unread_count': unread_count
             })
     
+    # 获取当前时间用于日期格式化
+    now = datetime.now()
+    
     return render_template('professional/messages.html',
-                          conversations=conversation_users)
+                          conversations=conversation_users,
+                          now=now)
 
 @professional_bp.route('/market')
 @login_required

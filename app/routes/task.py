@@ -640,7 +640,11 @@ def task_responses(task_id):
                 if not conversations_by_user[other_user_id]['last_message_time'] or \
                    msg.created_at > conversations_by_user[other_user_id]['last_message_time']:
                     conversations_by_user[other_user_id]['last_message_time'] = msg.created_at
-                    conversations_by_user[other_user_id]['last_message_preview'] = msg.content[:30] + '...' if len(msg.content) > 30 else msg.content
+                    # 限制消息预览长度并添加省略号
+                    if len(msg.content) > 30:
+                        conversations_by_user[other_user_id]['last_message_preview'] = msg.content[:30] + "..."
+                    else:
+                        conversations_by_user[other_user_id]['last_message_preview'] = msg.content
             except Exception as msg_e:
                 current_app.logger.error(f"处理消息ID {msg.id}时出错: {str(msg_e)}")
         
@@ -725,6 +729,9 @@ def task_responses(task_id):
             csrf_token = session.get('csrf_token', '')
             current_app.logger.info(f"CSRF令牌: {csrf_token[:10]}...")
 
+            # 获取当前时间用于日期格式化
+            now = datetime.now()
+            
             return render_template('task_responses.html', 
                                task=task,
                                conversations=conversations_list,
@@ -733,7 +740,8 @@ def task_responses(task_id):
                                unread_messages_count=unread_count,
                                interested_pros_count=interested_count,
                                matching_pros_count=matching_count,
-                               csrf_token=csrf_token)
+                               csrf_token=csrf_token,
+                               now=now)
         except Exception as render_e:
             current_app.logger.error(f"渲染模板时出错: {str(render_e)}, 错误类型: {type(render_e).__name__}")
             raise
@@ -1125,7 +1133,11 @@ def task_conversations(task_id):
             # 更新最后消息时间
             if not conversations[other_user_id]["last_message_time"] or message.created_at > conversations[other_user_id]["last_message_time"]:
                 conversations[other_user_id]["last_message_time"] = message.created_at
-                conversations[other_user_id]["last_message_preview"] = message.content[:50] + ("..." if len(message.content) > 50 else "")
+                # 限制消息预览长度并添加省略号
+                if len(message.content) > 30:
+                    conversations[other_user_id]["last_message_preview"] = message.content[:30] + "..."
+                else:
+                    conversations[other_user_id]["last_message_preview"] = message.content
             
             # 计算未读消息数
             if message.recipient_id == current_user.id and not message.is_read:

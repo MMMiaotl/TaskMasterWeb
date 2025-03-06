@@ -45,7 +45,11 @@ def messages(user_id=None):
         # 更新最后消息时间和预览
         if not conversations[other_user_id]['last_message_time'] or message.created_at > conversations[other_user_id]['last_message_time']:
             conversations[other_user_id]['last_message_time'] = message.created_at
-            conversations[other_user_id]['last_message_preview'] = message.content[:50] + ('...' if len(message.content) > 50 else '')
+            # 限制消息预览长度并添加省略号
+            if len(message.content) > 30:
+                conversations[other_user_id]['last_message_preview'] = message.content[:30] + "..."
+            else:
+                conversations[other_user_id]['last_message_preview'] = message.content
             
             # 更新关联的任务
             if message.task_id and not conversations[other_user_id]['task']:
@@ -72,10 +76,14 @@ def messages(user_id=None):
         recent_user_id = max(conversations.items(), key=lambda x: x[1]['last_message_time'])[0]
         return redirect(url_for('message.messages', user_id=recent_user_id))
     
+    # 获取当前时间用于日期格式化
+    now = datetime.now()
+    
     return render_template('messages.html', 
                            conversations=conversations, 
                            selected_conversation=selected_conversation,
-                           selected_user_id=selected_user_id)
+                           selected_user_id=selected_user_id,
+                           now=now)
 
 @message_bp.route('/send_message/<int:recipient_id>', methods=['POST'])
 @login_required
