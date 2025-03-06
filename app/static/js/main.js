@@ -37,6 +37,13 @@ function initSearchSuggestions() {
     if (!searchInput || !searchSuggestions) return;
     
     const suggestionsList = searchSuggestions.querySelector('.list-group');
+    
+    // 检查suggestionsList是否存在
+    if (!suggestionsList) {
+        console.log('警告: 在搜索建议容器中未找到列表组元素 (class: list-group)');
+        return;
+    }
+    
     let typingTimer;
 
     // 监听输入事件

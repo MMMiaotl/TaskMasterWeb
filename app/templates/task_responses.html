@@ -513,44 +513,119 @@
     });
     
     // 处理专业人士列表点击事件
-    document.querySelectorAll('.pro-item').forEach(item => {
-        item.addEventListener('click', function() {
-            try {
-                const proId = this.getAttribute('data-pro-id');
-                const tabType = this.getAttribute('data-tab-id');
-                logDebug('点击专业人士项', {proId, tabType});
-                
-                // 显示专业人士详情区域，隐藏其他区域
-                document.getElementById('chat-area-container').classList.add('d-none');
-                document.getElementById('pro-details-area').classList.remove('d-none');
-                document.getElementById('content-area-title').textContent = '专业人士详情';
-                document.getElementById('back-to-chat').style.display = 'block';
-                
-                // 高亮选中的专业人士
-                document.querySelectorAll('.pro-item').forEach(i => 
-                    i.classList.remove('bg-primary', 'text-white'));
-                this.classList.add('bg-primary', 'text-white');
-                
-                // 加载专业人士详情
-                loadProDetails(proId, tabType);
-            } catch (error) {
-                logError('处理专业人士项点击事件出错', error);
-            }
+    document.addEventListener('DOMContentLoaded', function() {
+        // 确保DOM完全加载后再绑定事件
+        document.querySelectorAll('.pro-item').forEach(item => {
+            item.addEventListener('click', function() {
+                try {
+                    const proId = this.getAttribute('data-pro-id');
+                    const tabType = this.getAttribute('data-tab-id');
+                    logDebug('点击专业人士项', {proId, tabType});
+                    
+                    if (!proId || !tabType) {
+                        logError('专业人士项缺少必要属性', {
+                            element: this.outerHTML,
+                            proId: proId,
+                            tabType: tabType
+                        });
+                        return;
+                    }
+                    
+                    // 获取必要的DOM元素
+                    const chatAreaContainer = document.getElementById('chat-area-container');
+                    const proDetailsArea = document.getElementById('pro-details-area');
+                    const contentAreaTitle = document.getElementById('content-area-title');
+                    const backToChat = document.getElementById('back-to-chat');
+                    
+                    // 检查元素是否存在
+                    if (!chatAreaContainer || !proDetailsArea || !contentAreaTitle || !backToChat) {
+                        logError('找不到必要的DOM元素', {
+                            chatAreaContainer: chatAreaContainer ? '存在' : '不存在',
+                            proDetailsArea: proDetailsArea ? '存在' : '不存在',
+                            contentAreaTitle: contentAreaTitle ? '存在' : '不存在',
+                            backToChat: backToChat ? '存在' : '不存在'
+                        });
+                        return;
+                    }
+                    
+                    // 显示专业人士详情区域，隐藏其他区域
+                    chatAreaContainer.classList.add('d-none');
+                    proDetailsArea.classList.remove('d-none');
+                    contentAreaTitle.textContent = '专业人士详情';
+                    backToChat.style.display = 'block';
+                    
+                    // 高亮选中的专业人士
+                    document.querySelectorAll('.pro-item').forEach(i => 
+                        i.classList.remove('bg-primary', 'text-white'));
+                    this.classList.add('bg-primary', 'text-white');
+                    
+                    // 加载专业人士详情
+                    loadProDetails(proId, tabType);
+                } catch (error) {
+                    logError('处理专业人士项点击事件出错', error);
+                    alert('加载专业人士详情时出错: ' + error.message);
+                }
+            });
         });
-    });
-    
-    // 返回聊天区域按钮
-    document.getElementById('back-to-chat').addEventListener('click', function() {
-        document.getElementById('chat-area-container').classList.remove('d-none');
-        document.getElementById('pro-details-area').classList.add('d-none');
-        document.getElementById('content-area-title').textContent = '聊天详情';
-        this.style.display = 'none';
-    });
-    
-    // 工作详情按钮
-    document.getElementById('view-task-details').addEventListener('click', function() {
-        const taskDetailsModal = new bootstrap.Modal(document.getElementById('taskDetailsModal'));
-        taskDetailsModal.show();
+        
+        // 返回聊天区域按钮
+        const backToChat = document.getElementById('back-to-chat');
+        if (backToChat) {
+            backToChat.addEventListener('click', function() {
+                const chatAreaContainer = document.getElementById('chat-area-container');
+                const proDetailsArea = document.getElementById('pro-details-area');
+                const contentAreaTitle = document.getElementById('content-area-title');
+                
+                if (chatAreaContainer && proDetailsArea && contentAreaTitle) {
+                    chatAreaContainer.classList.remove('d-none');
+                    proDetailsArea.classList.add('d-none');
+                    contentAreaTitle.textContent = '聊天详情';
+                    this.style.display = 'none';
+                } else {
+                    logError('返回聊天区域时找不到必要的DOM元素');
+                }
+            });
+        } else {
+            logError('找不到返回聊天区域按钮');
+        }
+        
+        // 工作详情按钮
+        const viewTaskDetails = document.getElementById('view-task-details');
+        if (viewTaskDetails) {
+            viewTaskDetails.addEventListener('click', function() {
+                const taskDetailsModal = document.getElementById('taskDetailsModal');
+                if (taskDetailsModal && typeof bootstrap !== 'undefined') {
+                    try {
+                        const modal = new bootstrap.Modal(taskDetailsModal);
+                        modal.show();
+                    } catch (error) {
+                        logError('显示任务详情模态框失败', error);
+                        // 尝试使用jQuery方式显示模态框
+                        try {
+                            if (typeof $ !== 'undefined') {
+                                $(taskDetailsModal).modal('show');
+                            } else {
+                                // 最后的尝试，使用原生方式
+                                taskDetailsModal.classList.add('show');
+                                taskDetailsModal.style.display = 'block';
+                                document.body.classList.add('modal-open');
+                                
+                                // 创建背景遮罩
+                                const backdrop = document.createElement('div');
+                                backdrop.className = 'modal-backdrop fade show';
+                                document.body.appendChild(backdrop);
+                            }
+                        } catch (jqError) {
+                            logError('尝试备用方式显示模态框也失败', jqError);
+                        }
+                    }
+                } else {
+                    logError('找不到任务详情模态框或bootstrap未定义');
+                }
+            });
+        } else {
+            logError('找不到工作详情按钮');
+        }
     });
     
     // 加载对话内容的函数
@@ -754,55 +829,121 @@
         // 首先尝试从页面数据中获取专业人士信息
         let proData = null;
         
-        // 对于感兴趣的专业人士，尝试从页面数据中获取
-        if (tabType === 'interestedPros') {
-            const proElements = document.querySelectorAll(`.pro-item[data-pro-id="${proId}"][data-tab-id="interestedPros"]`);
-            if (proElements.length > 0) {
-                const proElement = proElements[0];
-                const nameElement = proElement.querySelector('h6.mb-0');
-                const ratingElement = proElement.querySelector('.fas.fa-star.text-warning').parentElement;
-                const jobsElement = proElement.querySelector('.fas.fa-briefcase').parentElement;
-                
-                proData = {
-                    id: proId,
-                    name: nameElement ? nameElement.textContent.trim() : '未知专业人士',
-                    rating: ratingElement ? parseFloat(ratingElement.textContent.trim()) : 0,
-                    completed_jobs: jobsElement ? parseInt(jobsElement.textContent.trim()) : 0,
-                    profession: '',
-                    skills: [],
-                    contact: '',
-                    description: '此信息来自页面缓存，可能不完整。'
-                };
-                
-                logDebug('从页面元素获取专业人士数据', proData);
+        try {
+            // 对于感兴趣的专业人士，尝试从页面数据中获取
+            if (tabType === 'interestedPros') {
+                const proElements = document.querySelectorAll(`.pro-item[data-pro-id="${proId}"][data-tab-id="interestedPros"]`);
+                if (proElements && proElements.length > 0) {
+                    const proElement = proElements[0];
+                    if (proElement) {
+                        const nameElement = proElement.querySelector('h6.mb-0');
+                        const ratingElement = proElement.querySelector('.fas.fa-star.text-warning');
+                        const jobsElement = proElement.querySelector('.fas.fa-briefcase');
+                        
+                        proData = {
+                            id: proId,
+                            name: nameElement ? nameElement.textContent.trim() : '未知专业人士',
+                            rating: ratingElement ? parseFloat(ratingElement.parentElement.textContent.trim() || '0') : 0,
+                            completed_jobs: jobsElement ? parseInt(jobsElement.parentElement.textContent.trim().replace(/\D/g, '') || '0') : 0,
+                            profession: '',
+                            skills: [],
+                            contact: '',
+                            description: '此信息来自页面缓存，可能不完整。'
+                        };
+                        
+                        logDebug('从页面元素获取专业人士数据', proData);
+                    } else {
+                        logError('找到的proElement为null', {proId, tabType});
+                    }
+                }
+            } else if (tabType === 'matchingPros') {
+                const proElements = document.querySelectorAll(`.pro-item[data-pro-id="${proId}"][data-tab-id="matchingPros"]`);
+                if (proElements && proElements.length > 0) {
+                    const proElement = proElements[0];
+                    if (proElement) {
+                        const nameElement = proElement.querySelector('h6.mb-0');
+                        const ratingElement = proElement.querySelector('.fas.fa-star.text-warning');
+                        const distanceElement = proElement.querySelector('.fas.fa-map-marker-alt');
+                        const matchScoreElement = proElement.querySelector('.badge.bg-success');
+                        
+                        proData = {
+                            id: proId,
+                            name: nameElement ? nameElement.textContent.trim() : '未知专业人士',
+                            rating: ratingElement ? parseFloat(ratingElement.parentElement.textContent.trim() || '0') : 0,
+                            distance: distanceElement ? parseFloat(distanceElement.parentElement.textContent.trim().replace(/[^\d.]/g, '') || '0') : 0,
+                            match_score: matchScoreElement ? parseInt(matchScoreElement.textContent.replace(/\D/g, '') || '0') : 0,
+                            profession: '',
+                            skills: [],
+                            contact: '',
+                            description: '此信息来自页面缓存，可能不完整。'
+                        };
+                        
+                        logDebug('从页面元素获取专业人士数据', proData);
+                    } else {
+                        logError('找到的proElement为null', {proId, tabType});
+                    }
+                }
             }
-        } else if (tabType === 'matchingPros') {
-            const proElements = document.querySelectorAll(`.pro-item[data-pro-id="${proId}"][data-tab-id="matchingPros"]`);
-            if (proElements.length > 0) {
-                const proElement = proElements[0];
-                const nameElement = proElement.querySelector('h6.mb-0');
-                const ratingElement = proElement.querySelector('.fas.fa-star.text-warning').parentElement;
-                const distanceElement = proElement.querySelector('.fas.fa-map-marker-alt').parentElement;
-                const matchScoreElement = proElement.querySelector('.badge.bg-success');
-                
-                proData = {
-                    id: proId,
-                    name: nameElement ? nameElement.textContent.trim() : '未知专业人士',
-                    rating: ratingElement ? parseFloat(ratingElement.textContent.trim()) : 0,
-                    distance: distanceElement ? parseFloat(distanceElement.textContent.trim()) : 0,
-                    match_score: matchScoreElement ? parseInt(matchScoreElement.textContent.replace(/\D/g, '')) : 0,
-                    profession: '',
-                    skills: [],
-                    contact: '',
-                    description: '此信息来自页面缓存，可能不完整。'
-                };
-                
-                logDebug('从页面元素获取专业人士数据', proData);
-            }
+        } catch (error) {
+            logError('从页面元素获取专业人士数据失败', error);
+            // 继续执行，尝试API请求
         }
         
+        // 获取容器元素，确保它们存在
         const profileContainer = document.querySelector('.pro-profile');
         const placeholderContainer = document.querySelector('.pro-placeholder');
+        
+        if (!profileContainer || !placeholderContainer) {
+            logError('找不到专业人士资料容器元素', {
+                profileContainer: profileContainer ? '存在' : '不存在',
+                placeholderContainer: placeholderContainer ? '存在' : '不存在'
+            });
+            
+            // 创建一个错误提示
+            const errorMessage = `
+                <div class="alert alert-danger">
+                    <h5><i class="fas fa-exclamation-triangle me-2"></i>页面错误</h5>
+                    <p>无法加载专业人士资料，页面元素缺失。</p>
+                    <button class="btn btn-outline-danger btn-sm mt-2" onclick="window.location.reload()">
+                        <i class="fas fa-sync-alt me-1"></i>刷新页面
+                    </button>
+                </div>
+            `;
+            
+            // 尝试在可能的位置显示错误
+            const proDetailsArea = document.getElementById('pro-details-area');
+            if (proDetailsArea) {
+                proDetailsArea.innerHTML = errorMessage;
+                proDetailsArea.classList.remove('d-none');
+            } else {
+                // 如果连容器都找不到，尝试在内容区域显示
+                const contentBody = document.querySelector('.card-body');
+                if (contentBody) {
+                    contentBody.innerHTML = errorMessage;
+                } else {
+                    // 最后的尝试，在body中添加一个模态框
+                    const modalDiv = document.createElement('div');
+                    modalDiv.className = 'modal fade show';
+                    modalDiv.style.display = 'block';
+                    modalDiv.style.backgroundColor = 'rgba(0,0,0,0.5)';
+                    modalDiv.innerHTML = `
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">页面错误</h5>
+                                    <button type="button" class="btn-close" onclick="this.parentElement.parentElement.parentElement.parentElement.remove()"></button>
+                                </div>
+                                <div class="modal-body">
+                                    ${errorMessage}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modalDiv);
+                }
+            }
+            return;
+        }
         
         // 显示加载状态
         placeholderContainer.classList.remove('d-none');
@@ -889,94 +1030,119 @@
         
         // 显示专业人士数据的函数
         function displayProData(data, tabType) {
-            // 隐藏加载状态，显示资料
-            placeholderContainer.classList.add('d-none');
-            profileContainer.classList.remove('d-none');
-            
-            // 创建专业人士档案HTML
-            const profileHtml = `
-                <div class="card mb-3">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">${data.name || '未知专业人士'}</h5>
-                    </div>
-                    <div class="card-body">
-                        ${data.profession ? `
-                        <div class="row mb-3">
-                            <div class="col-md-4 fw-bold">职业:</div>
-                            <div class="col-md-8">${data.profession}</div>
-                        </div>` : ''}
-                        
-                        ${data.skills && data.skills.length > 0 ? `
-                        <div class="row mb-3">
-                            <div class="col-md-4 fw-bold">技能:</div>
-                            <div class="col-md-8">${Array.isArray(data.skills) ? data.skills.join(', ') : data.skills}</div>
-                        </div>` : ''}
-                        
-                        ${data.contact ? `
-                        <div class="row mb-3">
-                            <div class="col-md-4 fw-bold">联系方式:</div>
-                            <div class="col-md-8">${data.contact}</div>
-                        </div>` : ''}
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-4 fw-bold">评分:</div>
-                            <div class="col-md-8">${renderStars(data.rating || 0)}</div>
+            try {
+                // 再次检查容器是否存在
+                if (!profileContainer || !placeholderContainer) {
+                    logError('显示专业人士数据时找不到容器元素');
+                    return;
+                }
+                
+                // 隐藏加载状态，显示资料
+                placeholderContainer.classList.add('d-none');
+                profileContainer.classList.remove('d-none');
+                
+                // 创建专业人士档案HTML
+                const profileHtml = `
+                    <div class="card mb-3">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">${data.name || '未知专业人士'}</h5>
                         </div>
-                        
-                        ${data.completed_jobs !== undefined ? `
-                        <div class="row mb-3">
-                            <div class="col-md-4 fw-bold">已完成工作:</div>
-                            <div class="col-md-8">${data.completed_jobs} 个</div>
-                        </div>` : ''}
-                        
-                        ${data.distance !== undefined ? `
-                        <div class="row mb-3">
-                            <div class="col-md-4 fw-bold">距离:</div>
-                            <div class="col-md-8">${data.distance} km</div>
-                        </div>` : ''}
-                        
-                        ${data.match_score !== undefined ? `
-                        <div class="row mb-3">
-                            <div class="col-md-4 fw-bold">匹配度:</div>
-                            <div class="col-md-8">
-                                <div class="progress" style="height: 20px;">
-                                    <div class="progress-bar bg-success" role="progressbar" style="width: ${data.match_score}%;" 
-                                        aria-valuenow="${data.match_score}" aria-valuemin="0" aria-valuemax="100">
-                                        ${data.match_score}%
+                        <div class="card-body">
+                            ${data.profession ? `
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">职业:</div>
+                                <div class="col-md-8">${data.profession}</div>
+                            </div>` : ''}
+                            
+                            ${data.skills && data.skills.length > 0 ? `
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">技能:</div>
+                                <div class="col-md-8">${Array.isArray(data.skills) ? data.skills.join(', ') : data.skills}</div>
+                            </div>` : ''}
+                            
+                            ${data.contact ? `
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">联系方式:</div>
+                                <div class="col-md-8">${data.contact}</div>
+                            </div>` : ''}
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">评分:</div>
+                                <div class="col-md-8">${renderStars(data.rating || 0)}</div>
+                            </div>
+                            
+                            ${data.completed_jobs !== undefined ? `
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">已完成工作:</div>
+                                <div class="col-md-8">${data.completed_jobs} 个</div>
+                            </div>` : ''}
+                            
+                            ${data.distance !== undefined ? `
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">距离:</div>
+                                <div class="col-md-8">${data.distance} km</div>
+                            </div>` : ''}
+                            
+                            ${data.match_score !== undefined ? `
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">匹配度:</div>
+                                <div class="col-md-8">
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: ${data.match_score}%;" 
+                                            aria-valuenow="${data.match_score}" aria-valuemin="0" aria-valuemax="100">
+                                            ${data.match_score}%
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>` : ''}
-                        
-                        ${data.description ? `
-                        <div class="row mb-3">
-                            <div class="col-md-4 fw-bold">简介:</div>
-                            <div class="col-md-8">${data.description}</div>
-                        </div>` : ''}
+                            </div>` : ''}
+                            
+                            ${data.description ? `
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">简介:</div>
+                                <div class="col-md-8">${data.description}</div>
+                            </div>` : ''}
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-primary" onclick="sendMessageToPro(${data.id})">
+                                <i class="fas fa-comment-dots"></i> 发送消息
+                            </button>
+                            ${tabType === 'interestedPros' ? 
+                              `<button class="btn btn-success ms-2" onclick="acceptPro(${data.id})">
+                                  <i class="fas fa-check"></i> 接受申请
+                              </button>` : ''}
+                        </div>
                     </div>
-                    <div class="card-footer">
-                        <button class="btn btn-primary" onclick="sendMessageToPro(${data.id})">
-                            <i class="fas fa-comment-dots"></i> 发送消息
-                        </button>
-                        ${tabType === 'interestedPros' ? 
-                          `<button class="btn btn-success ms-2" onclick="acceptPro(${data.id})">
-                              <i class="fas fa-check"></i> 接受申请
-                          </button>` : ''}
-                    </div>
-                </div>
+                    
+                    ${data.portfolio ? 
+                      `<div class="card mt-3">
+                          <div class="card-header bg-primary text-white">
+                              <h5 class="mb-0">作品集</h5>
+                          </div>
+                          <div class="card-body">
+                              ${data.portfolio}
+                          </div>
+                      </div>` : ''}
+                `;
                 
-                ${data.portfolio ? 
-                  `<div class="card mt-3">
-                      <div class="card-header bg-primary text-white">
-                          <h5 class="mb-0">作品集</h5>
-                      </div>
-                      <div class="card-body">
-                          ${data.portfolio}
-                      </div>
-                  </div>` : ''}
-            `;
-            
-            profileContainer.innerHTML = profileHtml;
+                profileContainer.innerHTML = profileHtml;
+            } catch (error) {
+                logError('显示专业人士数据出错', error);
+                if (profileContainer) {
+                    profileContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            <h5><i class="fas fa-exclamation-triangle me-2"></i>显示专业人士资料时出错</h5>
+                            <p>${error.message}</p>
+                            <button class="btn btn-outline-danger btn-sm mt-2" onclick="loadProDetails('${proId}', '${tabType}')">
+                                <i class="fas fa-sync-alt me-1"></i>重试
+                            </button>
+                        </div>
+                    `;
+                    profileContainer.classList.remove('d-none');
+                }
+                if (placeholderContainer) {
+                    placeholderContainer.classList.add('d-none');
+                }
+            }
         }
     }
     
@@ -1168,7 +1334,6 @@
             })
             .catch(error => {
                 logError('发送消息失败', error);
-                alert(`发送消息失败: ${error.message}`);
                 
                 // 启用输入框
                 messageInput.disabled = false;
@@ -1203,6 +1368,14 @@
         const chatItem = document.querySelector(`.chat-item[data-conversation-id="${conversationId}"]`);
         if (chatItem) {
             chatItem.classList.add('active-chat');
+            
+            // 更新未读消息徽章
+            const badge = chatItem.querySelector('.badge');
+            if (badge) {
+                badge.classList.add('d-none');
+            }
+        } else {
+            logDebug('未找到匹配的聊天项', {conversationId});
         }
         
         // 加载对话
@@ -1290,6 +1463,7 @@
                 });
             });
         } else {
+            logDebug('未找到接受按钮元素', {proId});
             // 如果找不到按钮，直接发送请求
             fetchWithCsrf(url, {
                 method: 'POST',

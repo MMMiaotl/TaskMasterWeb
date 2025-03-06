@@ -142,7 +142,21 @@
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById('searchInput');
         const suggestionsContainer = document.getElementById('searchSuggestions');
+        
+        // 检查suggestionsContainer是否存在
+        if (!suggestionsContainer) {
+            console.log('警告: 未找到搜索建议容器元素 (ID: searchSuggestions)');
+            return; // 如果不存在，则退出初始化
+        }
+        
         const suggestionsList = suggestionsContainer.querySelector('.list-group');
+        
+        // 检查suggestionsList是否存在
+        if (!suggestionsList) {
+            console.log('警告: 在搜索建议容器中未找到列表组元素 (class: list-group)');
+            return; // 如果不存在，则退出初始化
+        }
+        
         let debounceTimer;
 
         // 添加输入事件监听
