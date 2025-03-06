@@ -825,12 +825,73 @@
     function loadProDetails(proId, tabType) {
         logDebug('开始加载专业人士详情', {proId, tabType});
         
-        // 尝试不同的API路径
-        // 首先尝试从页面数据中获取专业人士信息
-        let proData = null;
+        // 显示加载状态，但使用更友好的UI
+        const profileContainer = document.querySelector('.pro-profile');
+        const placeholderContainer = document.querySelector('.pro-placeholder');
         
+        if (!profileContainer || !placeholderContainer) {
+            logError('找不到专业人士资料容器元素', {
+                profileContainer: profileContainer ? '存在' : '不存在',
+                placeholderContainer: placeholderContainer ? '存在' : '不存在'
+            });
+            return;
+        }
+        
+        // 显示更友好的加载状态
+        placeholderContainer.classList.remove('d-none');
+        profileContainer.classList.add('d-none');
+        placeholderContainer.innerHTML = `
+            <div class="text-center p-4">
+                <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
+                <span>正在加载专业人士资料...</span>
+                <div class="progress mt-3" style="height: 5px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
+                         role="progressbar" style="width: 100%"></div>
+                </div>
+            </div>
+        `;
+        
+        // 创建一个缓存键
+        const cacheKey = `pro_${proId}_${tabType}`;
+        
+        // 检查是否有缓存数据
+        const cachedData = sessionStorage.getItem(cacheKey);
+        if (cachedData) {
+            try {
+                const data = JSON.parse(cachedData);
+                logDebug('使用缓存的专业人士数据', {proId, tabType});
+                // 使用短延迟显示缓存数据，让用户感知到加载过程
+                setTimeout(() => displayProData(data, tabType), 300);
+                
+                // 在后台仍然请求新数据以更新缓存
+                fetchProDataAndUpdateCache(proId, tabType, cacheKey);
+                return;
+            } catch (e) {
+                logError('解析缓存数据失败', e);
+                // 继续正常加载流程
+            }
+        }
+        
+        // 首先尝试从页面数据中获取专业人士信息作为快速显示
+        let proData = extractProDataFromPage(proId, tabType);
+        
+        if (proData) {
+            // 立即显示从页面提取的基本数据
+            displayProData(proData, tabType);
+            
+            // 然后在后台获取完整数据
+            fetchProDataAndUpdateCache(proId, tabType, cacheKey);
+        } else {
+            // 如果没有页面数据，直接获取API数据
+            fetchProDataAndUpdateCache(proId, tabType, cacheKey);
+        }
+    }
+    
+    // 从页面元素中提取专业人士数据
+    function extractProDataFromPage(proId, tabType) {
         try {
-            // 对于感兴趣的专业人士，尝试从页面数据中获取
+            let proData = null;
+            
             if (tabType === 'interestedPros') {
                 const proElements = document.querySelectorAll(`.pro-item[data-pro-id="${proId}"][data-tab-id="interestedPros"]`);
                 if (proElements && proElements.length > 0) {
@@ -848,12 +909,9 @@
                             profession: '',
                             skills: [],
                             contact: '',
-                            description: '此信息来自页面缓存，可能不完整。'
+                            description: '正在加载完整资料...',
+                            _fromPage: true
                         };
-                        
-                        logDebug('从页面元素获取专业人士数据', proData);
-                    } else {
-                        logError('找到的proElement为null', {proId, tabType});
                     }
                 }
             } else if (tabType === 'matchingPros') {
@@ -875,81 +933,22 @@
                             profession: '',
                             skills: [],
                             contact: '',
-                            description: '此信息来自页面缓存，可能不完整。'
+                            description: '正在加载完整资料...',
+                            _fromPage: true
                         };
-                        
-                        logDebug('从页面元素获取专业人士数据', proData);
-                    } else {
-                        logError('找到的proElement为null', {proId, tabType});
                     }
                 }
             }
+            
+            return proData;
         } catch (error) {
-            logError('从页面元素获取专业人士数据失败', error);
-            // 继续执行，尝试API请求
+            logError('从页面元素提取专业人士数据失败', error);
+            return null;
         }
-        
-        // 获取容器元素，确保它们存在
-        const profileContainer = document.querySelector('.pro-profile');
-        const placeholderContainer = document.querySelector('.pro-placeholder');
-        
-        if (!profileContainer || !placeholderContainer) {
-            logError('找不到专业人士资料容器元素', {
-                profileContainer: profileContainer ? '存在' : '不存在',
-                placeholderContainer: placeholderContainer ? '存在' : '不存在'
-            });
-            
-            // 创建一个错误提示
-            const errorMessage = `
-                <div class="alert alert-danger">
-                    <h5><i class="fas fa-exclamation-triangle me-2"></i>页面错误</h5>
-                    <p>无法加载专业人士资料，页面元素缺失。</p>
-                    <button class="btn btn-outline-danger btn-sm mt-2" onclick="window.location.reload()">
-                        <i class="fas fa-sync-alt me-1"></i>刷新页面
-                    </button>
-                </div>
-            `;
-            
-            // 尝试在可能的位置显示错误
-            const proDetailsArea = document.getElementById('pro-details-area');
-            if (proDetailsArea) {
-                proDetailsArea.innerHTML = errorMessage;
-                proDetailsArea.classList.remove('d-none');
-            } else {
-                // 如果连容器都找不到，尝试在内容区域显示
-                const contentBody = document.querySelector('.card-body');
-                if (contentBody) {
-                    contentBody.innerHTML = errorMessage;
-                } else {
-                    // 最后的尝试，在body中添加一个模态框
-                    const modalDiv = document.createElement('div');
-                    modalDiv.className = 'modal fade show';
-                    modalDiv.style.display = 'block';
-                    modalDiv.style.backgroundColor = 'rgba(0,0,0,0.5)';
-                    modalDiv.innerHTML = `
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">页面错误</h5>
-                                    <button type="button" class="btn-close" onclick="this.parentElement.parentElement.parentElement.parentElement.remove()"></button>
-                                </div>
-                                <div class="modal-body">
-                                    ${errorMessage}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    document.body.appendChild(modalDiv);
-                }
-            }
-            return;
-        }
-        
-        // 显示加载状态
-        placeholderContainer.classList.remove('d-none');
-        profileContainer.classList.add('d-none');
-        placeholderContainer.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-3">加载专业人士资料中...</p></div>';
-        
+    }
+    
+    // 从API获取专业人士数据并更新缓存
+    function fetchProDataAndUpdateCache(proId, tabType, cacheKey) {
         // 尝试不同的API路径
         const urls = [
             `/task/api/professionals/${proId}?task_id=${taskId}`,
@@ -957,191 +956,239 @@
             `/api/tasks/${taskId}/professionals/${proId}`
         ];
         
-        // 如果已经从页面获取了数据，直接显示
-        if (proData) {
-            setTimeout(() => {
-                displayProData(proData, tabType);
-            }, 500);
-            return;
-        }
+        // 使用Promise.any尝试所有URL，取第一个成功的结果
+        const fetchPromises = urls.map(url => {
+            return new Promise((resolve, reject) => {
+                logDebug(`尝试API路径`, {url});
+                
+                fetchWithCsrf(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.text().then(text => {
+                                throw new Error(`请求失败，状态码: ${response.status}, 错误信息: ${text}`);
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        logDebug('获取专业人士数据成功', {url, data});
+                        resolve(data);
+                    })
+                    .catch(error => {
+                        logError(`API路径 ${url} 失败`, error);
+                        reject(error);
+                    });
+            });
+        });
         
-        // 否则尝试API请求
-        tryNextUrl(0);
-        
-        function tryNextUrl(index) {
-            if (index >= urls.length) {
-                // 所有URL都尝试失败，显示错误
-                logError('所有API路径尝试失败');
-                placeholderContainer.classList.add('d-none');
-                profileContainer.classList.remove('d-none');
-                profileContainer.innerHTML = `
-                    <div class="alert alert-warning">
-                        <h5><i class="fas fa-exclamation-triangle me-2"></i>无法加载完整资料</h5>
-                        <p>我们无法从服务器获取专业人士的详细资料。</p>
-                        <p>您仍然可以与该专业人士联系或接受申请。</p>
-                        <div class="mt-3">
-                            <button class="btn btn-primary" onclick="sendMessageToPro(${proId})">
-                                <i class="fas fa-comment-dots"></i> 发送消息
+        // 使用Promise.allSettled替代Promise.any，以便在所有请求都失败时也能处理
+        Promise.allSettled(fetchPromises)
+            .then(results => {
+                // 查找第一个成功的结果
+                const successResult = results.find(r => r.status === 'fulfilled');
+                
+                if (successResult) {
+                    const data = successResult.value;
+                    
+                    // 缓存数据
+                    try {
+                        sessionStorage.setItem(cacheKey, JSON.stringify(data));
+                        logDebug('专业人士数据已缓存', {cacheKey});
+                    } catch (e) {
+                        logError('缓存专业人士数据失败', e);
+                    }
+                    
+                    // 显示数据
+                    displayProData(data, tabType);
+                } else {
+                    // 所有请求都失败
+                    logError('所有API路径尝试失败');
+                    
+                    // 获取当前显示的数据
+                    const profileContainer = document.querySelector('.pro-profile');
+                    const placeholderContainer = document.querySelector('.pro-placeholder');
+                    
+                    // 如果当前没有显示数据，显示错误信息
+                    if (profileContainer.classList.contains('d-none')) {
+                        placeholderContainer.classList.add('d-none');
+                        profileContainer.classList.remove('d-none');
+                        profileContainer.innerHTML = `
+                            <div class="alert alert-warning">
+                                <h5><i class="fas fa-exclamation-triangle me-2"></i>无法加载完整资料</h5>
+                                <p>我们无法从服务器获取专业人士的详细资料。</p>
+                                <p>您仍然可以与该专业人士联系或接受申请。</p>
+                                <div class="mt-3">
+                                    <button class="btn btn-primary" onclick="sendMessageToPro(${proId})">
+                                        <i class="fas fa-comment-dots"></i> 发送消息
+                                    </button>
+                                    ${tabType === 'interestedPros' ? 
+                                      `<button class="btn btn-success ms-2" onclick="acceptPro(${proId})">
+                                          <i class="fas fa-check"></i> 接受申请
+                                      </button>` : ''}
+                                    <button class="btn btn-outline-secondary ms-2" onclick="loadProDetails('${proId}', '${tabType}')">
+                                        <i class="fas fa-sync-alt me-1"></i>重试
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // 如果已经显示了基本数据，添加一个小提示
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-warning mt-3';
+                        alertDiv.innerHTML = `
+                            <p class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>无法加载完整资料，显示的是基本信息</p>
+                            <button class="btn btn-sm btn-outline-warning mt-2" onclick="loadProDetails('${proId}', '${tabType}')">
+                                <i class="fas fa-sync-alt me-1"></i>重试加载
                             </button>
-                            ${tabType === 'interestedPros' ? 
-                              `<button class="btn btn-success ms-2" onclick="acceptPro(${proId})">
-                                  <i class="fas fa-check"></i> 接受申请
-                              </button>` : ''}
-                            <button class="btn btn-outline-secondary ms-2" onclick="loadProDetails('${proId}', '${tabType}')">
-                                <i class="fas fa-sync-alt me-1"></i>重试
-                            </button>
-                        </div>
-                    </div>
-                `;
+                        `;
+                        
+                        // 添加到资料卡片底部
+                        const cardFooter = profileContainer.querySelector('.card-footer');
+                        if (cardFooter) {
+                            cardFooter.parentNode.insertBefore(alertDiv, cardFooter.nextSibling);
+                        } else {
+                            profileContainer.appendChild(alertDiv);
+                        }
+                    }
+                }
+            });
+    }
+    
+    // 显示专业人士数据的函数
+    function displayProData(data, tabType) {
+        try {
+            // 获取容器元素
+            const profileContainer = document.querySelector('.pro-profile');
+            const placeholderContainer = document.querySelector('.pro-placeholder');
+            
+            if (!profileContainer || !placeholderContainer) {
+                logError('显示专业人士数据时找不到容器元素');
                 return;
             }
             
-            const url = urls[index];
-            logDebug(`尝试API路径 ${index + 1}/${urls.length}`, {url});
+            // 隐藏加载状态，显示资料
+            placeholderContainer.classList.add('d-none');
+            profileContainer.classList.remove('d-none');
             
-            // 发送AJAX请求
-            fetchWithCsrf(url)
-                .then(response => {
-                    logDebug('获取API响应', {url, status: response.status, ok: response.ok});
-                    if (!response.ok) {
-                        // 尝试下一个URL
-                        return response.text().then(text => {
-                            logError(`API路径 ${index + 1} 失败`, {url, status: response.status, text});
-                            throw new Error('next');
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    logDebug('解析专业人士数据成功', {url, data});
-                    displayProData(data, tabType);
-                })
-                .catch(error => {
-                    if (error.message === 'next') {
-                        // 尝试下一个URL
-                        tryNextUrl(index + 1);
-                    } else {
-                        logError('解析专业人士数据失败', error);
-                        // 尝试下一个URL
-                        tryNextUrl(index + 1);
-                    }
-                });
-        }
-        
-        // 显示专业人士数据的函数
-        function displayProData(data, tabType) {
-            try {
-                // 再次检查容器是否存在
-                if (!profileContainer || !placeholderContainer) {
-                    logError('显示专业人士数据时找不到容器元素');
-                    return;
-                }
-                
-                // 隐藏加载状态，显示资料
-                placeholderContainer.classList.add('d-none');
-                profileContainer.classList.remove('d-none');
-                
-                // 创建专业人士档案HTML
-                const profileHtml = `
-                    <div class="card mb-3">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">${data.name || '未知专业人士'}</h5>
+            // 如果数据来自页面元素且正在加载中，添加加载指示器
+            const loadingIndicator = data._fromPage ? 
+                `<div class="position-absolute top-0 end-0 p-2">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                </div>` : '';
+            
+            // 创建专业人士档案HTML
+            const profileHtml = `
+                <div class="card mb-3 position-relative">
+                    ${loadingIndicator}
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">${data.name || '未知专业人士'}</h5>
+                    </div>
+                    <div class="card-body">
+                        ${data.profession ? `
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">职业:</div>
+                            <div class="col-md-8">${data.profession}</div>
+                        </div>` : ''}
+                        
+                        ${data.skills && data.skills.length > 0 ? `
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">技能:</div>
+                            <div class="col-md-8">${Array.isArray(data.skills) ? data.skills.join(', ') : data.skills}</div>
+                        </div>` : ''}
+                        
+                        ${data.contact ? `
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">联系方式:</div>
+                            <div class="col-md-8">${data.contact}</div>
+                        </div>` : ''}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">评分:</div>
+                            <div class="col-md-8">${renderStars(data.rating || 0)}</div>
                         </div>
-                        <div class="card-body">
-                            ${data.profession ? `
-                            <div class="row mb-3">
-                                <div class="col-md-4 fw-bold">职业:</div>
-                                <div class="col-md-8">${data.profession}</div>
-                            </div>` : ''}
-                            
-                            ${data.skills && data.skills.length > 0 ? `
-                            <div class="row mb-3">
-                                <div class="col-md-4 fw-bold">技能:</div>
-                                <div class="col-md-8">${Array.isArray(data.skills) ? data.skills.join(', ') : data.skills}</div>
-                            </div>` : ''}
-                            
-                            ${data.contact ? `
-                            <div class="row mb-3">
-                                <div class="col-md-4 fw-bold">联系方式:</div>
-                                <div class="col-md-8">${data.contact}</div>
-                            </div>` : ''}
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-4 fw-bold">评分:</div>
-                                <div class="col-md-8">${renderStars(data.rating || 0)}</div>
-                            </div>
-                            
-                            ${data.completed_jobs !== undefined ? `
-                            <div class="row mb-3">
-                                <div class="col-md-4 fw-bold">已完成工作:</div>
-                                <div class="col-md-8">${data.completed_jobs} 个</div>
-                            </div>` : ''}
-                            
-                            ${data.distance !== undefined ? `
-                            <div class="row mb-3">
-                                <div class="col-md-4 fw-bold">距离:</div>
-                                <div class="col-md-8">${data.distance} km</div>
-                            </div>` : ''}
-                            
-                            ${data.match_score !== undefined ? `
-                            <div class="row mb-3">
-                                <div class="col-md-4 fw-bold">匹配度:</div>
-                                <div class="col-md-8">
-                                    <div class="progress" style="height: 20px;">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: ${data.match_score}%;" 
-                                            aria-valuenow="${data.match_score}" aria-valuemin="0" aria-valuemax="100">
-                                            ${data.match_score}%
+                        
+                        ${data.completed_jobs !== undefined ? `
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">已完成工作:</div>
+                            <div class="col-md-8">
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2">${data.completed_jobs} 个</span>
+                                    <div class="progress flex-grow-1" style="height: 8px;">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: ${Math.min(data.completed_jobs * 5, 100)}%;" 
+                                             aria-valuenow="${data.completed_jobs}" aria-valuemin="0" aria-valuemax="20">
                                         </div>
                                     </div>
                                 </div>
-                            </div>` : ''}
-                            
-                            ${data.description ? `
-                            <div class="row mb-3">
-                                <div class="col-md-4 fw-bold">简介:</div>
-                                <div class="col-md-8">${data.description}</div>
-                            </div>` : ''}
-                        </div>
-                        <div class="card-footer">
-                            <button class="btn btn-primary" onclick="sendMessageToPro(${data.id})">
-                                <i class="fas fa-comment-dots"></i> 发送消息
-                            </button>
-                            ${tabType === 'interestedPros' ? 
-                              `<button class="btn btn-success ms-2" onclick="acceptPro(${data.id})">
-                                  <i class="fas fa-check"></i> 接受申请
-                              </button>` : ''}
-                        </div>
+                            </div>
+                        </div>` : ''}
+                        
+                        ${data.distance !== undefined ? `
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">距离:</div>
+                            <div class="col-md-8">${data.distance} km</div>
+                        </div>` : ''}
+                        
+                        ${data.match_score !== undefined ? `
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">匹配度:</div>
+                            <div class="col-md-8">
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: ${data.match_score}%;" 
+                                        aria-valuenow="${data.match_score}" aria-valuemin="0" aria-valuemax="100">
+                                        ${data.match_score}%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>` : ''}
+                        
+                        ${data.description ? `
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">简介:</div>
+                            <div class="col-md-8">${data.description}</div>
+                        </div>` : ''}
                     </div>
-                    
-                    ${data.portfolio ? 
-                      `<div class="card mt-3">
-                          <div class="card-header bg-primary text-white">
-                              <h5 class="mb-0">作品集</h5>
-                          </div>
-                          <div class="card-body">
-                              ${data.portfolio}
-                          </div>
-                      </div>` : ''}
-                `;
+                    <div class="card-footer">
+                        <button class="btn btn-primary" onclick="sendMessageToPro(${data.id})">
+                            <i class="fas fa-comment-dots"></i> 发送消息
+                        </button>
+                        ${tabType === 'interestedPros' ? 
+                          `<button class="btn btn-success ms-2" onclick="acceptPro(${data.id})">
+                              <i class="fas fa-check"></i> 接受申请
+                          </button>` : ''}
+                    </div>
+                </div>
                 
-                profileContainer.innerHTML = profileHtml;
-            } catch (error) {
-                logError('显示专业人士数据出错', error);
-                if (profileContainer) {
-                    profileContainer.innerHTML = `
-                        <div class="alert alert-danger">
-                            <h5><i class="fas fa-exclamation-triangle me-2"></i>显示专业人士资料时出错</h5>
-                            <p>${error.message}</p>
-                            <button class="btn btn-outline-danger btn-sm mt-2" onclick="loadProDetails('${proId}', '${tabType}')">
-                                <i class="fas fa-sync-alt me-1"></i>重试
-                            </button>
-                        </div>
-                    `;
-                    profileContainer.classList.remove('d-none');
-                }
-                if (placeholderContainer) {
-                    placeholderContainer.classList.add('d-none');
-                }
+                ${data.portfolio ? 
+                  `<div class="card mt-3">
+                      <div class="card-header bg-primary text-white">
+                          <h5 class="mb-0">作品集</h5>
+                      </div>
+                      <div class="card-body">
+                          ${data.portfolio}
+                      </div>
+                  </div>` : ''}
+            `;
+            
+            profileContainer.innerHTML = profileHtml;
+        } catch (error) {
+            logError('显示专业人士数据出错', error);
+            if (profileContainer) {
+                profileContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i>显示专业人士资料时出错</h5>
+                        <p>${error.message}</p>
+                        <button class="btn btn-outline-danger btn-sm mt-2" onclick="loadProDetails('${proId}', '${tabType}')">
+                            <i class="fas fa-sync-alt me-1"></i>重试
+                        </button>
+                    </div>
+                `;
+                profileContainer.classList.remove('d-none');
+            }
+            if (placeholderContainer) {
+                placeholderContainer.classList.add('d-none');
             }
         }
     }
@@ -1759,6 +1806,9 @@
         refreshChatList();
         updateUnreadCount();
         
+        // 预加载专业人士数据
+        preloadProfessionalsData();
+        
         // 重新绑定发送按钮事件，确保在DOM更新后仍然有效
         document.getElementById('send-message-btn')?.addEventListener('click', sendMessage);
         
@@ -1790,9 +1840,145 @@
             .chat-input-area {
                 display: block !important;
             }
+            
+            /* 添加专业人士资料卡片的过渡效果 */
+            .pro-profile {
+                transition: opacity 0.3s ease;
+            }
+            
+            /* 添加加载状态的动画 */
+            .loading-pulse {
+                animation: pulse 1.5s infinite ease-in-out;
+            }
+            
+            @keyframes pulse {
+                0% { opacity: 0.6; }
+                50% { opacity: 1; }
+                100% { opacity: 0.6; }
+            }
         `;
         document.head.appendChild(style);
     });
+    
+    // 预加载专业人士数据的函数
+    function preloadProfessionalsData() {
+        logDebug('开始预加载专业人士数据');
+        
+        // 获取所有专业人士项
+        const proItems = document.querySelectorAll('.pro-item');
+        if (!proItems || proItems.length === 0) {
+            logDebug('没有找到专业人士项，跳过预加载');
+            return;
+        }
+        
+        // 创建一个延迟队列，避免同时发送太多请求
+        const queue = [];
+        proItems.forEach(item => {
+            const proId = item.getAttribute('data-pro-id');
+            const tabType = item.getAttribute('data-tab-id');
+            
+            if (proId && tabType) {
+                queue.push({ proId, tabType });
+            }
+        });
+        
+        // 如果队列为空，直接返回
+        if (queue.length === 0) {
+            logDebug('预加载队列为空');
+            return;
+        }
+        
+        logDebug(`预加载队列中有 ${queue.length} 个专业人士数据`);
+        
+        // 使用交错延迟加载数据
+        let index = 0;
+        function processNext() {
+            if (index >= queue.length) {
+                logDebug('所有专业人士数据预加载完成');
+                return;
+            }
+            
+            const { proId, tabType } = queue[index++];
+            const cacheKey = `pro_${proId}_${tabType}`;
+            
+            // 如果已经有缓存，跳过
+            if (sessionStorage.getItem(cacheKey)) {
+                logDebug(`专业人士 ${proId} 数据已缓存，跳过预加载`);
+                processNext();
+                return;
+            }
+            
+            // 先从页面提取基本数据
+            const proData = extractProDataFromPage(proId, tabType);
+            if (proData) {
+                try {
+                    // 缓存基本数据
+                    sessionStorage.setItem(cacheKey, JSON.stringify(proData));
+                    logDebug(`专业人士 ${proId} 基本数据已缓存`);
+                } catch (e) {
+                    logError(`缓存专业人士 ${proId} 基本数据失败`, e);
+                }
+            }
+            
+            // 在后台获取完整数据
+            setTimeout(() => {
+                // 使用低优先级获取完整数据
+                fetchProDataInBackground(proId, tabType, cacheKey);
+                // 处理下一个
+                processNext();
+            }, 500); // 每500毫秒处理一个，避免同时发送太多请求
+        }
+        
+        // 开始处理队列
+        processNext();
+    }
+    
+    // 在后台获取专业人士数据的函数
+    function fetchProDataInBackground(proId, tabType, cacheKey) {
+        logDebug(`在后台获取专业人士 ${proId} 数据`);
+        
+        // 尝试不同的API路径
+        const urls = [
+            `/task/api/professionals/${proId}?task_id=${taskId}`,
+            `/api/professionals/${proId}?task_id=${taskId}`,
+            `/api/tasks/${taskId}/professionals/${proId}`
+        ];
+        
+        // 使用Promise.race尝试所有URL，取第一个成功的结果
+        const fetchPromises = urls.map(url => {
+            return new Promise((resolve, reject) => {
+                fetchWithCsrf(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.text().then(text => {
+                                throw new Error(`请求失败，状态码: ${response.status}`);
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        resolve(data);
+                    })
+                    .catch(error => {
+                        reject(error);
+                    });
+            });
+        });
+        
+        Promise.race(fetchPromises)
+            .then(data => {
+                // 缓存数据
+                try {
+                    sessionStorage.setItem(cacheKey, JSON.stringify(data));
+                    logDebug(`专业人士 ${proId} 完整数据已缓存`);
+                } catch (e) {
+                    logError(`缓存专业人士 ${proId} 完整数据失败`, e);
+                }
+            })
+            .catch(error => {
+                logDebug(`在后台获取专业人士 ${proId} 数据失败，将在用户点击时重试`);
+            });
+    }
 </script>
 {% endblock %}
 {% endblock %}
