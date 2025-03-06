@@ -1,63 +1,192 @@
 {% extends "base.html" %}
 
-{% block content %}
-<div class="container">
-    <h2>我的消息</h2>
-    
-    <!-- 收到的消息 -->
-    <div class="received-messages mt-4">
-        <h3>收到的消息</h3>
-        {% if received_messages %}
-            {% for message in received_messages %}
-            <div class="message-item card mb-3">
-                <div class="card-body">
-                    <div class="message-meta text-muted mb-2">
-                        <small>
-                            来自: {{ message.sender.username }} | 
-                            时间: {{ message.created_at.strftime('%Y-%m-%d %H:%M') }}
-                            {% if message.task %}
-                                | 关于任务: <a href="{{ url_for('task.task_detail', task_id=message.task.id) }}">{{ message.task.title }}</a>
-                            {% endif %}
-                        </small>
-                    </div>
-                    <p class="card-text">{{ message.content }}</p>
-                    <a href="{{ url_for('message.send_message', recipient_id=message.sender.id) }}" 
-                       class="btn btn-sm btn-outline-primary">回复</a>
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-            <p>暂无收到的消息</p>
-        {% endif %}
-    </div>
+{% block title %}我的消息{% endblock %}
 
-    <!-- 发送的消息 -->
-    <div class="sent-messages mt-4">
-        <h3>发送的消息</h3>
-        {% if sent_messages %}
-            {% for message in sent_messages %}
-            <div class="message-item card mb-3">
-                <div class="card-body">
-                    <div class="message-meta text-muted mb-2">
-                        <small>
-                            发给: {{ message.recipient.username }} |
-                            {% if message.created_at %}
-                                时间: {{ message.created_at.strftime('%Y-%m-%d %H:%M') }}
-                            {% else %}
-                                时间: 未知
-                            {% endif %}
-                            {% if message.task %}
-                                | 关于任务: <a href="{{ url_for('task.task_detail', task_id=message.task.id) }}">{{ message.task.title }}</a>
-                            {% endif %}
-                        </small>
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- 左侧会话列表 -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-lg mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-comments me-2"></i>我的消息
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush conversation-list">
+                        {% if conversations %}
+                            {% for user_id, conv in conversations.items() %}
+                                <div class="list-group-item p-0">
+                                    <a href="{{ url_for('message.messages', user_id=user_id) }}" class="conversation-item d-flex align-items-center p-3 text-decoration-none {% if selected_user_id == user_id %}active{% endif %}">
+                                        <div class="position-relative me-3">
+                                            <img src="{{ conv.user.avatar_url or url_for('static', filename='images/default-avatar.jpg') }}" class="avatar-md rounded-circle" alt="{{ conv.user.username }}">
+                                            {% if conv.unread_count > 0 %}
+                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                                {{ conv.unread_count }}
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">{{ conv.user.username }}</h6>
+                                            <p class="text-muted mb-0 small text-truncate">{{ conv.last_message_preview }}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <small class="text-muted d-block">{{ conv.last_message_time|datetimeformat }}</small>
+                                        </div>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center p-3">
+                                <p class="text-muted mb-0">您暂无任何消息</p>
+                            </div>
+                        {% endif %}
                     </div>
-                    <p class="card-text">{{ message.content }}</p>
                 </div>
             </div>
-            {% endfor %}
-        {% else %}
-            <p>暂无发送的消息</p>
-        {% endif %}
+        </div>
+
+        <!-- 右侧消息详情 -->
+        <div class="col-md-9">
+            <div class="card shadow-sm border-0 rounded-lg">
+                {% if selected_conversation %}
+                    <div class="card-header">
+                        <div class="d-flex align-items-center">
+                            <img src="{{ selected_conversation.user.avatar_url or url_for('static', filename='images/default-avatar.jpg') }}" class="avatar-md rounded-circle me-3" alt="{{ selected_conversation.user.username }}">
+                            <div>
+                                <h5 class="mb-0">{{ selected_conversation.user.username }}</h5>
+                                {% if selected_conversation.task %}
+                                <p class="mb-0 text-muted small">
+                                    <i class="fas fa-clipboard-list me-1"></i>
+                                    <a href="{{ url_for('task.task_detail', task_id=selected_conversation.task.id) }}" class="text-decoration-none">
+                                        {{ selected_conversation.task.title }}
+                                    </a>
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="message-area p-3" style="height: 400px; overflow-y: auto;">
+                            {% for message in selected_conversation.messages %}
+                                <div class="message-item d-flex mb-3 {% if message.sender_id == current_user.id %}justify-content-end{% endif %}">
+                                    {% if message.sender_id != current_user.id %}
+                                    <img src="{{ selected_conversation.user.avatar_url or url_for('static', filename='images/default-avatar.jpg') }}" class="avatar-sm rounded-circle me-2 align-self-end" alt="{{ selected_conversation.user.username }}">
+                                    {% endif %}
+                                    
+                                    <div class="message-content {% if message.sender_id == current_user.id %}bg-primary text-white{% else %}bg-light{% endif %} p-3 rounded">
+                                        {{ message.content }}
+                                        <div class="message-time text-end mt-1">
+                                            <small class="{% if message.sender_id == current_user.id %}text-white-50{% else %}text-muted{% endif %}">
+                                                {{ message.created_at.strftime('%H:%M') }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if message.sender_id == current_user.id %}
+                                    <img src="{{ current_user.avatar_url or url_for('static', filename='images/default-avatar.jpg') }}" class="avatar-sm rounded-circle ms-2 align-self-end" alt="{{ current_user.username }}">
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="message-input p-3 border-top">
+                            <form id="message-form" action="{{ url_for('message.send_message', recipient_id=selected_user_id) }}" method="post">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="content" id="message-content" placeholder="输入消息..." required>
+                                    <button class="btn btn-primary" type="submit">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">选择一个会话以查看消息</h5>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 滚动到消息区域底部
+    const messageArea = document.querySelector('.message-area');
+    if (messageArea) {
+        messageArea.scrollTop = messageArea.scrollHeight;
+    }
+    
+    // 处理表单提交
+    const messageForm = document.getElementById('message-form');
+    if (messageForm) {
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 添加新消息到界面
+                    const messageArea = document.querySelector('.message-area');
+                    const messageHtml = `
+                        <div class="message-item d-flex mb-3 justify-content-end">
+                            <div class="message-content bg-primary text-white p-3 rounded">
+                                ${data.message.content}
+                                <div class="message-time text-end mt-1">
+                                    <small class="text-white-50">
+                                        ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                    </small>
+                                </div>
+                            </div>
+                            <img src="${data.current_user_avatar || '/static/images/default-avatar.jpg'}" class="avatar-sm rounded-circle ms-2 align-self-end" alt="${data.current_user_name}">
+                        </div>
+                    `;
+                    messageArea.insertAdjacentHTML('beforeend', messageHtml);
+                    messageArea.scrollTop = messageArea.scrollHeight;
+                    
+                    // 清空输入框
+                    document.getElementById('message-content').value = '';
+                } else {
+                    alert('发送消息失败: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('发送消息失败，请重试');
+            });
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .conversation-item.active {
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+    
+    .message-area {
+        height: 400px;
+        overflow-y: auto;
+    }
+    
+    .message-content {
+        max-width: 75%;
+        word-wrap: break-word;
+    }
+</style>
 {% endblock %}

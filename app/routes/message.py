@@ -3,60 +3,135 @@ from flask_login import current_user, login_required
 from app import db, csrf
 from app.models import Message, User, Task
 from app.forms import MessageForm
+from datetime import datetime
 
 message_bp = Blueprint('message', __name__, url_prefix='')
 
 @message_bp.route('/messages')
+@message_bp.route('/messages/<int:user_id>')
 @login_required
-def messages():
-    received = Message.query.filter_by(recipient_id=current_user.id)\
-        .order_by(Message.created_at.desc()).all()
-    sent = Message.query.filter_by(sender_id=current_user.id)\
-        .order_by(Message.created_at.desc()).all()
-    return render_template('messages.html', received_messages=received, sent_messages=sent)
-
-@message_bp.route('/send_message/<int:recipient_id>', methods=['GET', 'POST'])
-@message_bp.route('/send_message/<int:recipient_id>/<int:task_id>', methods=['GET', 'POST'])
-@login_required
-def send_message(recipient_id, task_id=None):
-    recipient = User.query.get_or_404(recipient_id)
-    task = Task.query.get(task_id) if task_id else None
-    form = MessageForm()
+def messages(user_id=None):
+    # 获取当前用户的所有对话
+    all_messages = Message.query.filter(
+        (Message.sender_id == current_user.id) | (Message.recipient_id == current_user.id)
+    ).order_by(Message.created_at.desc()).all()
     
-    if form.validate_on_submit():
-        message = Message(
-            sender_id=current_user.id,
-            recipient_id=recipient_id,
-            content=form.content.data,
-            task_id=task_id if task_id else None
-        )
-        db.session.add(message)
+    # 按用户分组消息
+    conversations = {}
+    for message in all_messages:
+        other_user_id = message.sender_id if message.sender_id != current_user.id else message.recipient_id
+        
+        if other_user_id not in conversations:
+            other_user = User.query.get(other_user_id)
+            if not other_user:
+                continue
+                
+            conversations[other_user_id] = {
+                'user': other_user,
+                'messages': [],
+                'unread_count': 0,
+                'last_message_time': None,
+                'last_message_preview': '',
+                'task': None
+            }
+        
+        # 添加消息到对话
+        conversations[other_user_id]['messages'].append(message)
+        
+        # 更新未读消息计数
+        if message.recipient_id == current_user.id and not message.is_read:
+            conversations[other_user_id]['unread_count'] += 1
+            
+        # 更新最后消息时间和预览
+        if not conversations[other_user_id]['last_message_time'] or message.created_at > conversations[other_user_id]['last_message_time']:
+            conversations[other_user_id]['last_message_time'] = message.created_at
+            conversations[other_user_id]['last_message_preview'] = message.content[:50] + ('...' if len(message.content) > 50 else '')
+            
+            # 更新关联的任务
+            if message.task_id and not conversations[other_user_id]['task']:
+                conversations[other_user_id]['task'] = Task.query.get(message.task_id)
+    
+    # 对每个会话中的消息按时间排序
+    for conv in conversations.values():
+        conv['messages'] = sorted(conv['messages'], key=lambda x: x.created_at)
+    
+    # 如果指定了用户ID，则获取与该用户的对话
+    selected_conversation = None
+    selected_user_id = None
+    if user_id and user_id in conversations:
+        selected_conversation = conversations[user_id]
+        selected_user_id = user_id
+        
+        # 标记消息为已读
+        for message in selected_conversation['messages']:
+            if message.recipient_id == current_user.id and not message.is_read:
+                message.is_read = True
         db.session.commit()
-        flash('消息已发送')
-        return redirect(url_for('message.messages'))
+    elif conversations:
+        # 如果没有指定用户但有对话，默认选择最近的一个
+        recent_user_id = max(conversations.items(), key=lambda x: x[1]['last_message_time'])[0]
+        return redirect(url_for('message.messages', user_id=recent_user_id))
     
-    return render_template('send_message.html', 
-                         form=form, 
-                         recipient=recipient,
-                         task=task)
+    return render_template('messages.html', 
+                           conversations=conversations, 
+                           selected_conversation=selected_conversation,
+                           selected_user_id=selected_user_id)
 
-@message_bp.route('/user/messages')
+@message_bp.route('/send_message/<int:recipient_id>', methods=['POST'])
 @login_required
-def user_messages():
-    # 使用joinedload预加载关联数据
-    sent_messages = Message.query.options(db.joinedload(Message.task))\
-        .filter_by(sender_id=current_user.id)\
-        .order_by(Message.created_at.desc())\
-        .all()
-
-    received_messages = Message.query.options(db.joinedload(Message.task))\
-        .filter_by(recipient_id=current_user.id)\
-        .order_by(Message.created_at.desc())\
-        .all()
-
-    return render_template('user_messages.html',
-                         sent_messages=sent_messages,
-                         received_messages=received_messages)
+def send_message(recipient_id):
+    # 确保接收者存在
+    recipient = User.query.get_or_404(recipient_id)
+    
+    # 获取消息内容
+    content = request.form.get('content')
+    if not content:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'error': '消息内容不能为空'})
+        flash('消息内容不能为空', 'danger')
+        return redirect(url_for('message.messages', user_id=recipient_id))
+    
+    # 查找最近的消息以获取任务ID（如果有）
+    recent_message = Message.query.filter(
+        ((Message.sender_id == current_user.id) & (Message.recipient_id == recipient_id)) |
+        ((Message.recipient_id == current_user.id) & (Message.sender_id == recipient_id))
+    ).order_by(Message.created_at.desc()).first()
+    
+    task_id = None
+    if recent_message and recent_message.task_id:
+        task_id = recent_message.task_id
+    
+    # 创建新消息
+    message = Message(
+        content=content,
+        sender_id=current_user.id,
+        recipient_id=recipient_id,
+        task_id=task_id,
+        created_at=datetime.utcnow(),
+        is_read=False
+    )
+    
+    db.session.add(message)
+    db.session.commit()
+    
+    # 根据请求类型返回响应
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({
+            'success': True,
+            'message': {
+                'id': message.id,
+                'content': message.content,
+                'sender_id': message.sender_id,
+                'recipient_id': message.recipient_id,
+                'created_at': message.created_at.isoformat(),
+                'is_read': message.is_read
+            },
+            'current_user_name': current_user.username,
+            'current_user_avatar': current_user.avatar_url or url_for('static', filename='images/default-avatar.jpg')
+        })
+    
+    flash('消息已发送', 'success')
+    return redirect(url_for('message.messages', user_id=recipient_id))
 
 @message_bp.route('/send_message/<int:recipient_id>/<int:task_id>', methods=['POST'])
 @login_required
@@ -78,6 +153,24 @@ def send_task_message(recipient_id, task_id):
         flash('消息已发送')
     
     return redirect(url_for('task.task_conversation', task_id=task_id))
+
+@message_bp.route('/user/messages')
+@login_required
+def user_messages():
+    # 使用joinedload预加载关联数据
+    sent_messages = Message.query.options(db.joinedload(Message.task))\
+        .filter_by(sender_id=current_user.id)\
+        .order_by(Message.created_at.desc())\
+        .all()
+
+    received_messages = Message.query.options(db.joinedload(Message.task))\
+        .filter_by(recipient_id=current_user.id)\
+        .order_by(Message.created_at.desc())\
+        .all()
+
+    return render_template('user_messages.html',
+                         sent_messages=sent_messages,
+                         received_messages=received_messages)
 
 @message_bp.route('/message/<int:message_id>/respond_invitation', methods=['POST'])
 @login_required

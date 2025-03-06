@@ -91,6 +91,15 @@ def create_app():
         return translations.get(status, status)
 
     app.jinja_env.filters['status_translate'] = status_translate
+    
+    # 添加日期时间格式化过滤器
+    @app.template_filter('datetimeformat')
+    def datetimeformat(value, format='%Y-%m-%d %H:%M'):
+        if value:
+            return value.strftime(format)
+        return ""
+
+    app.jinja_env.filters['datetimeformat'] = datetimeformat
 
     # 将配置添加到模板全局变量
     @app.context_processor
