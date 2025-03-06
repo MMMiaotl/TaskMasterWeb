@@ -196,32 +196,29 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="content-section" id="chat-area">
+                    <div class="content-section" id="chat-area-container">
                         <div class="row">
                             <!-- 聊天窗口 -->
                             <div class="col-12">
                                 <div class="chat-window" id="chat-window">
-                                    <!-- 聊天内容区域 -->
-                                    <div id="chat-area" class="d-none">
-                                        <!-- 当没有选中对话时显示 -->
-                                        <div class="chat-placeholder text-center p-5">
-                                            <i class="fas fa-comments fa-3x text-muted mb-3"></i>
-                                            <p class="lead text-muted">请选择一个对话开始聊天</p>
-                                        </div>
-                                        
-                                        <!-- 对话消息容器 -->
-                                        <div class="chat-messages d-none overflow-auto p-3" style="height: calc(100vh - 300px);">
-                                            <!-- 消息将在这里动态加载 -->
-                                        </div>
-                                        
-                                        <!-- 消息输入框 -->
-                                        <div class="chat-input-area d-none mt-3 p-3 bg-light rounded">
-                                            <div class="input-group">
-                                                <input type="text" id="message-input" class="form-control" placeholder="输入消息...">
-                                                <button class="btn btn-primary" onclick="sendMessage()">
-                                                    <i class="fas fa-paper-plane"></i> 发送
-                                                </button>
-                                            </div>
+                                    <!-- 当没有选中对话时显示 -->
+                                    <div class="chat-placeholder text-center p-5">
+                                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                                        <p class="lead text-muted">请选择一个对话开始聊天</p>
+                                    </div>
+                                    
+                                    <!-- 对话消息容器 -->
+                                    <div class="chat-messages overflow-auto p-3" style="height: calc(100vh - 400px);">
+                                        <!-- 消息将在这里动态加载 -->
+                                    </div>
+                                    
+                                    <!-- 消息输入框 -->
+                                    <div class="chat-input-area mt-3 p-3 bg-light rounded">
+                                        <div class="input-group">
+                                            <input type="text" id="message-input" class="form-control" placeholder="输入消息...">
+                                            <button class="btn btn-primary" id="send-message-btn">
+                                                <i class="fas fa-paper-plane"></i> 发送
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -486,7 +483,7 @@
             });
             
             // 显示聊天区域，隐藏专业人士详情区域
-            document.getElementById('chat-area').classList.remove('d-none');
+            document.getElementById('chat-area-container').classList.remove('d-none');
             document.getElementById('pro-details-area').classList.add('d-none');
             document.getElementById('content-area-title').textContent = '聊天详情';
             document.getElementById('back-to-chat').style.display = 'none';
@@ -509,6 +506,9 @@
             if (chatPlaceholder) chatPlaceholder.classList.add('d-none');
             if (chatMessages) chatMessages.classList.remove('d-none');
             if (chatInputArea) chatInputArea.classList.remove('d-none');
+            
+            // 设置当前活跃对话ID到发送按钮的data属性
+            document.getElementById('send-message-btn').setAttribute('data-conversation-id', conversationId);
         });
     });
     
@@ -521,7 +521,7 @@
                 logDebug('点击专业人士项', {proId, tabType});
                 
                 // 显示专业人士详情区域，隐藏其他区域
-                document.getElementById('chat-area').classList.add('d-none');
+                document.getElementById('chat-area-container').classList.add('d-none');
                 document.getElementById('pro-details-area').classList.remove('d-none');
                 document.getElementById('content-area-title').textContent = '专业人士详情';
                 document.getElementById('back-to-chat').style.display = 'block';
@@ -545,7 +545,7 @@
     
     // 返回聊天区域按钮
     document.getElementById('back-to-chat').addEventListener('click', function() {
-        document.getElementById('chat-area').classList.remove('d-none');
+        document.getElementById('chat-area-container').classList.remove('d-none');
         document.getElementById('pro-details-area').classList.add('d-none');
         document.getElementById('content-area-title').textContent = '聊天详情';
         this.style.display = 'none';
@@ -608,6 +608,7 @@
             // 显示聊天窗口，隐藏占位符
             const chatPlaceholder = document.querySelector('.chat-placeholder');
             const chatInputArea = document.querySelector('.chat-input-area');
+            const messageInput = document.getElementById('message-input');
             
             logDebug('聊天区域元素状态', {
                 chatPlaceholder: chatPlaceholder ? {
@@ -621,12 +622,22 @@
                 chatInputArea: chatInputArea ? {
                     exists: true,
                     isHidden: chatInputArea.classList.contains('d-none')
+                } : 'not found',
+                messageInput: messageInput ? {
+                    exists: true,
+                    disabled: messageInput.disabled
                 } : 'not found'
             });
             
             if (chatPlaceholder) chatPlaceholder.classList.add('d-none');
-            messagesContainer.classList.remove('d-none');
+            if (messagesContainer) messagesContainer.classList.remove('d-none');
             if (chatInputArea) chatInputArea.classList.remove('d-none');
+            
+            // 确保输入框可用
+            if (messageInput) {
+                messageInput.disabled = false;
+                messageInput.focus();
+            }
             
             // 发送AJAX请求
             logDebug('发送API请求', {url});
@@ -722,6 +733,13 @@
                     
                     // 刷新聊天列表以更新未读状态
                     refreshChatList();
+                    
+                    // 确保输入框可用并获取焦点
+                    const messageInput = document.getElementById('message-input');
+                    if (messageInput) {
+                        messageInput.disabled = false;
+                        messageInput.focus();
+                    }
                 })
                 .catch(error => {
                     logError('加载对话失败', error);
@@ -925,8 +943,16 @@
     function sendMessage() {
         try {
             const messageInput = document.getElementById('message-input');
+            if (!messageInput) {
+                logError('发送消息失败', {error: '找不到消息输入框'});
+                return;
+            }
+            
             const message = messageInput.value.trim();
-            const conversationId = document.querySelector('.chat-item.active-chat')?.dataset.conversationId;
+            // 从发送按钮的data属性获取当前活跃对话ID
+            const sendButton = document.getElementById('send-message-btn');
+            const conversationId = sendButton.getAttribute('data-conversation-id') || 
+                                  document.querySelector('.chat-item.active-chat')?.dataset.conversationId;
             
             logDebug('发送消息', {message, conversationId, taskId});
             
@@ -950,6 +976,9 @@
             
             const otherUserId = userIds[0] === currentUserId ? userIds[1] : userIds[0];
             logDebug('解析对话ID', {userIds, currentUserId, otherUserId});
+            
+            // 禁用输入框，防止重复发送
+            messageInput.disabled = true;
             
             // 使用fetchWithCsrf函数发送请求
             fetchWithCsrf(`/message/api/messages/send`, {
@@ -976,15 +1005,28 @@
                 // 清空输入框
                 messageInput.value = '';
                 
+                // 启用输入框
+                messageInput.disabled = false;
+                messageInput.focus();
+                
                 // 重新加载对话
                 loadConversation(conversationId);
             })
             .catch(error => {
                 logError('发送消息失败', error);
                 alert(`发送消息失败: ${error.message}`);
+                
+                // 启用输入框
+                messageInput.disabled = false;
             });
         } catch (error) {
             logError('发送消息函数出错', error);
+            
+            // 确保输入框始终可用
+            const messageInput = document.getElementById('message-input');
+            if (messageInput) {
+                messageInput.disabled = false;
+            }
         }
     }
     
@@ -997,7 +1039,7 @@
         logDebug('构建对话ID', {conversationId, currentUserId, proId});
         
         // 切换到聊天区域
-        document.getElementById('chat-area').classList.remove('d-none');
+        document.getElementById('chat-area-container').classList.remove('d-none');
         document.getElementById('pro-details-area').classList.add('d-none');
         document.getElementById('content-area-title').textContent = '聊天详情';
         document.getElementById('back-to-chat').style.display = 'none';
@@ -1083,6 +1125,9 @@
                         containerHTML: chatsContainer.outerHTML.substring(0, 100) + '...'
                     });
                     
+                    // 保存当前活跃的对话ID
+                    const activeConversationId = document.querySelector('.chat-item.active-chat')?.dataset.conversationId;
+                    
                     chatsContainer.innerHTML = '';
                     
                     if (data.conversations.length === 0) {
@@ -1099,14 +1144,18 @@
                         const unreadBadge = conv.unread_count > 0 ? 
                             `<span class="badge bg-danger rounded-pill mt-1">${conv.unread_count}</span>` : '';
                         
+                        // 检查是否是当前活跃的对话
+                        const isActive = conv.id === activeConversationId;
+                        
                         logDebug('创建聊天项', {
                             conversation_id: conv.id,
                             other_user: conv.other_user.name,
-                            unread_count: conv.unread_count
+                            unread_count: conv.unread_count,
+                            isActive: isActive
                         });
                         
                         const chatItemHtml = `
-                            <div class="chat-item p-3 border-bottom ${conv.unread_count > 0 ? 'bg-light' : ''}" data-conversation-id="${conv.id}">
+                            <div class="chat-item p-3 border-bottom ${conv.unread_count > 0 ? 'bg-light' : ''} ${isActive ? 'active-chat' : ''}" data-conversation-id="${conv.id}">
                                 <div class="d-flex align-items-center position-relative">
                                     <img src="${conv.other_user.avatar}" alt="${conv.other_user.name}" class="rounded-circle" width="40">
                                     <div class="ms-3 flex-grow-1">
@@ -1151,7 +1200,7 @@
                             });
                             
                             // 显示聊天区域，隐藏专业人士详情区域
-                            document.getElementById('chat-area').classList.remove('d-none');
+                            document.getElementById('chat-area-container').classList.remove('d-none');
                             document.getElementById('pro-details-area').classList.add('d-none');
                             document.getElementById('content-area-title').textContent = '聊天详情';
                             document.getElementById('back-to-chat').style.display = 'none';
@@ -1174,8 +1223,16 @@
                             if (chatPlaceholder) chatPlaceholder.classList.add('d-none');
                             if (chatMessages) chatMessages.classList.remove('d-none');
                             if (chatInputArea) chatInputArea.classList.remove('d-none');
+                            
+                            // 设置当前活跃对话ID到发送按钮的data属性
+                            document.getElementById('send-message-btn').setAttribute('data-conversation-id', conversationId);
                         });
                     });
+                    
+                    // 如果有活跃对话，确保发送按钮有正确的对话ID
+                    if (activeConversationId) {
+                        document.getElementById('send-message-btn').setAttribute('data-conversation-id', activeConversationId);
+                    }
                 } else {
                     logError('找不到聊天列表容器', {selector: '.chats-list'});
                 }
@@ -1234,27 +1291,76 @@
     }
     
     // 绑定发送消息按钮点击事件
-    document.getElementById('send-message-btn').addEventListener('click', sendMessage);
+    const sendMessageBtn = document.getElementById('send-message-btn');
+    if (sendMessageBtn) {
+        sendMessageBtn.addEventListener('click', sendMessage);
+    } else {
+        logDebug('未找到发送消息按钮元素');
+    }
     
     // 绑定消息输入框回车键事件
-    document.getElementById('message-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
+    const messageInput = document.getElementById('message-input');
+    if (messageInput) {
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    } else {
+        logDebug('未找到消息输入框元素');
+    }
     
     // 绑定聊天表单提交事件
-    document.getElementById('chat-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        sendMessage();
-    });
+    const chatForm = document.getElementById('chat-form');
+    if (chatForm) {
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            sendMessage();
+        });
+    } else {
+        logDebug('未找到聊天表单元素');
+    }
     
     // 页面加载完成后自动刷新聊天列表
     window.addEventListener('load', function() {
         refreshCsrfToken();
         refreshChatList();
         updateUnreadCount();
+        
+        // 重新绑定发送按钮事件，确保在DOM更新后仍然有效
+        document.getElementById('send-message-btn')?.addEventListener('click', sendMessage);
+        
+        // 确保输入框可用
+        const messageInput = document.getElementById('message-input');
+        if (messageInput) {
+            messageInput.disabled = false;
+        }
+        
+        // 添加CSS样式以确保聊天区域正确显示
+        const style = document.createElement('style');
+        style.textContent = `
+            .message-outgoing {
+                display: flex;
+                justify-content: flex-end;
+            }
+            .message-incoming {
+                display: flex;
+                justify-content: flex-start;
+            }
+            .message-content {
+                max-width: 80%;
+                word-break: break-word;
+            }
+            .chat-messages {
+                overflow-y: auto;
+                display: block !important;
+            }
+            .chat-input-area {
+                display: block !important;
+            }
+        `;
+        document.head.appendChild(style);
     });
 </script>
 {% endblock %}
