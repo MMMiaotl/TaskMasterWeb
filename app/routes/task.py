@@ -1,12 +1,11 @@
-from flask import Blueprint, render_template, flash, redirect, url_for, request, jsonify
+from flask import Blueprint, render_template, flash, redirect, url_for, request, jsonify, current_app, abort
 from flask_login import current_user, login_required
-from app import db
+from app import db, csrf
 from app.models import Task, Message, User, Review, UserCategory
 from app.forms import TaskForm, ReviewForm
 from sqlalchemy import or_
 from datetime import datetime
 from app.utils.constants import SERVICE_CATEGORIES, SERVICE_CHOICES
-from flask import current_app
 
 task_bp = Blueprint('task', __name__, url_prefix='/task')
 
@@ -598,8 +597,11 @@ def task_responses(task_id):
         # 查询与任务相关的所有对话
         current_app.logger.info(f"开始查询任务相关的对话消息")
         conversations = Message.query.filter(
-            (Message.task_id == task_id) &
-            ((Message.sender_id == current_user.id) | (Message.recipient_id == current_user.id))
+            Message.task_id == task_id,
+            (
+                (Message.sender_id == current_user.id) | 
+                (Message.recipient_id == current_user.id)
+            )
         ).order_by(Message.created_at.desc()).all()
         current_app.logger.info(f"获取到 {len(conversations)} 条对话消息")
         
@@ -616,9 +618,9 @@ def task_responses(task_id):
                         continue
                     
                     conversations_by_user[other_user_id] = {
-                        'id': other_user_id,  # 这里使用其他用户ID作为对话ID
+                        'id': f"{min(current_user.id, other_user_id)}_{max(current_user.id, other_user_id)}",  # 使用格式化的对话ID
                         'pro_name': other_user.username,
-                        'pro_avatar': other_user.avatar(128),
+                        'pro_avatar': other_user.avatar_url or url_for('static', filename='images/default-avatar.jpg'),
                         'messages': [],
                         'has_unread': False,
                         'unread_count': 0,
@@ -645,16 +647,11 @@ def task_responses(task_id):
         current_app.logger.info(f"对话数据整理完成，共有 {len(conversations_by_user)} 个对话")
         
         # 将对话按照最新消息时间排序
-        try:
-            conversations_list = sorted(
-                conversations_by_user.values(),
-                key=lambda x: x['last_message_time'] or datetime.min,
-                reverse=True
-            )
-            current_app.logger.info(f"对话排序完成")
-        except Exception as sort_e:
-            current_app.logger.error(f"对话排序出错: {str(sort_e)}")
-            conversations_list = list(conversations_by_user.values())
+        conversations_list = sorted(
+            conversations_by_user.values(),
+            key=lambda x: x['last_message_time'] or datetime.min.isoformat(),
+            reverse=True
+        )
         
         # 查询对此任务感兴趣的专业人士
         current_app.logger.info(f"开始查询感兴趣的专业人士")
@@ -676,7 +673,7 @@ def task_responses(task_id):
                     interested_pros.append({
                         'id': user.id,
                         'name': user.username,
-                        'avatar': user.avatar(128),
+                        'avatar': user.avatar_url or url_for('static', filename='images/default-avatar.jpg'),
                         'rating': round(rating, 1),
                         'completed_jobs': completed_jobs
                     })
@@ -703,7 +700,7 @@ def task_responses(task_id):
                 matching_pros.append({
                     'id': user.id,
                     'name': user.username,
-                    'avatar': user.avatar(128),
+                    'avatar': user.avatar_url or url_for('static', filename='images/default-avatar.jpg'),
                     'rating': round(rating, 1),
                     'match_score': match_score,
                     'distance': distance
@@ -748,17 +745,17 @@ def task_responses(task_id):
         flash('加载任务回应页面时发生错误', 'danger')
         return redirect(url_for('task.tasks'))
 
-@task_bp.route('/api/conversations/<int:conversation_id>/messages')
+@task_bp.route('/api/conversations/<int:other_user_id>/messages')
 @login_required
-def get_conversation_messages(conversation_id):
+def get_conversation_messages(other_user_id):
     """获取与特定用户的对话消息"""
     try:
         task_id = request.args.get('task_id')
         if not task_id:
             # 尝试从消息中获取任务ID
             message = Message.query.filter(
-                ((Message.sender_id == current_user.id) & (Message.recipient_id == conversation_id)) |
-                ((Message.recipient_id == current_user.id) & (Message.sender_id == conversation_id))
+                ((Message.sender_id == current_user.id) & (Message.recipient_id == other_user_id)) |
+                ((Message.recipient_id == current_user.id) & (Message.sender_id == other_user_id))
             ).first()
             if message:
                 task_id = message.task_id
@@ -769,8 +766,8 @@ def get_conversation_messages(conversation_id):
         messages = Message.query.filter(
             (Message.task_id == task_id) &
             (
-                ((Message.sender_id == current_user.id) & (Message.recipient_id == conversation_id)) |
-                ((Message.recipient_id == current_user.id) & (Message.sender_id == conversation_id))
+                ((Message.sender_id == current_user.id) & (Message.recipient_id == other_user_id)) |
+                ((Message.recipient_id == current_user.id) & (Message.sender_id == other_user_id))
             )
         ).order_by(Message.created_at.asc()).all()
         
@@ -796,14 +793,19 @@ def get_conversation_messages(conversation_id):
         current_app.logger.error(f"Error in get_conversation_messages: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@task_bp.route('/api/conversations/<int:conversation_id>/read', methods=['POST'])
+@task_bp.route('/api/conversations/<int:other_user_id>/read', methods=['POST'])
 @login_required
-def mark_conversation_as_read(conversation_id):
+def mark_conversation_as_read(other_user_id):
     """将与特定用户的对话标记为已读"""
     try:
-        # 查找用户ID为conversation_id发送的未读消息
+        task_id = request.args.get('task_id')
+        if not task_id:
+            return jsonify({"error": "任务ID不能为空"}), 400
+            
+        # 查找特定任务下，由other_user_id发送给当前用户的未读消息
         unread_messages = Message.query.filter(
-            (Message.sender_id == conversation_id) &
+            (Message.task_id == task_id) &
+            (Message.sender_id == other_user_id) &
             (Message.recipient_id == current_user.id) &
             (Message.is_read == False)
         ).all()
@@ -825,22 +827,27 @@ def mark_conversation_as_read(conversation_id):
 def get_professional_details(user_id):
     """获取专业人士的详细信息"""
     try:
+        current_app.logger.info(f"开始获取专业人士详情，用户ID: {user_id}")
         user = User.query.get_or_404(user_id)
+        current_app.logger.info(f"找到用户: {user.username}, 头像URL: {user.avatar_url}")
         
         # 获取用户已完成的任务数量
         completed_jobs = Task.query.filter(
             (Task.executor_id == user.id) & 
             (Task.status == 2)  # 假设状态2表示已完成
         ).count()
+        current_app.logger.info(f"用户已完成任务数: {completed_jobs}")
         
         # 获取用户评分
         reviews = Review.query.filter_by(reviewee_id=user.id).all()
         rating = sum([r.rating for r in reviews]) / len(reviews) if reviews else 0
+        current_app.logger.info(f"用户评分: {rating}, 评论数: {len(reviews)}")
         
         # 获取用户技能 (假设用户模型有skills字段或关联表)
         skills = []
-        if hasattr(user, 'skills'):
-            skills = [skill.name for skill in user.skills]
+        if user.skills:
+            skills = user.skills.split(',')
+            current_app.logger.info(f"用户技能: {skills}")
         else:
             # 模拟一些技能
             from app.utils.constants import SERVICE_CATEGORIES
@@ -849,6 +856,7 @@ def get_professional_details(user_id):
             for category in SERVICE_CATEGORIES:
                 all_services.extend([service[1] for service in category[1]])
             skills = random.sample(all_services, min(5, len(all_services)))
+            current_app.logger.info(f"模拟的用户技能: {skills}")
         
         # 格式化评论
         reviews_json = []
@@ -865,18 +873,24 @@ def get_professional_details(user_id):
                 })
         
         # 构建响应
-        return jsonify({
+        response_data = {
             'id': user.id,
             'name': user.username,
-            'avatar': user.avatar(128),
-            'bio': user.about_me if hasattr(user, 'about_me') else '',
+            'avatar': user.avatar_url or url_for('static', filename='images/default-avatar.jpg'),
+            'bio': user.bio or '',
+            'profession': user.professional_title or '专业人士',
+            'contact': user.phone or '未提供联系方式',
             'rating': round(rating, 1),
             'completed_jobs': completed_jobs,
             'skills': skills,
             'reviews': reviews_json
-        })
+        }
+        current_app.logger.info(f"返回专业人士详情: {response_data}")
+        return jsonify(response_data)
     except Exception as e:
-        current_app.logger.error(f"Error in get_professional_details: {str(e)}")
+        current_app.logger.error(f"获取专业人士详情出错: {str(e)}")
+        import traceback
+        current_app.logger.error(f"错误堆栈: {traceback.format_exc()}")
         return jsonify({"error": str(e)}), 500
 
 @task_bp.route('/<int:task_id>/hire/<int:pro_id>', methods=['POST'])
@@ -932,4 +946,272 @@ def get_csrf_token():
         return jsonify({"csrf_token": csrf_token})
     except Exception as e:
         current_app.logger.error(f"Error in get_csrf_token: {str(e)}")
-        return jsonify({"error": str(e)}), 500 
+        return jsonify({"error": str(e)}), 500
+
+@task_bp.route('/api/conversations/<int:recipient_id>/messages', methods=['POST'])
+@login_required
+def send_conversation_message(recipient_id):
+    """发送消息给特定用户"""
+    try:
+        # 获取请求数据
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "无效的请求数据"}), 400
+        
+        content = data.get('content')
+        task_id = data.get('task_id')
+        
+        if not content or not task_id:
+            return jsonify({"error": "消息内容和任务ID不能为空"}), 400
+        
+        # 创建新消息
+        message = Message(
+            content=content,
+            sender_id=current_user.id,
+            recipient_id=recipient_id,
+            task_id=task_id,
+            created_at=datetime.utcnow(),
+            is_read=False
+        )
+        
+        db.session.add(message)
+        db.session.commit()
+        
+        # 返回成功响应
+        return jsonify({
+            "success": True,
+            "message": {
+                'id': message.id,
+                'content': message.content,
+                'sender_id': message.sender_id,
+                'recipient_id': message.recipient_id,
+                'created_at': message.created_at.isoformat(),
+                'is_read': message.is_read
+            }
+        })
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error in send_conversation_message: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@task_bp.route('/api/users/me/unread_messages')
+@login_required
+def get_unread_messages_count():
+    """获取当前用户的未读消息数量"""
+    try:
+        # 查询当前用户的所有未读消息
+        unread_count = Message.query.filter(
+            (Message.recipient_id == current_user.id) & 
+            (Message.is_read == False)
+        ).count()
+        
+        return jsonify({
+            "unread_count": unread_count
+        })
+    except Exception as e:
+        current_app.logger.error(f"Error in get_unread_messages_count: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@task_bp.route('/api/conversations/with_professional/<int:pro_id>', methods=['POST'])
+@login_required
+def create_or_get_conversation(pro_id):
+    """创建或获取与专业人士的对话"""
+    try:
+        task_id = request.args.get('task_id')
+        if not task_id:
+            return jsonify({"error": "任务ID不能为空"}), 400
+        
+        # 检查任务是否存在
+        task = Task.query.get_or_404(task_id)
+        
+        # 检查当前用户是否为任务创建者
+        if task.user_id != current_user.id:
+            return jsonify({"error": "您无权为此任务创建对话"}), 403
+        
+        # 检查专业人士是否存在
+        pro = User.query.get_or_404(pro_id)
+        
+        # 创建一条初始消息（如果没有现有对话）
+        existing_message = Message.query.filter(
+            (Message.task_id == task_id) &
+            (
+                ((Message.sender_id == current_user.id) & (Message.recipient_id == pro_id)) |
+                ((Message.recipient_id == current_user.id) & (Message.sender_id == pro_id))
+            )
+        ).first()
+        
+        if not existing_message:
+            # 创建初始消息
+            message = Message(
+                content=f"您好，我对您完成我的任务\"{task.title}\"感兴趣。",
+                sender_id=current_user.id,
+                recipient_id=pro_id,
+                task_id=task_id,
+                created_at=datetime.utcnow(),
+                is_read=False
+            )
+            
+            db.session.add(message)
+            db.session.commit()
+        
+        # 返回对话ID（实际上是专业人士的ID）
+        return jsonify({
+            "success": True,
+            "id": pro_id
+        })
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error in create_or_get_conversation: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@task_bp.route('/api/tasks/<task_id>/conversations')
+@login_required
+@csrf.exempt
+def task_conversations(task_id):
+    """获取与任务相关的所有对话"""
+    try:
+        # 检查任务是否存在
+        task = Task.query.get_or_404(task_id)
+        
+        # 检查当前用户是否为任务创建者
+        if task.user_id != current_user.id and not current_user.is_admin:
+            return jsonify({"error": "您无权查看此任务的对话"}), 403
+        
+        # 获取与此任务相关的所有消息
+        messages = Message.query.filter(
+            Message.task_id == task_id,
+            (
+                (Message.sender_id == current_user.id) | 
+                (Message.recipient_id == current_user.id)
+            )
+        ).order_by(Message.created_at.desc()).all()
+        
+        # 按用户分组消息
+        conversations = {}
+        for message in messages:
+            other_user_id = message.sender_id if message.sender_id != current_user.id else message.recipient_id
+            
+            if other_user_id not in conversations:
+                other_user = User.query.get(other_user_id)
+                if not other_user:
+                    continue
+                
+                # 创建对话ID (smaller_id_larger_id)
+                conversation_id = f"{min(current_user.id, other_user_id)}_{max(current_user.id, other_user_id)}"
+                
+                conversations[other_user_id] = {
+                    "id": conversation_id,
+                    "other_user": {
+                        "id": other_user_id,
+                        "name": other_user.username,
+                        "avatar": other_user.avatar_url or url_for('static', filename='images/default-avatar.jpg')
+                    },
+                    "messages": [],
+                    "unread_count": 0,
+                    "last_message_time": None,
+                    "last_message_preview": ""
+                }
+            
+            # 添加消息到对话
+            conversations[other_user_id]["messages"].append({
+                "id": message.id,
+                "content": message.content,
+                "sender_id": message.sender_id,
+                "recipient_id": message.recipient_id,
+                "created_at": message.created_at.isoformat(),
+                "is_read": message.is_read
+            })
+            
+            # 更新最后消息时间
+            if not conversations[other_user_id]["last_message_time"] or message.created_at > conversations[other_user_id]["last_message_time"]:
+                conversations[other_user_id]["last_message_time"] = message.created_at
+                conversations[other_user_id]["last_message_preview"] = message.content[:50] + ("..." if len(message.content) > 50 else "")
+            
+            # 计算未读消息数
+            if message.recipient_id == current_user.id and not message.is_read:
+                conversations[other_user_id]["unread_count"] += 1
+        
+        # 转换为列表并按最后消息时间排序
+        conversation_list = list(conversations.values())
+        conversation_list.sort(key=lambda x: x["last_message_time"] or datetime.min, reverse=True)
+        
+        # 添加调试日志
+        current_app.logger.info(f"找到 {len(conversation_list)} 个对话")
+        for conv in conversation_list:
+            current_app.logger.info(f"对话ID: {conv['id']}, 用户: {conv['other_user']['name']}, 未读消息: {conv['unread_count']}")
+        
+        return jsonify({
+            "task_id": task_id,
+            "conversations": conversation_list
+        })
+    
+    except Exception as e:
+        current_app.logger.error(f"获取任务对话出错: {str(e)}")
+        return jsonify({"error": "获取对话失败"}), 500
+
+# 添加调试路由
+@task_bp.route('/debug/task/<task_id>/messages')
+@login_required
+def debug_task_messages(task_id):
+    """调试路由：查看与任务相关的所有消息"""
+    try:
+        task = Task.query.get_or_404(task_id)
+        
+        # 获取与此任务相关的所有消息
+        messages = Message.query.filter_by(task_id=task_id).all()
+        
+        result = []
+        for msg in messages:
+            sender = User.query.get(msg.sender_id)
+            recipient = User.query.get(msg.recipient_id)
+            
+            result.append({
+                'id': msg.id,
+                'sender': {
+                    'id': sender.id,
+                    'name': sender.username
+                },
+                'recipient': {
+                    'id': recipient.id,
+                    'name': recipient.username
+                },
+                'content': msg.content,
+                'created_at': msg.created_at.isoformat(),
+                'is_read': msg.is_read
+            })
+        
+        # 按照对话对象分组
+        conversations = {}
+        for msg in messages:
+            user_pair = tuple(sorted([msg.sender_id, msg.recipient_id]))
+            if user_pair not in conversations:
+                user1 = User.query.get(user_pair[0])
+                user2 = User.query.get(user_pair[1])
+                
+                conversations[user_pair] = {
+                    'id': f"{user_pair[0]}_{user_pair[1]}",
+                    'user1': {
+                        'id': user1.id,
+                        'name': user1.username
+                    },
+                    'user2': {
+                        'id': user2.id,
+                        'name': user2.username
+                    },
+                    'created_at': msg.created_at.isoformat()
+                }
+        
+        return jsonify({
+            'task': {
+                'id': task.id,
+                'title': task.title,
+                'user_id': task.user_id
+            },
+            'messages_count': len(messages),
+            'messages': result,
+            'conversations_count': len(conversations),
+            'conversations': list(conversations.values())
+        })
+    except Exception as e:
+        current_app.logger.error(f"调试任务消息时出错: {str(e)}")
+        return jsonify({'error': str(e)}), 500 
