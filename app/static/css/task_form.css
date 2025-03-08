@@ -1,4 +1,4 @@
-/* 任务表单样式 */
+/* 任务表单样式 - 简洁高级版 */
 
 /* 问题项样式 */
 .question-item {
@@ -6,8 +6,8 @@
     padding: 1.5rem;
     border-radius: 0.5rem;
     background-color: #fff;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    transition: all 0.5s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
     position: relative;
     border-left: 3px solid transparent;
 }
@@ -26,38 +26,32 @@
 .question-item.active {
     opacity: 1;
     transform: translateY(0);
-    border-left: 3px solid #007bff;
-    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    border-left: 3px solid #0072ef;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
 /* 已回答的问题 */
 .question-item.answered {
-    background-color: #f8f9fa;
-    box-shadow: none;
-    transition: all 0.3s ease;
-    border-left: 3px solid #28a745;
-    transform: scale(0.98);
+    background-color: #f9fafb;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    border-left: 3px solid #36b37e;
+    transform: scale(0.99);
 }
 
-/* 淡入动画 */
+/* 淡入动画 - 简化版 */
 .fade-in {
-    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: fadeIn 0.25s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
 }
 
 @keyframes fadeIn {
-    0% {
+    from {
         opacity: 0;
-        transform: translateY(15px) scale(0.98);
-        filter: blur(3px);
+        transform: translateY(8px);
     }
-    50% {
-        opacity: 0.8;
-        filter: blur(1px);
-    }
-    100% {
+    to {
         opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
+        transform: translateY(0);
     }
 }
 
@@ -66,36 +60,38 @@
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 1rem;
-    color: #343a40;
+    color: #1a1f36;
 }
 
 /* 问题描述 */
 .question-description {
     font-size: 0.9rem;
-    color: #6c757d;
+    color: #5e6c84;
     margin-bottom: 1.5rem;
+    line-height: 1.5;
 }
 
 /* 输入字段焦点样式 */
 .form-control:focus, .form-select:focus {
-    border-color: #80bdff;
-    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
-    transition: all 0.2s ease-in-out;
+    border-color: #0072ef;
+    box-shadow: 0 0 0 2px rgba(0, 114, 239, 0.15);
+    transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 /* 输入字段悬停样式 */
 .form-control:hover, .form-select:hover {
-    border-color: #b8daff;
+    border-color: #0072ef;
 }
 
 /* 输入字段动画 */
 .form-control, .form-select {
-    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    border-radius: 6px;
 }
 
 /* 问题项悬停效果 */
 .question-item.active:hover {
-    box-shadow: 0 0.35rem 0.65rem rgba(0, 0, 0, 0.12);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 /* 步骤按钮容器 */
@@ -103,7 +99,7 @@
     margin-top: 2rem;
     display: flex;
     justify-content: space-between;
-    transition: all 0.5s ease;
+    transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .step-buttons.hidden {
@@ -115,55 +111,154 @@
     pointer-events: none;
 }
 
+/* 按钮样式优化 */
+.btn-primary, .btn-outline-primary {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 0.5rem 1.25rem;
+    transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.btn-primary {
+    background-color: #0072ef;
+    border-color: #0072ef;
+    box-shadow: 0 2px 8px rgba(0, 114, 239, 0.15);
+}
+
+.btn-primary:hover {
+    background-color: #0065d2;
+    border-color: #0065d2;
+    box-shadow: 0 4px 12px rgba(0, 114, 239, 0.25);
+    transform: translateY(-1px);
+}
+
+.btn-outline-primary {
+    color: #0072ef;
+    border-color: #0072ef;
+}
+
+.btn-outline-primary:hover {
+    background-color: #0072ef;
+    border-color: #0072ef;
+    box-shadow: 0 4px 12px rgba(0, 114, 239, 0.15);
+    transform: translateY(-1px);
+}
+
 /* 进度指示器样式优化 */
-.form-progress {
+.progress-container {
+    padding: 1rem 0;
     margin-bottom: 2rem;
 }
 
-.form-progress .step {
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
+.progress {
+    height: 3px !important;
+    border-radius: 1.5px;
+    background-color: #edf2f7;
     overflow: hidden;
 }
 
-.form-progress .step.completed {
-    background-color: #28a745;
-    transform: scale(1.05);
+.progress-bar {
+    transition: width 0.4s cubic-bezier(0.25, 0.1, 0.25, 1) !important;
+    background-color: #0072ef;
 }
 
-.form-progress .step.completed::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
-    animation: shimmer 1.5s infinite;
+.step {
+    position: relative;
+    z-index: 1;
+    transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+    text-align: center;
 }
 
-@keyframes shimmer {
-    0% {
-        transform: translateX(-100%);
-    }
-    100% {
-        transform: translateX(100%);
-    }
+.step-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: #edf2f7;
+    color: #5e6c84;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.5rem;
+    font-weight: 600;
+    font-size: 14px;
+    border: 2px solid #fff;
+    transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.form-progress .step.active {
-    background-color: #007bff;
+.step-text {
+    font-size: 0.8rem;
+    color: #5e6c84;
+    transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    font-weight: 500;
+}
+
+.step.active .step-circle {
+    background-color: #0072ef;
+    color: #fff;
     transform: scale(1.1);
-    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+    box-shadow: 0 0 0 4px rgba(0, 114, 239, 0.15);
+}
+
+.step.active .step-text {
+    color: #0072ef;
+    font-weight: 600;
+}
+
+.step.completed .step-circle {
+    background-color: #36b37e;
+    color: #fff;
+}
+
+.step.completed .step-text {
+    color: #36b37e;
+}
+
+/* 步骤切换动画 */
+.form-step {
+    transition: opacity 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.form-step.hidden {
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.form-step.active {
+    opacity: 1;
+    animation: stepIn 0.4s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+@keyframes stepIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* 响应式调整 */
 @media (max-width: 768px) {
     .question-item {
-        padding: 1rem;
+        padding: 1.2rem;
     }
     
     .question-title {
         font-size: 1.1rem;
+    }
+    
+    .step-circle {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+    
+    .step-text {
+        font-size: 0.7rem;
     }
 } 

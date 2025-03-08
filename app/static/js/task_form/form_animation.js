@@ -1,6 +1,6 @@
 /**
- * 任务表单动画模块
- * 处理表单问题逐个出现的动画效果
+ * 任务表单动画模块 - 简洁高级版
+ * 处理表单进度和元素过渡的动画效果
  */
 document.addEventListener('DOMContentLoaded', function() {
     // 获取所有步骤元素
@@ -36,14 +36,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     nextButton.classList.remove('hidden');
                     nextButton.classList.add('fade-in');
                     
-                    // 滚动到按钮位置
+                    // 平滑滚动到按钮位置
                     setTimeout(() => {
-                        nextButton.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'start',
-                            inline: 'nearest'
-                        });
-                    }, 100);
+                        smoothScrollToElement(nextButton);
+                    }, 50);
                 }
             }
         });
@@ -62,6 +58,9 @@ document.addEventListener('DOMContentLoaded', function() {
     window.goToStep = function(stepNumber) {
         // 调用原始函数
         originalGoToStep(stepNumber);
+        
+        // 更新进度条
+        updateProgressBar(stepNumber);
         
         // 获取当前步骤的所有问题
         const currentStep = document.getElementById(`step-${stepNumber}`);
@@ -92,6 +91,31 @@ document.addEventListener('DOMContentLoaded', function() {
         addInputEventListeners(questions[0]);
     };
     
+    // 更新进度条
+    function updateProgressBar(stepNumber) {
+        const progressBar = document.getElementById('form-progress-bar');
+        if (progressBar) {
+            const progressPercentage = (stepNumber - 1) * 20;
+            progressBar.style.width = `${progressPercentage}%`;
+            progressBar.setAttribute('aria-valuenow', progressPercentage);
+        }
+        
+        // 更新步骤指示器的活跃状态
+        document.querySelectorAll('.step').forEach(step => {
+            const stepNum = parseInt(step.getAttribute('data-step'));
+            
+            // 移除所有状态类
+            step.classList.remove('active', 'completed');
+            
+            // 添加适当的状态类
+            if (stepNum === stepNumber) {
+                step.classList.add('active');
+            } else if (stepNum < stepNumber) {
+                step.classList.add('completed');
+            }
+        });
+    }
+    
     // 为所有步骤的第一个问题添加输入字段事件监听
     steps.forEach(step => {
         const questions = step.querySelectorAll('.question-item');
@@ -99,6 +123,16 @@ document.addEventListener('DOMContentLoaded', function() {
             addInputEventListeners(questions[0]);
         }
     });
+    
+    // 平滑滚动到元素
+    function smoothScrollToElement(element) {
+        if (!element) return;
+        
+        element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center'
+        });
+    }
     
     // 为问题中的输入字段添加事件监听
     function addInputEventListeners(questionElement) {
@@ -166,18 +200,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // 标记当前问题为已回答
             questionElement.classList.add('answered');
             
-            // 特殊处理时间偏好问题，不自动跳转到下一个问题
-            if (questionElement.id === 'time-preference-question') {
-                return;
-            }
+            // 特殊处理：这些问题不自动跳转到下一个问题
+            const nonAutoAdvanceQuestions = [
+                'time-preference-question',
+                'specific-date-question',
+                'date-range-question'
+            ];
             
-            // 特殊处理具体日期问题，不自动跳转到下一个问题
-            if (questionElement.id === 'specific-date-question') {
-                return;
-            }
-            
-            // 特殊处理日期范围问题，不自动跳转到下一个问题
-            if (questionElement.id === 'date-range-question') {
+            if (nonAutoAdvanceQuestions.includes(questionElement.id)) {
                 return;
             }
             
@@ -186,484 +216,151 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // 检查是否有下一个问题项
             if (nextQuestion && nextQuestion.classList.contains('question-item')) {
-                console.log('自动跳转到下一个问题:', nextQuestion.id);
                 // 显示下一个问题
                 nextQuestion.classList.remove('hidden');
                 
                 // 添加动画类
                 nextQuestion.classList.add('fade-in');
                 
-                // 滚动到新问题，时间与动画时间匹配
+                // 平滑滚动到新问题
                 setTimeout(() => {
-                    nextQuestion.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'start',
-                        inline: 'nearest'
-                    });
-                }, 100); // 减少延迟时间，使滚动与动画同步
+                    smoothScrollToElement(nextQuestion);
+                }, 50);
                 
                 // 为下一个问题添加输入字段事件监听
                 addInputEventListeners(nextQuestion);
                 
                 // 如果是最后一个问题，显示下一步按钮
                 if (!nextQuestion.nextElementSibling || !nextQuestion.nextElementSibling.classList.contains('question-item')) {
-                    const nextButton = questionElement.closest('.form-step').querySelector('.next-step');
-                    if (nextButton) {
-                        nextButton.classList.remove('hidden');
-                        nextButton.classList.add('fade-in');
-                        
-                        // 滚动到按钮位置
-                        setTimeout(() => {
-                            nextButton.scrollIntoView({ 
-                                behavior: 'smooth', 
-                                block: 'start',
-                                inline: 'nearest'
-                            });
-                        }, 100);
-                    }
+                    showNextButton(questionElement);
                 }
             } else {
-                console.log('没有下一个问题项，直接显示下一步按钮');
                 // 如果没有下一个问题项，直接显示下一步按钮
-                const nextButton = questionElement.closest('.form-step').querySelector('.next-step');
-                console.log('下一步按钮元素:', nextButton);
-                if (nextButton) {
-                    // 移除隐藏类
-                    nextButton.classList.remove('hidden');
-                    // 添加动画类
-                    nextButton.classList.add('fade-in');
-                    
-                    // 滚动到按钮位置，时间与动画时间匹配
-                    setTimeout(() => {
-                        nextButton.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'start',
-                            inline: 'nearest'
-                        });
-                    }, 100); // 减少延迟时间，使滚动与动画同步
-                }
+                showNextButton(questionElement);
             }
+        }
+    }
+    
+    // 显示下一步按钮
+    function showNextButton(questionElement) {
+        const nextButton = questionElement.closest('.form-step').querySelector('.next-step');
+        if (nextButton) {
+            // 移除隐藏类
+            nextButton.classList.remove('hidden');
+            // 添加动画类
+            nextButton.classList.add('fade-in');
+            
+            // 平滑滚动到按钮位置
+            setTimeout(() => {
+                smoothScrollToElement(nextButton);
+            }, 50);
         }
     }
     
     // 验证单个问题
     function validateQuestion(questionElement) {
+        // 根据问题的特殊ID进行不同的验证逻辑
+        const questionId = questionElement.id;
+        
+        // 特殊验证逻辑
+        switch(questionId) {
+            case 'service-category-question':
+                return validateServiceCategory();
+            case 'time-preference-question':
+                return validateTimePreference();
+            case 'specific-date-question':
+                return validateSpecificDate();
+            case 'date-range-question':
+                return validateDateRange();
+            case 'budget-question':
+                return validateBudget();
+            case 'title-question':
+                return validateTitle();
+            case 'description-question':
+                return validateDescription();
+            default:
+                // 默认验证逻辑：检查必填字段是否有值
+                return validateRequired(questionElement);
+        }
+    }
+    
+    // 默认验证：检查必填字段
+    function validateRequired(questionElement) {
         let isValid = true;
         
-        // 特殊处理服务类别问题
-        if (questionElement.id === 'service-category-question') {
-            const serviceSelect = questionElement.querySelector('#service_category');
-            if (serviceSelect && !serviceSelect.value) {
-                serviceSelect.classList.add('is-invalid');
-                isValid = false;
-            } else if (serviceSelect) {
-                serviceSelect.classList.remove('is-invalid');
-                
-                // 显示下一步按钮
-                const nextStepBtn = questionElement.closest('.form-step').querySelector('.next-step');
-                nextStepBtn.classList.remove('hidden');
-                
-                // 平滑滚动到下一步按钮
-                setTimeout(() => {
-                    nextStepBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 300);
-            }
-            return isValid;
-        }
-        
-        // 特殊处理时间偏好问题
-        if (questionElement.id === 'time-preference-question') {
-            const selectedOption = questionElement.querySelector('input[type="radio"]:checked');
-            if (!selectedOption) {
-                // 标记所有单选按钮为无效
-                const radioButtons = questionElement.querySelectorAll('input[type="radio"]');
-                radioButtons.forEach(radio => {
-                    radio.classList.add('is-invalid');
-                });
-                isValid = false;
-            } else {
-                // 移除无效标记
-                const radioButtons = questionElement.querySelectorAll('input[type="radio"]');
-                radioButtons.forEach(radio => {
-                    radio.classList.remove('is-invalid');
-                });
-            }
-            return isValid;
-        }
-        
-        // 特殊处理具体日期问题
-        if (questionElement.id === 'specific-date-question') {
-            const deadlineInput = questionElement.querySelector('#deadline');
-            if (deadlineInput && !deadlineInput.value) {
-                deadlineInput.classList.add('is-invalid');
-                isValid = false;
-            } else if (deadlineInput) {
-                deadlineInput.classList.remove('is-invalid');
-                
-                // 显示下一步按钮
-                const nextStepBtn = questionElement.closest('.form-step').querySelector('.next-step');
-                nextStepBtn.classList.remove('hidden');
-                
-                // 平滑滚动到下一步按钮
-                setTimeout(() => {
-                    nextStepBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 300);
-            }
-            return isValid;
-        }
-        
-        // 特殊处理日期范围问题
-        if (questionElement.id === 'date-range-question') {
-            const startDate = questionElement.querySelector('#start_date');
-            const endDate = questionElement.querySelector('#end_date');
-            
-            if (startDate && !startDate.value) {
-                startDate.classList.add('is-invalid');
-                isValid = false;
-            } else if (startDate) {
-                startDate.classList.remove('is-invalid');
-            }
-            
-            if (endDate && !endDate.value) {
-                endDate.classList.add('is-invalid');
-                isValid = false;
-            } else if (endDate) {
-                endDate.classList.remove('is-invalid');
-            }
-            
-            // 验证结束日期不早于开始日期
-            if (startDate && endDate && startDate.value && endDate.value) {
-                if (new Date(endDate.value) < new Date(startDate.value)) {
-                    endDate.classList.add('is-invalid');
-                    // 添加自定义错误消息
-                    const feedbackElement = endDate.nextElementSibling.nextElementSibling;
-                    if (feedbackElement && feedbackElement.classList.contains('invalid-feedback')) {
-                        feedbackElement.textContent = '结束日期不能早于开始日期';
-                    }
-                    isValid = false;
-                }
-            }
-            
-            if (isValid) {
-                // 显示下一步按钮
-                const nextStepBtn = questionElement.closest('.form-step').querySelector('.next-step');
-                nextStepBtn.classList.remove('hidden');
-                
-                // 平滑滚动到下一步按钮
-                setTimeout(() => {
-                    nextStepBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 300);
-            }
-            
-            return isValid;
-        }
-        
-        // 特殊处理标题问题
-        if (questionElement.id === 'title-question') {
-            const titleInput = questionElement.querySelector('#title');
-            if (titleInput && !titleInput.value.trim()) {
-                titleInput.classList.add('is-invalid');
-                isValid = false;
-            } else if (titleInput) {
-                titleInput.classList.remove('is-invalid');
-                
-                // 获取下一个问题元素
-                const nextQuestion = document.getElementById('description-question');
-                if (nextQuestion) {
-                    // 显示下一个问题
-                    nextQuestion.classList.remove('hidden');
-                    nextQuestion.classList.add('fade-in');
-                    
-                    // 平滑滚动到下一个问题
-                    setTimeout(() => {
-                        nextQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 300);
-                    
-                    // 为下一个问题添加输入字段事件监听
-                    addInputEventListeners(nextQuestion);
-                }
-            }
-            return isValid;
-        }
-        
-        // 特殊处理描述问题
-        if (questionElement.id === 'description-question') {
-            const descriptionInput = questionElement.querySelector('#description');
-            if (descriptionInput && !descriptionInput.value.trim()) {
-                descriptionInput.classList.add('is-invalid');
-                isValid = false;
-            } else if (descriptionInput) {
-                descriptionInput.classList.remove('is-invalid');
-                
-                // 显示下一步按钮
-                const nextStepBtn = questionElement.closest('.form-step').querySelector('.next-step');
-                nextStepBtn.classList.remove('hidden');
-                
-                // 平滑滚动到下一步按钮
-                setTimeout(() => {
-                    nextStepBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 300);
-            }
-            return isValid;
-        }
-        
-        // 获取问题中的所有必填输入字段
-        const requiredInputs = questionElement.querySelectorAll('input[required], select[required], textarea[required]');
+        // 获取所有必填输入字段
+        const requiredInputs = questionElement.querySelectorAll('input[required], textarea[required], select[required]');
         
         requiredInputs.forEach(input => {
             if (!input.value.trim()) {
-                input.classList.add('is-invalid');
                 isValid = false;
-            } else {
-                input.classList.remove('is-invalid');
             }
         });
         
-        return isValid;
-    }
-    
-    // 验证当前步骤
-    function validateStep(stepElement) {
-        console.log('验证步骤元素:', stepElement);
-        let isValid = true;
-        const requiredInputs = stepElement.querySelectorAll('input[required]:not([type="radio"]), select[required], textarea[required]');
-        const radioGroups = {};
+        // 获取必填的复选框和单选按钮组
+        const checkboxGroups = questionElement.querySelectorAll('.checkbox-group[data-required="true"]');
+        const radioGroups = questionElement.querySelectorAll('.radio-group[data-required="true"]');
         
-        // 收集单选按钮组
-        stepElement.querySelectorAll('input[type="radio"][required]').forEach(radio => {
-            if (!radioGroups[radio.name]) {
-                radioGroups[radio.name] = [];
+        // 验证复选框组
+        checkboxGroups.forEach(group => {
+            const checkedBoxes = group.querySelectorAll('input[type="checkbox"]:checked');
+            if (checkedBoxes.length === 0) {
+                isValid = false;
             }
-            radioGroups[radio.name].push(radio);
         });
         
         // 验证单选按钮组
-        for (const groupName in radioGroups) {
-            const group = radioGroups[groupName];
-            const isChecked = group.some(radio => radio.checked);
-            
-            if (!isChecked) {
-                group.forEach(radio => {
-                    radio.classList.add('is-invalid');
-                });
+        radioGroups.forEach(group => {
+            const checkedRadios = group.querySelectorAll('input[type="radio"]:checked');
+            if (checkedRadios.length === 0) {
                 isValid = false;
-            } else {
-                group.forEach(radio => {
-                    radio.classList.remove('is-invalid');
-                });
-            }
-        }
-        
-        // 验证其他必填输入
-        requiredInputs.forEach(input => {
-            if (!input.value.trim()) {
-                input.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                input.classList.remove('is-invalid');
             }
         });
         
-        // 特殊验证：日期范围
-        const timePreference = stepElement.querySelector('input[name="time_preference"]:checked');
-        if (timePreference && timePreference.value === 'date_range') {
-            const startDate = stepElement.querySelector('#start_date');
-            const endDate = stepElement.querySelector('#end_date');
-            
-            if (startDate && endDate) {
-                // 验证开始日期和结束日期都已填写
-                if (!startDate.value) {
-                    startDate.classList.add('is-invalid');
-                    isValid = false;
-                } else {
-                    startDate.classList.remove('is-invalid');
-                }
-                
-                if (!endDate.value) {
-                    endDate.classList.add('is-invalid');
-                    isValid = false;
-                } else {
-                    endDate.classList.remove('is-invalid');
-                }
-                
-                // 验证结束日期不早于开始日期
-                if (startDate.value && endDate.value && new Date(endDate.value) < new Date(startDate.value)) {
-                    endDate.classList.add('is-invalid');
-                    // 添加自定义错误消息
-                    const feedbackElement = endDate.nextElementSibling.nextElementSibling;
-                    if (feedbackElement && feedbackElement.classList.contains('invalid-feedback')) {
-                        feedbackElement.textContent = '结束日期不能早于开始日期';
-                    }
-                    isValid = false;
-                }
-            }
-        }
-        
-        // 特殊验证：具体日期
-        if (timePreference && timePreference.value === 'specific_date') {
-            const deadlineInput = stepElement.querySelector('#deadline');
-            if (deadlineInput && !deadlineInput.value) {
-                deadlineInput.classList.add('is-invalid');
-                isValid = false;
-            } else if (deadlineInput) {
-                deadlineInput.classList.remove('is-invalid');
-            }
-        }
-        
-        console.log('步骤验证结果:', isValid);
         return isValid;
     }
     
-    // 修改原有的validateStep函数
-    const originalValidateStep = window.validateStep;
-    window.validateStep = function(stepNumber) {
-        console.log('验证步骤:', stepNumber);
-        
-        // 获取当前步骤元素
-        const stepElement = document.getElementById(`step-${stepNumber}`);
-        console.log('步骤元素:', stepElement);
-        
-        if (!stepElement) {
-            console.error('找不到步骤元素:', `step-${stepNumber}`);
-            return false;
-        }
-        
-        // 如果原始验证函数存在，调用它
-        if (originalValidateStep) {
-            // 调用原始验证函数，但传入步骤元素而不是步骤编号
-            const result = validateStep(stepElement);
-            console.log('验证结果:', result);
-            
-            // 特殊处理第三步的日期范围验证
-            if (stepNumber === 3 && result) {
-                console.log('特殊处理第三步的日期范围验证');
-                const timePreference = stepElement.querySelector('input[name="time_preference"]:checked');
-                console.log('时间偏好:', timePreference ? timePreference.value : 'none');
-                
-                if (timePreference && timePreference.value === 'date_range') {
-                    const startDate = stepElement.querySelector('#start_date');
-                    const endDate = stepElement.querySelector('#end_date');
-                    console.log('开始日期:', startDate ? startDate.value : 'none');
-                    console.log('结束日期:', endDate ? endDate.value : 'none');
-                    
-                    // 确保开始日期和结束日期都已填写
-                    if (startDate && endDate && startDate.value && endDate.value) {
-                        // 确保结束日期不早于开始日期
-                        const startDateObj = new Date(startDate.value);
-                        const endDateObj = new Date(endDate.value);
-                        console.log('开始日期对象:', startDateObj);
-                        console.log('结束日期对象:', endDateObj);
-                        console.log('结束日期 >= 开始日期:', endDateObj >= startDateObj);
-                        
-                        if (endDateObj >= startDateObj) {
-                            console.log('日期范围验证通过');
-                            return true; // 验证通过
-                        } else {
-                            console.log('结束日期早于开始日期，验证失败');
-                        }
-                    } else {
-                        console.log('开始日期或结束日期未填写，验证失败');
-                    }
-                }
-            }
-            
-            return result;
-        }
-        
-        // 否则使用默认验证逻辑
-        return validateStep(stepElement);
-    };
-    
-    // 处理时间偏好选择
-    handleTimePreferenceSelection();
-});
-
-// 处理时间偏好选择
-function handleTimePreferenceSelection() {
-    const timePreferenceQuestion = document.getElementById('time-preference-question');
-    const specificDateQuestion = document.getElementById('specific-date-question');
-    const dateRangeQuestion = document.getElementById('date-range-question');
-    const nextStepBtn = timePreferenceQuestion.closest('.form-step').querySelector('.next-step');
-    
-    // 如果时间偏好问题存在
-    if (timePreferenceQuestion) {
-        const radioButtons = timePreferenceQuestion.querySelectorAll('input[type="radio"]');
-        
-        // 检查是否已经有选择
-        function checkTimePreference() {
-            let selectedOption = timePreferenceQuestion.querySelector('input[type="radio"]:checked');
-            
-            // 隐藏所有日期问题
-            if (specificDateQuestion) specificDateQuestion.classList.add('hidden');
-            if (dateRangeQuestion) dateRangeQuestion.classList.add('hidden');
-            
-            if (selectedOption) {
-                // 显示下一步按钮
-                nextStepBtn.classList.remove('hidden');
-                
-                // 根据选择显示相应的日期问题
-                if (selectedOption.value === 'specific_date' && specificDateQuestion) {
-                    specificDateQuestion.classList.remove('hidden');
-                    specificDateQuestion.classList.add('fade-in');
-                    
-                    // 平滑滚动到具体日期问题
-                    setTimeout(() => {
-                        specificDateQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 300);
-                } 
-                else if (selectedOption.value === 'date_range' && dateRangeQuestion) {
-                    dateRangeQuestion.classList.remove('hidden');
-                    dateRangeQuestion.classList.add('fade-in');
-                    
-                    // 平滑滚动到日期范围问题
-                    setTimeout(() => {
-                        dateRangeQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 300);
-                    
-                    // 为日期范围输入字段添加事件监听
-                    const startDate = dateRangeQuestion.querySelector('#start_date');
-                    const endDate = dateRangeQuestion.querySelector('#end_date');
-                    
-                    if (startDate && endDate) {
-                        // 监听日期变化
-                        const updateNextButton = function() {
-                            if (startDate.value && endDate.value) {
-                                if (new Date(endDate.value) >= new Date(startDate.value)) {
-                                    // 日期有效，启用下一步按钮
-                                    nextStepBtn.classList.remove('hidden');
-                                    nextStepBtn.disabled = false;
-                                } else {
-                                    // 结束日期早于开始日期，禁用下一步按钮
-                                    nextStepBtn.disabled = true;
-                                }
-                            }
-                        };
-                        
-                        // 添加事件监听器
-                        startDate.addEventListener('change', updateNextButton);
-                        endDate.addEventListener('change', updateNextButton);
-                        
-                        // 初始检查
-                        updateNextButton();
-                    }
-                }
-                
-                // 平滑滚动到下一步按钮
-                setTimeout(() => {
-                    nextStepBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 500);
-            } else {
-                // 如果没有选择，隐藏下一步按钮
-                nextStepBtn.classList.add('hidden');
-            }
-        }
-        
-        // 初始检查
-        checkTimePreference();
-        
-        // 为每个单选按钮添加事件监听器
-        radioButtons.forEach(radio => {
-            radio.addEventListener('change', checkTimePreference);
-        });
+    // 服务类别验证
+    function validateServiceCategory() {
+        const select = document.getElementById('service_category');
+        return select && select.value;
     }
-} 
+    
+    // 时间偏好验证
+    function validateTimePreference() {
+        const radioGroup = document.querySelector('#time-preference-question .radio-group');
+        const checkedRadio = radioGroup ? radioGroup.querySelector('input[type="radio"]:checked') : null;
+        return checkedRadio !== null;
+    }
+    
+    // 具体日期验证
+    function validateSpecificDate() {
+        const dateInput = document.getElementById('specific_date');
+        return dateInput && dateInput.value;
+    }
+    
+    // 日期范围验证
+    function validateDateRange() {
+        const startDate = document.getElementById('date_range_start');
+        const endDate = document.getElementById('date_range_end');
+        return startDate && endDate && startDate.value && endDate.value;
+    }
+    
+    // 预算验证
+    function validateBudget() {
+        const budgetInput = document.getElementById('budget');
+        return budgetInput && budgetInput.value && !isNaN(parseFloat(budgetInput.value));
+    }
+    
+    // 标题验证
+    function validateTitle() {
+        const titleInput = document.getElementById('title');
+        return titleInput && titleInput.value.trim().length >= 5;
+    }
+    
+    // 描述验证
+    function validateDescription() {
+        const descriptionInput = document.getElementById('description');
+        return descriptionInput && descriptionInput.value.trim().length >= 20;
+    }
+}); 
