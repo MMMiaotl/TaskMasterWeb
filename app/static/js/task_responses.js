@@ -8,7 +8,64 @@ document.addEventListener('DOMContentLoaded', function() {
     currentUserId = document.querySelector('meta[name="current-user-id"]').getAttribute('content');
     csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     
+    // 初始化事件监听器
     initializeEventListeners();
+    
+    // 设置专业人士列表项点击事件
+    document.querySelectorAll('.pro-item').forEach(item => {
+        item.addEventListener('click', function() {
+            try {
+                const proId = this.getAttribute('data-pro-id');
+                const tabType = this.getAttribute('data-tab-id');
+                logDebug('点击专业人士项', {proId, tabType});
+                
+                if (!proId || !tabType) {
+                    logError('专业人士项缺少必要属性', {
+                        element: this.outerHTML,
+                        proId: proId,
+                        tabType: tabType
+                    });
+                    return;
+                }
+                
+                // 获取必要的DOM元素
+                const chatAreaContainer = document.getElementById('chat-area-container');
+                const proDetailsArea = document.getElementById('pro-details-area');
+                const contentAreaTitle = document.getElementById('content-area-title');
+                const backToChat = document.getElementById('back-to-chat');
+                
+                // 检查元素是否存在
+                if (!chatAreaContainer || !proDetailsArea || !contentAreaTitle || !backToChat) {
+                    logError('找不到必要的DOM元素', {
+                        chatAreaContainer: chatAreaContainer ? '存在' : '不存在',
+                        proDetailsArea: proDetailsArea ? '存在' : '不存在',
+                        contentAreaTitle: contentAreaTitle ? '存在' : '不存在',
+                        backToChat: backToChat ? '存在' : '不存在'
+                    });
+                    return;
+                }
+                
+                // 显示专业人士详情区域，隐藏其他区域
+                chatAreaContainer.classList.add('d-none');
+                proDetailsArea.classList.remove('d-none');
+                contentAreaTitle.textContent = '专业人士详情';
+                backToChat.style.display = 'block';
+                
+                // 高亮选中的专业人士
+                document.querySelectorAll('.pro-item').forEach(i => 
+                    i.classList.remove('bg-primary', 'text-white'));
+                this.classList.add('bg-primary', 'text-white');
+                
+                // 加载专业人士详情
+                loadProDetails(proId, tabType);
+            } catch (error) {
+                logError('处理专业人士点击事件出错', error);
+                logErrorStack(error);
+            }
+        });
+    });
+    
+    // 预加载专业人士数据
     preloadProfessionalsData();
     
     // 页面加载完成后自动刷新聊天列表
@@ -16,6 +73,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 每隔60秒刷新一次聊天列表
     setInterval(refreshChatList, 60000);
+    
+    // 初始化日志
+    logDebug('页面初始化', {taskId, currentUserId});
 });
 
 // 初始化所有事件监听器
@@ -25,15 +85,6 @@ function initializeEventListeners() {
         item.addEventListener('click', function() {
             const conversationId = this.dataset.conversationId;
             loadConversation(conversationId);
-        });
-    });
-
-    // 处理专业人士列表项点击事件
-    document.querySelectorAll('.pro-item').forEach(function(item) {
-        item.addEventListener('click', function() {
-            const proId = this.dataset.proId;
-            const tabId = this.dataset.tabId;
-            loadProDetails(proId, tabId);
         });
     });
 
@@ -147,9 +198,6 @@ async function fetchWithCsrf(url, options = {}) {
     }
 }
 
-// 初始化日志
-logDebug('页面初始化', {taskId, currentUserId});
-
 // 处理聊天列表点击事件
 document.querySelectorAll('.chat-item').forEach(item => {
     item.addEventListener('click', function() {
@@ -200,122 +248,6 @@ document.querySelectorAll('.chat-item').forEach(item => {
         // 设置当前活跃对话ID到发送按钮的data属性
         document.getElementById('send-message-btn').setAttribute('data-conversation-id', conversationId);
     });
-});
-
-// 处理专业人士列表点击事件
-document.addEventListener('DOMContentLoaded', function() {
-    // 确保DOM完全加载后再绑定事件
-    document.querySelectorAll('.pro-item').forEach(item => {
-        item.addEventListener('click', function() {
-            try {
-                const proId = this.getAttribute('data-pro-id');
-                const tabType = this.getAttribute('data-tab-id');
-                logDebug('点击专业人士项', {proId, tabType});
-                
-                if (!proId || !tabType) {
-                    logError('专业人士项缺少必要属性', {
-                        element: this.outerHTML,
-                        proId: proId,
-                        tabType: tabType
-                    });
-                    return;
-                }
-                
-                // 获取必要的DOM元素
-                const chatAreaContainer = document.getElementById('chat-area-container');
-                const proDetailsArea = document.getElementById('pro-details-area');
-                const contentAreaTitle = document.getElementById('content-area-title');
-                const backToChat = document.getElementById('back-to-chat');
-                
-                // 检查元素是否存在
-                if (!chatAreaContainer || !proDetailsArea || !contentAreaTitle || !backToChat) {
-                    logError('找不到必要的DOM元素', {
-                        chatAreaContainer: chatAreaContainer ? '存在' : '不存在',
-                        proDetailsArea: proDetailsArea ? '存在' : '不存在',
-                        contentAreaTitle: contentAreaTitle ? '存在' : '不存在',
-                        backToChat: backToChat ? '存在' : '不存在'
-                    });
-                    return;
-                }
-                
-                // 显示专业人士详情区域，隐藏其他区域
-                chatAreaContainer.classList.add('d-none');
-                proDetailsArea.classList.remove('d-none');
-                contentAreaTitle.textContent = '专业人士详情';
-                backToChat.style.display = 'block';
-                
-                // 高亮选中的专业人士
-                document.querySelectorAll('.pro-item').forEach(i => 
-                    i.classList.remove('bg-primary', 'text-white'));
-                this.classList.add('bg-primary', 'text-white');
-                
-                // 加载专业人士详情
-                loadProDetails(proId, tabType);
-            } catch (error) {
-                logError('处理专业人士项点击事件出错', error);
-                alert('加载专业人士详情时出错: ' + error.message);
-            }
-        });
-    });
-    
-    // 返回聊天区域按钮
-    const backToChat = document.getElementById('back-to-chat');
-    if (backToChat) {
-        backToChat.addEventListener('click', function() {
-            const chatAreaContainer = document.getElementById('chat-area-container');
-            const proDetailsArea = document.getElementById('pro-details-area');
-            const contentAreaTitle = document.getElementById('content-area-title');
-            
-            if (chatAreaContainer && proDetailsArea && contentAreaTitle) {
-                chatAreaContainer.classList.remove('d-none');
-                proDetailsArea.classList.add('d-none');
-                contentAreaTitle.textContent = '聊天详情';
-                this.style.display = 'none';
-            } else {
-                logError('返回聊天区域时找不到必要的DOM元素');
-            }
-        });
-    } else {
-        logError('找不到返回聊天区域按钮');
-    }
-    
-    // 工作详情按钮
-    const viewTaskDetails = document.getElementById('view-task-details');
-    if (viewTaskDetails) {
-        viewTaskDetails.addEventListener('click', function() {
-            const taskDetailsModal = document.getElementById('taskDetailsModal');
-            if (taskDetailsModal && typeof bootstrap !== 'undefined') {
-                try {
-                    const modal = new bootstrap.Modal(taskDetailsModal);
-                    modal.show();
-                } catch (error) {
-                    logError('显示任务详情模态框失败', error);
-                    // 尝试使用jQuery方式显示模态框
-                    try {
-                        if (typeof $ !== 'undefined') {
-                            $(taskDetailsModal).modal('show');
-                        } else {
-                            // 最后的尝试，使用原生方式
-                            taskDetailsModal.classList.add('show');
-                            taskDetailsModal.style.display = 'block';
-                            document.body.classList.add('modal-open');
-                            
-                            // 创建背景遮罩
-                            const backdrop = document.createElement('div');
-                            backdrop.className = 'modal-backdrop fade show';
-                            document.body.appendChild(backdrop);
-                        }
-                    } catch (jqError) {
-                        logError('尝试备用方式显示模态框也失败', jqError);
-                    }
-                }
-            } else {
-                logError('找不到任务详情模态框或bootstrap未定义');
-            }
-        });
-    } else {
-        logError('找不到工作详情按钮');
-    }
 });
 
 // 加载对话内容的函数
@@ -1670,4 +1602,21 @@ function fetchProDataInBackground(proId, tabType, cacheKey) {
         .catch(error => {
             logDebug(`在后台获取专业人士 ${proId} 数据失败，将在用户点击时重试`);
         });
+}
+
+// 显示聊天区域，隐藏专业人士详情
+function showChatArea() {
+    const chatAreaContainer = document.getElementById('chat-area-container');
+    const proDetailsArea = document.getElementById('pro-details-area');
+    const contentAreaTitle = document.getElementById('content-area-title');
+    const backToChat = document.getElementById('back-to-chat');
+    
+    if (chatAreaContainer && proDetailsArea && contentAreaTitle && backToChat) {
+        chatAreaContainer.classList.remove('d-none');
+        proDetailsArea.classList.add('d-none');
+        contentAreaTitle.textContent = '聊天详情';
+        backToChat.style.display = 'none';
+    } else {
+        logError('显示聊天区域时找不到必要的DOM元素');
+    }
 }

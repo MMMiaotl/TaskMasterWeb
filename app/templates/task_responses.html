@@ -2,15 +2,11 @@
 
 {% block title %}{{ task.title }} - 对你的某任务的回应{% endblock %}
 
-{% block meta %}
+{% block extra_css %}
 {{ super() }}
 <meta name="task-id" content="{{ task.id }}">
 <meta name="current-user-id" content="{{ current_user.id }}">
 <meta name="csrf-token" content="{{ csrf_token }}">
-{% endblock %}
-
-{% block styles %}
-{{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/task_responses.css') }}">
 {% endblock %}
 
