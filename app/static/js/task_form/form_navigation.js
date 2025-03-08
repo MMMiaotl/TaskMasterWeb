@@ -112,10 +112,44 @@ document.addEventListener('DOMContentLoaded', function() {
             const step = index + 1;
             indicator.classList.remove('active', 'completed');
             
+            // 获取步骤圆圈和文本元素
+            const stepCircle = indicator.querySelector('.step-circle');
+            const stepText = indicator.querySelector('.step-text');
+            
             if (step === stepNumber) {
+                // 当前步骤
                 indicator.classList.add('active');
+                
+                // 更新内联样式
+                if (stepCircle) {
+                    stepCircle.setAttribute('style', 'width: 32px !important; height: 32px !important; border-radius: 50%; background-color: #0072ef !important; color: #fff !important; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5rem; font-weight: 600; font-size: 16px; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);');
+                }
+                
+                if (stepText) {
+                    stepText.setAttribute('style', 'font-size: 0.9rem; color: #0072ef !important; font-weight: 600;');
+                }
             } else if (step < stepNumber) {
+                // 已完成步骤
                 indicator.classList.add('completed');
+                
+                // 更新内联样式
+                if (stepCircle) {
+                    stepCircle.setAttribute('style', 'width: 32px !important; height: 32px !important; border-radius: 50%; background-color: #36b37e !important; color: #fff !important; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5rem; font-weight: 600; font-size: 16px; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);');
+                }
+                
+                if (stepText) {
+                    stepText.setAttribute('style', 'font-size: 0.9rem; color: #36b37e !important; font-weight: 500;');
+                }
+            } else {
+                // 未完成步骤
+                // 更新内联样式
+                if (stepCircle) {
+                    stepCircle.setAttribute('style', 'width: 32px !important; height: 32px !important; border-radius: 50%; background-color: #edf2f7 !important; color: #5e6c84 !important; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5rem; font-weight: 600; font-size: 16px; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);');
+                }
+                
+                if (stepText) {
+                    stepText.setAttribute('style', 'font-size: 0.9rem; color: #5e6c84 !important; font-weight: 500;');
+                }
             }
         });
         
