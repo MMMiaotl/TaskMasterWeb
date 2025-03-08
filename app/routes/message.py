@@ -85,61 +85,53 @@ def messages(user_id=None):
                            selected_user_id=selected_user_id,
                            now=now)
 
-@message_bp.route('/send_message/<int:recipient_id>', methods=['POST'])
+@message_bp.route('/send_message/<int:recipient_id>', methods=['GET', 'POST'])
 @login_required
 def send_message(recipient_id):
     # 确保接收者存在
     recipient = User.query.get_or_404(recipient_id)
     
-    # 获取消息内容
-    content = request.form.get('content')
-    if not content:
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({'success': False, 'error': '消息内容不能为空'})
-        flash('消息内容不能为空', 'danger')
+    # 获取任务参数(如果存在)
+    task_id = request.args.get('task_id', type=int)
+    task = None
+    if task_id:
+        task = Task.query.get_or_404(task_id)
+    
+    # 创建表单
+    form = MessageForm()
+    
+    # 处理POST请求
+    if request.method == 'POST' and form.validate_on_submit():
+        # 获取消息内容
+        content = form.content.data
+        if not content:
+            flash('消息内容不能为空', 'danger')
+            return render_template('send_message.html', form=form, recipient=recipient, task=task)
+        
+        # 创建新消息
+        message = Message(
+            content=content,
+            sender_id=current_user.id,
+            recipient_id=recipient_id,
+            task_id=task_id,
+            created_at=datetime.utcnow(),
+            is_read=False
+        )
+        
+        db.session.add(message)
+        db.session.commit()
+        
+        # 返回成功消息
+        flash('消息已发送', 'success')
+        
+        # 如果是任务相关消息，重定向到任务对话页面
+        if task_id:
+            return redirect(url_for('task.task_conversation', task_id=task_id))
+        # 否则重定向到消息列表
         return redirect(url_for('message.messages', user_id=recipient_id))
     
-    # 查找最近的消息以获取任务ID（如果有）
-    recent_message = Message.query.filter(
-        ((Message.sender_id == current_user.id) & (Message.recipient_id == recipient_id)) |
-        ((Message.recipient_id == current_user.id) & (Message.sender_id == recipient_id))
-    ).order_by(Message.created_at.desc()).first()
-    
-    task_id = None
-    if recent_message and recent_message.task_id:
-        task_id = recent_message.task_id
-    
-    # 创建新消息
-    message = Message(
-        content=content,
-        sender_id=current_user.id,
-        recipient_id=recipient_id,
-        task_id=task_id,
-        created_at=datetime.utcnow(),
-        is_read=False
-    )
-    
-    db.session.add(message)
-    db.session.commit()
-    
-    # 根据请求类型返回响应
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return jsonify({
-            'success': True,
-            'message': {
-                'id': message.id,
-                'content': message.content,
-                'sender_id': message.sender_id,
-                'recipient_id': message.recipient_id,
-                'created_at': message.created_at.isoformat(),
-                'is_read': message.is_read
-            },
-            'current_user_name': current_user.username,
-            'current_user_avatar': current_user.avatar_url or url_for('static', filename='images/default-avatar.jpg')
-        })
-    
-    flash('消息已发送', 'success')
-    return redirect(url_for('message.messages', user_id=recipient_id))
+    # 处理GET请求 - 渲染表单
+    return render_template('send_message.html', form=form, recipient=recipient, task=task)
 
 @message_bp.route('/send_message/<int:recipient_id>/<int:task_id>', methods=['POST'])
 @login_required

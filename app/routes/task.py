@@ -309,7 +309,7 @@ def task_conversation(task_id):
                 is_executor = task.executor_id == current_user.id
                 if not (is_creator or is_executor or pro_id == current_user.id):
                     flash('您无权访问此对话', 'danger')
-                    return redirect(url_for('task.view_task', task_id=task_id))
+                    return redirect(url_for('task.task_detail', task_id=task_id))
                 
                 # 查询与任务和专业人士相关的所有消息
                 messages = Message.query.filter(
@@ -332,7 +332,7 @@ def task_conversation(task_id):
                                        messages=messages)
             else:
                 flash('未指定对话对象', 'warning')
-                return redirect(url_for('task.view_task', task_id=task_id))
+                return redirect(url_for('task.task_detail', task_id=task_id))
         
         # 如果是POST请求，处理消息发送
         elif request.method == 'POST':
@@ -346,7 +346,7 @@ def task_conversation(task_id):
                     return jsonify({"success": False, "error": "消息内容和接收者ID不能为空"}), 400
                 else:
                     flash('消息内容和接收者ID不能为空', 'danger')
-                    return redirect(request.referrer or url_for('task.view_task', task_id=task_id))
+                    return redirect(request.referrer or url_for('task.task_detail', task_id=task_id))
             
             try:
                 recipient_id = int(recipient_id)
@@ -355,7 +355,7 @@ def task_conversation(task_id):
                     return jsonify({"success": False, "error": "接收者ID必须是整数"}), 400
                 else:
                     flash('接收者ID必须是整数', 'danger')
-                    return redirect(request.referrer or url_for('task.view_task', task_id=task_id))
+                    return redirect(request.referrer or url_for('task.task_detail', task_id=task_id))
             
             # 获取接收者
             recipient = User.query.get(recipient_id)
@@ -364,7 +364,7 @@ def task_conversation(task_id):
                     return jsonify({"success": False, "error": "接收者不存在"}), 404
                 else:
                     flash('接收者不存在', 'danger')
-                    return redirect(request.referrer or url_for('task.view_task', task_id=task_id))
+                    return redirect(request.referrer or url_for('task.task_detail', task_id=task_id))
             
             # 创建消息
             message = Message(
@@ -401,7 +401,7 @@ def task_conversation(task_id):
             return jsonify({"success": False, "error": str(e)}), 500
         else:
             flash('处理对话时发生错误', 'danger')
-            return redirect(url_for('task.view_task', task_id=task_id))
+            return redirect(url_for('task.task_detail', task_id=task_id))
 
 @task_bp.route('/<int:task_id>/invite/<int:user_id>', methods=['POST'])
 @login_required
