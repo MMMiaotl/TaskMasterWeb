@@ -1,7 +1,63 @@
-// 存储当前任务ID和当前用户ID
-const taskId = "{{ task.id }}";
-const currentUserId = "{{ current_user.id }}";
-let csrfToken = "{{ csrf_token }}";
+// 存储任务和用户相关信息
+let taskId, currentUserId, csrfToken;
+
+// 初始化页面
+document.addEventListener('DOMContentLoaded', function() {
+    // 从页面元数据中获取必要的数据
+    taskId = document.querySelector('meta[name="task-id"]').getAttribute('content');
+    currentUserId = document.querySelector('meta[name="current-user-id"]').getAttribute('content');
+    csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    initializeEventListeners();
+    preloadProfessionalsData();
+    
+    // 页面加载完成后自动刷新聊天列表
+    refreshChatList();
+    
+    // 每隔60秒刷新一次聊天列表
+    setInterval(refreshChatList, 60000);
+});
+
+// 初始化所有事件监听器
+function initializeEventListeners() {
+    // 处理聊天列表项点击事件
+    document.querySelectorAll('.chat-item').forEach(function(item) {
+        item.addEventListener('click', function() {
+            const conversationId = this.dataset.conversationId;
+            loadConversation(conversationId);
+        });
+    });
+
+    // 处理专业人士列表项点击事件
+    document.querySelectorAll('.pro-item').forEach(function(item) {
+        item.addEventListener('click', function() {
+            const proId = this.dataset.proId;
+            const tabId = this.dataset.tabId;
+            loadProDetails(proId, tabId);
+        });
+    });
+
+    // 处理任务详情按钮点击事件
+    document.getElementById('view-task-details').addEventListener('click', function() {
+        const taskDetailsModal = new bootstrap.Modal(document.getElementById('taskDetailsModal'));
+        taskDetailsModal.show();
+    });
+
+    // 处理返回聊天按钮点击事件
+    document.getElementById('back-to-chat').addEventListener('click', function() {
+        showChatArea();
+    });
+
+    // 处理发送消息按钮点击事件
+    document.getElementById('send-message-btn').addEventListener('click', sendMessage);
+
+    // 处理消息输入框回车键事件
+    document.getElementById('message-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+}
 
 // 添加全局错误处理
 window.addEventListener('error', function(event) {
@@ -1421,38 +1477,6 @@ function renderStars(rating) {
         logError('渲染星级评分出错', error);
         return `${rating || 0}`;
     }
-}
-
-// 绑定发送消息按钮点击事件
-const sendMessageBtn = document.getElementById('send-message-btn');
-if (sendMessageBtn) {
-    sendMessageBtn.addEventListener('click', sendMessage);
-} else {
-    logDebug('未找到发送消息按钮元素');
-}
-
-// 绑定消息输入框回车键事件
-const messageInput = document.getElementById('message-input');
-if (messageInput) {
-    messageInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-} else {
-    logDebug('未找到消息输入框元素');
-}
-
-// 绑定聊天表单提交事件
-const chatForm = document.getElementById('chat-form');
-if (chatForm) {
-    chatForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        sendMessage();
-    });
-} else {
-    logDebug('未找到聊天表单元素');
 }
 
 // 页面加载完成后自动刷新聊天列表
