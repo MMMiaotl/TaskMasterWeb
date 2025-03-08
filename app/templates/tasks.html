@@ -1,73 +1,88 @@
 {% extends "base.html" %}
 
-{% block content %}
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>任务列表</h1>
-        <a href="{{ url_for('task.create_task') }}" class="btn btn-primary">
-            发布任务
-        </a>
-    </div>
-    
-    <!-- 搜索框 -->
-    <div class="search-box mb-4">
-        <form action="{{ url_for('task.tasks') }}" method="get" class="form-inline">
-            <div class="input-group">
-                <input type="text" name="q" class="form-control" placeholder="搜索任务..." value="{{ request.args.get('q', '') }}">
-                <button type="submit" class="btn btn-primary">搜索</button>
-            </div>
-        </form>
-    </div>
+{% block title %}任务列表 - 海帮{% endblock %}
 
-    <!-- 任务列表 -->
-    <div class="task-list">
-        {% if tasks %}
+{% block content %}
+<div class="container py-4">
+    {% if access_denied %}
+    <!-- 无权限访问提示 -->
+    <div class="card shadow-sm border-0 rounded-lg mb-4">
+        <div class="card-body text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-lock text-danger" style="font-size: 5rem;"></i>
+            </div>
+            <h2 class="h4 mb-3">访问受限</h2>
+            
+            {% if error_message %}
+            <p class="text-muted mb-4">
+                {{ error_message }}
+            </p>
+            {% else %}
+            <p class="text-muted mb-4">
+                您没有权限访问任务列表。
+            </p>
+            {% endif %}
+            
+            <div class="mt-4">
+                {% if current_user.is_authenticated %}
+                    {% if current_user.is_professional %}
+                    <div class="mb-3">
+                        <p class="text-muted">要访问更多任务，您需要在个人资料中注册相关的服务类别。</p>
+                        <a href="{{ url_for('user.user_profile') }}" class="btn btn-primary">
+                            <i class="fas fa-user-cog me-2"></i>更新专业类别
+                        </a>
+                    </div>
+                    {% endif %}
+                    <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                        <i class="fas fa-home me-2"></i>返回首页
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt me-2"></i>登录
+                    </a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary ms-2">
+                        <i class="fas fa-user-plus me-2"></i>注册
+                    </a>
+                {% endif %}
+                <button onclick="history.back()" class="btn btn-outline-secondary ms-2">
+                    <i class="fas fa-arrow-left me-2"></i>返回上一页
+                </button>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <h1 class="display-5 fw-bold mb-4">任务列表</h1>
+    
+    {% if tasks %}
+        <div class="row">
+            <!-- 任务卡片 -->
             {% for task in tasks %}
-            <div class="task-item card mb-3">
-                <div class="card-body">
-                    <h2 class="card-title">
-                        <a href="{{ url_for('task.task_detail', task_id=task.id) }}">{{ task.title }}</a>
-                    </h2>
-                    <p class="card-text">{{ task.description[:200] }}{% if task.description|length > 200 %}...{% endif %}</p>
-                    <div class="task-meta text-muted">
-                        <span>发布者: 
-                            <a href="{{ url_for('user.other_user_profile', username=task.author.username) }}">
-                                {{ task.author.username }}
-                            </a>
-                        </span>
-                        <span class="mx-2">|</span>
-                        <span>发布时间: {{ task.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
-                        <span class="mx-2">|</span>
-                        <span>状态: 
-                            {% if task.status == 0 %}
-                                <span class="badge bg-warning">等待接单</span>
-                            {% elif task.status == 1 %}
-                                <span class="badge bg-info">等待执行</span>
-                            {% elif task.status == 2 %}
-                                <span class="badge bg-primary">任务完成</span>
-                            {% elif task.status == 3 %}
-                                <span class="badge bg-success">付款完成</span>
-                            {% elif task.status == 4 %}
-                                <span class="badge bg-danger">已取消</span>
-                            {% else %}
-                                <span class="badge bg-secondary">未知状态</span>
-                            {% endif %}
-                        </span>
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ task.title }}</h5>
+                        <p class="card-text">{{ task.description|truncate(100) }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">{{ task.created_at.strftime('%Y-%m-%d') }}</small>
+                            <a href="{{ url_for('task.task_detail', task_id=task.id) }}" class="btn btn-sm btn-outline-primary">查看详情</a>
+                        </div>
                     </div>
                 </div>
             </div>
             {% endfor %}
-        {% else %}
-            <div class="alert alert-info">
-                暂无任务
-            </div>
-        {% endif %}
-    </div>
-
-    {% if current_user.is_authenticated %}
-        <div class="actions mt-4">
-            <a href="{{ url_for('task.create_task') }}" class="btn btn-primary">创建新任务</a>
         </div>
+    {% else %}
+        <div class="alert alert-info">
+            <h4 class="alert-heading">暂无任务</h4>
+            <p>目前没有可以显示的任务。</p>
+            {% if current_user.is_authenticated %}
+            <hr>
+            <p class="mb-0">
+                <a href="{{ url_for('task.create_task') }}" class="btn btn-primary">发布新任务</a>
+            </p>
+            {% endif %}
+        </div>
+    {% endif %}
     {% endif %}
 </div>
 {% endblock %}

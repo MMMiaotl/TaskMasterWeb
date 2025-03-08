@@ -18,9 +18,45 @@ def tasks():
         # 基本查询
         base_query = Task.query.order_by(Task.created_at.desc())
         
-        # 如果用户已登录但不是专业人士，只显示自己发布的任务
-        if current_user.is_authenticated and not current_user.is_professional:
-            base_query = base_query.filter(Task.user_id == current_user.id)
+        # 用户权限控制
+        access_granted = True
+        error_message = ""
+        
+        if current_user.is_authenticated:
+            if current_user.is_admin():
+                # 管理员可以查看所有任务
+                pass
+            elif current_user.is_professional:
+                # 专业人士只能看到自己的任务和与其专业类别相关的任务
+                user_categories = current_user.get_category_ids()
+                category_filters = []
+                for category_id in user_categories:
+                    if '.' in category_id:
+                        main_cat, sub_cat = category_id.split('.')
+                        category_filters.append(
+                            (Task.service_main_category == main_cat) & 
+                            (Task.service_sub_category == sub_cat)
+                        )
+                
+                if category_filters:
+                    # 构建 OR 条件：自己的任务 OR 与专业类别相关的任务
+                    base_query = base_query.filter(
+                        or_(
+                            Task.user_id == current_user.id,
+                            *category_filters
+                        )
+                    )
+                else:
+                    # 如果没有注册专业类别，则只显示自己的任务
+                    base_query = base_query.filter(Task.user_id == current_user.id)
+            else:
+                # 普通用户只能看到自己的任务
+                base_query = base_query.filter(Task.user_id == current_user.id)
+        else:
+            # 未登录用户显示权限错误提示
+            access_granted = False
+            error_message = '请先登录后查看任务列表'
+            flash(error_message, 'info')
         
         # 如果有搜索词，添加搜索条件
         if search_query:
@@ -32,9 +68,15 @@ def tasks():
             )
         
         # 执行查询
-        tasks = base_query.all()
-        return render_template('tasks.html', tasks=tasks)
+        tasks = base_query.all() if access_granted else []
+        
+        return render_template('tasks.html', 
+                              tasks=tasks, 
+                              search_query=search_query,
+                              access_denied=not access_granted,
+                              error_message=error_message)
     except Exception as e:
+        current_app.logger.error(f"加载任务列表时出错: {str(e)}")
         flash('加载任务列表时发生错误')
         return render_template('tasks.html', tasks=[])
 
@@ -153,77 +195,49 @@ def create_task():
 def task_detail(task_id):
     task = Task.query.get_or_404(task_id)
     
-    # 增加浏览计数，确保 view_count 不是 None
-    if task.view_count is None:
-        task.view_count = 1
+    # 权限检查
+    access_granted = True
+    error_message = ""
+    
+    if current_user.is_authenticated:
+        if current_user.is_admin():
+            # 管理员可以查看所有任务
+            pass
+        elif current_user.is_professional:
+            # 专业人士只能查看自己的任务和与其专业类别相关的任务
+            if task.user_id != current_user.id:
+                category_id = f"{task.service_main_category}.{task.service_sub_category}"
+                if not current_user.has_category(category_id):
+                    access_granted = False
+                    error_message = '您没有权限查看此任务，因为它不属于您注册的服务类别'
+                    flash(error_message, 'warning')
+        else:
+            # 普通用户只能查看自己的任务
+            if task.user_id != current_user.id:
+                access_granted = False
+                error_message = '普通用户只能查看自己发布的任务'
+                flash(error_message, 'warning')
     else:
-        task.view_count += 1
+        # 未登录用户无权查看任务详情
+        access_granted = False
+        error_message = '请先登录后再查看任务详情'
+        flash(error_message, 'info')
+    
+    # 增加浏览量
+    task.view_count += 1
     db.session.commit()
     
-    # 获取感兴趣的用户（发送过消息的用户）
-    interested_users = set()
-    for message in task.messages:
-        if message.sender_id != task.author.id:
-            interested_users.add(message.sender)
-    
-    # 获取平台推荐用户（只推荐专业人士）
-    # 1. 只选择已注册为专业人士的用户
-    # 2. 排除任务发布者自己
-    # 3. 优先推荐与任务类别匹配的专业人士
-    if task.service_category:
-        main_cat, sub_cat = task.service_category.split('.')
-        category_id = task.service_category
-        
-        # 查找与任务类别匹配的专业人士
-        matching_pros = User.query.join(UserCategory).filter(
-            User.is_professional == True,
-            User.id != task.author.id,
-            UserCategory.category_id == category_id
-        ).all()
-        
-        # 如果匹配的专业人士不足5人，再查找同一主类别下的专业人士
-        if len(matching_pros) < 5:
-            more_pros = User.query.join(UserCategory).filter(
-                User.is_professional == True,
-                User.id != task.author.id,
-                UserCategory.category_id.like(f"{main_cat}.%"),
-                ~User.id.in_([pro.id for pro in matching_pros])
-            ).limit(5 - len(matching_pros)).all()
-            
-            matching_pros.extend(more_pros)
-        
-        # 如果仍然不足5人，再随机推荐其他专业人士
-        if len(matching_pros) < 5:
-            random_pros = User.query.filter(
-                User.is_professional == True,
-                User.id != task.author.id,
-                ~User.id.in_([pro.id for pro in matching_pros])
-            ).order_by(db.func.random()).limit(5 - len(matching_pros)).all()
-            
-            matching_pros.extend(random_pros)
-        
-        recommended_users = matching_pros
-    else:
-        # 如果任务没有指定类别，随机推荐专业人士
-        recommended_users = User.query.filter(
-            User.is_professional == True,
-            User.id != task.author.id
-        ).order_by(db.func.random()).limit(5).all()
-    
-    # 计算任务的响应数量（不同的消息发送者数量）
-    senders = set()
-    for message in task.messages:
-        if message.sender_id != task.author.id:
-            senders.add(message.sender_id)
-    responses_count = len(senders)
-    
-    # 将responses_count添加到task对象中，以便在模板中使用
-    task.responses_count = responses_count
+    # 获取推荐的专业人士
+    recommended_users = []
+    if current_user.is_authenticated and task.user_id == current_user.id and task.status == 0:
+        # 仅对任务发布者且任务状态为等待接单时显示推荐
+        recommended_users = get_recommended_users_for_task(task)
     
     return render_template('task_detail.html', 
-                         task=task,
-                         interested_users=interested_users,
-                         recommended_users=recommended_users)
+                          task=task, 
+                          recommended_users=recommended_users,
+                          access_denied=not access_granted,
+                          error_message=error_message)
 
 @task_bp.route('/<int:task_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -1226,4 +1240,93 @@ def debug_task_messages(task_id):
         })
     except Exception as e:
         current_app.logger.error(f"调试任务消息时出错: {str(e)}")
-        return jsonify({'error': str(e)}), 500 
+        return jsonify({'error': str(e)}), 500
+
+# 获取任务推荐用户的辅助函数
+def get_recommended_users_for_task(task):
+    try:
+        # 获取感兴趣的用户（发送过消息的用户）
+        interested_users = set()
+        for message in task.messages:
+            if message.sender_id != task.author.id:
+                interested_users.add(message.sender)
+        
+        # 获取平台推荐用户（只推荐专业人士）
+        # 1. 只选择已注册为专业人士的用户
+        # 2. 排除任务发布者自己
+        # 3. 优先推荐与任务类别匹配的专业人士
+        if task.service_category:
+            main_cat, sub_cat = task.service_category.split('.')
+            category_id = task.service_category
+            
+            # 查找与任务类别匹配的专业人士
+            matching_pros = User.query.join(UserCategory).filter(
+                User.is_professional == True,
+                User.id != task.author.id,
+                UserCategory.category_id == category_id
+            ).all()
+            
+            # 如果匹配的专业人士不足5人，再查找同一主类别下的专业人士
+            if len(matching_pros) < 5:
+                more_pros = User.query.join(UserCategory).filter(
+                    User.is_professional == True,
+                    User.id != task.author.id,
+                    UserCategory.category_id.like(f"{main_cat}.%"),
+                    ~User.id.in_([pro.id for pro in matching_pros])
+                ).limit(5 - len(matching_pros)).all()
+                
+                matching_pros.extend(more_pros)
+            
+            # 如果仍然不足5人，再随机推荐其他专业人士
+            if len(matching_pros) < 5:
+                random_pros = User.query.filter(
+                    User.is_professional == True,
+                    User.id != task.author.id,
+                    ~User.id.in_([pro.id for pro in matching_pros])
+                ).order_by(db.func.random()).limit(5 - len(matching_pros)).all()
+                
+                matching_pros.extend(random_pros)
+            
+            recommended_users = matching_pros
+        else:
+            # 如果任务没有指定类别，随机推荐专业人士
+            recommended_users = User.query.filter(
+                User.is_professional == True,
+                User.id != task.author.id
+            ).order_by(db.func.random()).limit(5).all()
+            
+        # 计算任务的响应数量（不同的消息发送者数量）
+        senders = set()
+        for message in task.messages:
+            if message.sender_id != task.author.id:
+                senders.add(message.sender_id)
+        responses_count = len(senders)
+        
+        # 将responses_count添加到task对象中，以便在模板中使用
+        task.responses_count = responses_count
+        
+        # 为推荐用户添加匹配分数
+        for user in recommended_users:
+            if hasattr(user, 'average_rating') and user.average_rating:
+                rating_score = min(user.average_rating * 10, 50)  # 最高贡献50分
+            else:
+                rating_score = 0
+                
+            # 计算完成任务的匹配分数
+            completed_tasks_score = min(user.completed_tasks * 5, 30)  # 最高贡献30分
+            
+            # 类别匹配分数
+            category_match_score = 0
+            if category_id and user.has_category(category_id):
+                category_match_score = 20  # 精确匹配贡献20分
+            
+            # 计算总分
+            user.match_score = int(rating_score + completed_tasks_score + category_match_score)
+            
+        # 按匹配分数排序
+        recommended_users = sorted(recommended_users, key=lambda x: x.match_score, reverse=True)
+        
+        return recommended_users
+    except Exception as e:
+        current_app.logger.error(f"获取推荐用户时出错: {str(e)}")
+        return [] 

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, current_app, request, jsonify, url_for
+from flask import Blueprint, render_template, current_app, request, jsonify, url_for, flash, redirect
 from flask_login import current_user, login_required
 from app.models import Task, ServiceView
 from sqlalchemy import or_
@@ -57,6 +57,30 @@ def service_page(category, service_id):
         
         current_service = service_details[service_id]
         
+        # 权限检查
+        access_granted = True
+        error_message = ""
+        
+        if current_user.is_authenticated:
+            # 如果不是专业人士且不是管理员，显示权限错误
+            if not current_user.is_professional and not current_user.is_admin():
+                access_granted = False
+                error_message = '普通用户无权访问服务子类别页面'
+                flash(error_message, 'warning')
+            
+            # 如果是专业人士，检查是否注册了该服务子类别
+            elif current_user.is_professional:
+                category_id = f"{category}.{service_id}"
+                if not current_user.has_category(category_id) and not current_user.is_admin():
+                    access_granted = False
+                    error_message = '您没有注册该服务子类别，无法访问相关任务'
+                    flash(error_message, 'warning')
+        else:
+            # 未登录用户无权访问
+            access_granted = False
+            error_message = '请先登录后再访问服务详情页'
+            flash(error_message, 'info')
+        
         # 记录服务访问
         ServiceView.increment_view(category, service_id)
         
@@ -78,51 +102,49 @@ def service_page(category, service_id):
             query = query.order_by(Task.budget.desc())
         
         # 应用日期排序/过滤
-        now = datetime.utcnow()
-        
-        if date_sort == 'newest':
+        if date_sort == 'recent':
             query = query.order_by(Task.created_at.desc())
-        elif date_sort == 'last_week':
-            one_week_ago = now - timedelta(days=7)
-            query = query.filter(Task.created_at >= one_week_ago).order_by(Task.created_at.desc())
-        elif date_sort == 'last_month':
-            one_month_ago = now - timedelta(days=30)
-            query = query.filter(Task.created_at >= one_month_ago).order_by(Task.created_at.desc())
+        elif date_sort == 'oldest':
+            query = query.order_by(Task.created_at.asc())
+        elif date_sort == 'deadline':
+            # 按截止日期排序，没有截止日期的排在最后
+            query = query.order_by(
+                Task.deadline.is_(None),
+                Task.deadline.asc()
+            )
         else:
-            # 默认按创建时间降序排序
+            # 默认按最近发布排序
             query = query.order_by(Task.created_at.desc())
         
         # 应用位置过滤
-        if location_filter and location_filter != 'all':
-            if location_filter == 'city_center':
-                query = query.filter(Task.location.ilike('%市中心%'))
-            elif location_filter == 'suburbs':
-                query = query.filter(Task.location.ilike('%郊区%'))
+        if location_filter:
+            query = query.filter(Task.location.ilike(f'%{location_filter}%'))
         
-        # 执行查询并限制结果数量
-        tasks = query.limit(10).all()
+        # 执行查询
+        tasks = query.all()
         
-        # 获取所有服务分类数据
-        services = get_services_from_categories()
+        # 获取此类别的热门搜索词
+        # 这部分可以根据用户行为或历史搜索来动态生成
+        popular_searches = ["搬家", "翻译", "面试辅导", "代购"]
         
-        # 渲染服务页面模板
+        # 返回结果
         return render_template(
             'service/service_page.html',
-            current_service=current_service,
             category=category,
-            service_id=service_id,
-            category_name=next((c['name'] for c in SERVICE_CATEGORIES if c['id'] == category), '未知分类'),
-            services=services,
-            tasks=tasks,
-            debug=False,  # 关闭调试信息显示
-            request=request  # 传递请求对象以便在模板中访问参数
+            service=current_service,
+            tasks=tasks if access_granted else [],
+            price_sort=price_sort,
+            date_sort=date_sort,
+            location_filter=location_filter,
+            popular_searches=popular_searches,
+            access_denied=not access_granted,
+            error_message=error_message
         )
         
     except Exception as e:
-        current_app.logger.error(f"服务页面错误: {str(e)}")
-        import traceback
-        current_app.logger.error(f"详细错误堆栈: {traceback.format_exc()}")
-        return f"错误: {str(e)}", 500
+        current_app.logger.error(f"访问服务页面时出错: {str(e)}")
+        flash('加载服务页面时出错', 'danger')
+        return redirect(url_for('main.index'))
 
 @service_bp.route('/search/suggestions')
 def search_suggestions():
