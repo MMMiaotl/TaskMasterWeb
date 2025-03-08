@@ -7,7 +7,7 @@
     border-radius: 0.5rem;
     background-color: #fff;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-    transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     position: relative;
     border-left: 3px solid transparent;
     display: block; /* 确保问题默认显示 */
@@ -15,6 +15,7 @@
     height: auto;
     overflow: visible;
     transform: translateY(0);
+    will-change: transform, opacity, box-shadow;
 }
 
 /* 隐藏的问题 - 完全隐藏，不占用空间 */
@@ -52,8 +53,10 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
     border-left: 3px solid #36b37e;
     transform: scale(0.98);
-    transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     z-index: 1; /* 较低的层级 */
+    animation: questionAnswered 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    cursor: pointer; /* 添加指针样式，提示可点击 */
 }
 
 /* 额外样式：已回答问题的内部段落和标签 */
@@ -72,8 +75,20 @@
 .question-item.answered:not(.active) input,
 .question-item.answered:not(.active) select,
 .question-item.answered:not(.active) textarea {
-    opacity: 0.8;
+    opacity: 0.7;
     background-color: #fafbfc;
+    transform: scale(0.97);
+    pointer-events: none; /* 非活跃状态下禁用交互 */
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 已回答问题的标签样式 */
+.question-item.answered:not(.active) .form-label,
+.question-item.answered:not(.active) .form-check-label,
+.question-item.answered:not(.active) .form-text {
+    opacity: 0.7;
+    transform: scale(0.97);
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* 已回答但当前活跃的问题 - 同时有两个类时的样式 */
@@ -82,6 +97,22 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06) !important;
     background-color: #f8faff !important;
     transform: scale(1) !important;
+    cursor: default; /* 活跃状态下恢复默认光标 */
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 已回答但处于活跃状态的问题内部元素 */
+.question-item.answered.active input,
+.question-item.answered.active select,
+.question-item.answered.active textarea,
+.question-item.answered.active .form-label,
+.question-item.answered.active .form-check-label,
+.question-item.answered.active .form-text {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+    pointer-events: auto !important; /* 恢复交互 */
+    background-color: #fff !important;
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* 已回答问题的标题和描述文字减淡 */
@@ -98,8 +129,11 @@
     right: 1rem;
     font-size: 0.75rem;
     color: #0072ef;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 2px 6px;
+    border-radius: 4px;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.3s ease;
 }
 
 .question-item.answered:not(.active):hover:after {
@@ -108,14 +142,52 @@
 
 /* 已回答问题悬停时的效果 */
 .question-item.answered:not(.active):hover {
-    box-shadow: 0 2px 8px rgba(0, 114, 239, 0.08);
+    box-shadow: 0 2px 12px rgba(0, 114, 239, 0.12);
     cursor: pointer;
     border-left-color: #0072ef;
+    transform: scale(0.985) translateY(-1px);
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* 淡入动画 - 修改为从上到下浮现效果 */
+/* 淡入动画 - 修改为更流畅的综合效果 */
 .fade-in {
-    animation: slideDown 0.3s ease-out; /* 使用与 .active 相同的动画效果，但稍微延长时间 */
+    animation: questionAppear 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    transform-origin: center top;
+}
+
+/* 流畅的问题出现动画关键帧 */
+@keyframes questionAppear {
+    0% {
+        opacity: 0;
+        transform: translateY(-12px) scale(0.98);
+        box-shadow: 0 0 0 rgba(0, 114, 239, 0);
+    }
+    40% {
+        opacity: 0.8;
+        transform: translateY(1px) scale(1.01);
+    }
+    70% {
+        box-shadow: 0 4px 20px rgba(0, 114, 239, 0.12);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    }
+}
+
+/* 问题转换为已回答状态的动画 */
+@keyframes questionAnswered {
+    0% {
+        background-color: #fff;
+        transform: translateY(0) scale(1);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    }
+    100% {
+        background-color: #f9fafb;
+        transform: scale(0.98);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
 }
 
 /* 问题标题 */
@@ -137,8 +209,8 @@
 /* 输入字段焦点样式 */
 .form-control:focus, .form-select:focus {
     border-color: #0072ef;
-    box-shadow: 0 0 0 2px rgba(0, 114, 239, 0.15);
-    transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    box-shadow: 0 0 0 3px rgba(0, 114, 239, 0.15);
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* 输入字段悬停样式 */
@@ -208,13 +280,19 @@
     background-color: #0072ef;
     border-color: #0072ef;
     box-shadow: 0 2px 8px rgba(0, 114, 239, 0.15);
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .btn-primary:hover {
     background-color: #0065d2;
     border-color: #0065d2;
-    box-shadow: 0 4px 12px rgba(0, 114, 239, 0.25);
-    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(0, 114, 239, 0.25);
+    transform: translateY(-2px);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+    transition: all 0.1s ease-out;
 }
 
 .btn-outline-primary {
@@ -342,14 +420,51 @@
     }
 }
 
-/* 添加从上到下浮现的动画关键帧 */
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-} 
+/* 问题项内部元素的过渡效果 */
+.question-item input,
+.question-item select,
+.question-item textarea,
+.question-item .form-check-label,
+.question-item .form-text {
+    transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 已回答问题的输入元素样式 */
+.question-item.answered:not(.active) input,
+.question-item.answered:not(.active) select,
+.question-item.answered:not(.active) textarea {
+    opacity: 0.7;
+    background-color: #fafbfc;
+    transform: scale(0.97);
+    pointer-events: none;
+}
+
+/* 已回答问题的标签样式 */
+.question-item.answered:not(.active) .form-label,
+.question-item.answered:not(.active) .form-check-label {
+    opacity: 0.7;
+    transform: scale(0.97);
+}
+
+/* 已回答问题重新激活时的效果 */
+.question-item.answered.active input,
+.question-item.answered.active select,
+.question-item.answered.active textarea,
+.question-item.answered.active .form-label,
+.question-item.answered.active .form-check-label {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 聚焦时的精细过渡效果 */
+.form-control:focus, .form-select:focus {
+    border-color: #0072ef;
+    box-shadow: 0 0 0 3px rgba(0, 114, 239, 0.15);
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 删除所有必填字段星号相关样式 */
+
+/* 所有必填样式已被移除 */ 

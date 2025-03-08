@@ -57,6 +57,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化自动生成功能监听
     initAutoGenerationListeners();
     
+    // 初始化已回答问题的点击事件
+    initAnsweredQuestionClickEvents();
+    
     // 为服务类别选择添加特殊处理
     const categorySelect = document.getElementById('service_category');
     if (categorySelect) {
@@ -673,15 +676,54 @@ steps.forEach(step => {
     }
 });
 
-// 滚动到元素函数 - 无动画版本
+// 平滑滚动到元素 - 优化版本
 function smoothScrollToElement(element) {
     if (!element) return;
     
-    // 使用即时滚动，不使用平滑效果
-    element.scrollIntoView({ 
-        behavior: 'auto', // 改为无动画滚动
-        block: 'center'
-    });
+    // 获取元素的位置信息
+    const rect = element.getBoundingClientRect();
+    const elementTop = rect.top + window.pageYOffset;
+    
+    // 计算目标滚动位置（减去一些偏移量，让元素在视口中更居中）
+    const offset = 80; // 顶部偏移量
+    const targetPosition = elementTop - offset;
+    
+    // 当前滚动位置
+    const startPosition = window.pageYOffset;
+    // 需要滚动的距离
+    const distance = targetPosition - startPosition;
+    
+    // 如果距离很小，直接跳转
+    if (Math.abs(distance) < 100) {
+        window.scrollTo(0, targetPosition);
+        return;
+    }
+    
+    // 否则使用平滑滚动
+    let start = null;
+    const duration = 400; // 滚动持续时间（毫秒）
+    
+    // 缓动函数 - easeInOutQuad
+    function easeInOutQuad(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    }
+    
+    // 动画函数
+    function animation(currentTime) {
+        if (start === null) start = currentTime;
+        const timeElapsed = currentTime - start;
+        const progress = Math.min(timeElapsed / duration, 1);
+        const easeProgress = easeInOutQuad(progress);
+        
+        window.scrollTo(0, startPosition + distance * easeProgress);
+        
+        if (timeElapsed < duration) {
+            requestAnimationFrame(animation);
+        }
+    }
+    
+    // 启动动画
+    requestAnimationFrame(animation);
 }
 
 // 为问题中的输入字段添加事件监听
@@ -747,82 +789,132 @@ function addInputEventListeners(questionElement) {
 function handleInputChange(questionElement) {
     // 验证当前问题
     if (validateQuestion(questionElement)) {
-        // 标记当前问题为已回答，并移除active类
-        questionElement.classList.add('answered');
+        // 检查是否为多字段问题并且是否所有字段都已填写
+        const isMultiFieldQuestion = hasMultipleRequiredFields(questionElement);
+        const allFieldsFilled = areAllFieldsInQuestionFilled(questionElement);
         
-        // 特殊处理：这些问题不自动跳转到下一个问题 - 由于添加了专门的处理函数，可以移除time-preference-question
-        const nonAutoAdvanceQuestions = [
-            'specific-date-question',
-            'date-range-question'
-        ];
-        
-        if (nonAutoAdvanceQuestions.includes(questionElement.id)) {
-            // 更新下一步按钮的状态
-            updateNextButtonForTimeQuestions(questionElement);
-            return;
-        }
-        
-        // 特殊处理搬家地址问题 - 必须同时填写搬出和搬入地址
-        if (questionElement.id === 'moving-address-question') {
-            const movingOutAddress = questionElement.querySelector('#moving_out_address');
-            const movingInAddress = questionElement.querySelector('#moving_in_address');
+        // 只有当所有字段都已填写完成时，才标记为已回答状态
+        if (!isMultiFieldQuestion || (isMultiFieldQuestion && allFieldsFilled)) {
+            if (!questionElement.classList.contains('answered')) {
+                // 使用requestAnimationFrame确保更流畅的过渡
+                requestAnimationFrame(() => {
+                    questionElement.classList.add('answered');
+                    // 添加已回答状态的属性标记
+                    questionElement.setAttribute('data-answered', 'true');
+                });
+            }
             
-            // 如果任一地址未填写，不进行跳转
-            if (!movingOutAddress || !movingOutAddress.value.trim() || 
-                !movingInAddress || !movingInAddress.value.trim()) {
+            // 特殊处理：这些问题不自动跳转到下一个问题
+            const nonAutoAdvanceQuestions = [
+                'specific-date-question',
+                'date-range-question'
+            ];
+            
+            if (nonAutoAdvanceQuestions.includes(questionElement.id)) {
+                // 更新下一步按钮的状态
+                updateNextButtonForTimeQuestions(questionElement);
                 return;
             }
             
-            console.log('搬家地址已填写完毕，准备显示下一个问题');
-        }
-        
-        // 特殊处理其他多字段问题
-        // 检查是否为多字段问题并且有未填写的必填字段
-        if (hasMultipleRequiredFields(questionElement) && !areAllFieldsInQuestionFilled(questionElement)) {
-            return;
-        }
-        
-        // 获取下一个问题
-        const nextQuestion = getNextQuestion(questionElement);
-        
-        if (nextQuestion) {
-            // 显示下一个问题
-            showQuestion(nextQuestion);
+            // 特殊处理搬家地址问题 - 必须同时填写搬出和搬入地址
+            if (questionElement.id === 'moving-address-question') {
+                const movingOutAddress = questionElement.querySelector('#moving_out_address');
+                const movingInAddress = questionElement.querySelector('#moving_in_address');
+                
+                // 如果任一地址未填写，不进行跳转
+                if (!movingOutAddress || !movingOutAddress.value.trim() || 
+                    !movingInAddress || !movingInAddress.value.trim()) {
+                    return;
+                }
+                
+                console.log('搬家地址已填写完毕，准备显示下一个问题');
+            }
             
-            // 平滑滚动到新问题
+            // 给下一个问题显示一些延迟，以便当前问题的answered动画能完成
             setTimeout(() => {
-                smoothScrollToElement(nextQuestion);
-            }, 50);
-            
-            // 为下一个问题添加输入字段事件监听
-            addInputEventListeners(nextQuestion);
-            
-            console.log('显示下一个问题: ' + nextQuestion.id);
+                // 获取下一个问题
+                const nextQuestion = getNextQuestion(questionElement);
+                
+                if (nextQuestion) {
+                    // 检查问题是否已经显示过
+                    const wasShownBefore = nextQuestion.hasAttribute('data-shown');
+                    
+                    // 显示下一个问题，如果已经显示过则不使用动画
+                    showQuestion(nextQuestion, !wasShownBefore);
+                    
+                    // 平滑滚动到新问题
+                    setTimeout(() => {
+                        smoothScrollToElement(nextQuestion);
+                    }, 200);
+                    
+                    // 为下一个问题添加输入字段事件监听
+                    addInputEventListeners(nextQuestion);
+                    
+                    console.log('显示下一个问题: ' + nextQuestion.id + (wasShownBefore ? ' (无动画)' : ' (带动画)'));
+                } else {
+                    // 如果没有下一个问题，显示下一步按钮
+                    showNextButton(questionElement);
+                    
+                    console.log('没有下一个问题，显示下一步按钮');
+                }
+            }, 150); // 添加150ms延迟以让answered动画有更好的视觉效果
         } else {
-            // 如果没有下一个问题，显示下一步按钮
-            showNextButton(questionElement);
-            
-            console.log('没有下一个问题，显示下一步按钮');
+            // 多字段问题，但不是所有字段都已填写
+            // 保持当前问题的活跃状态，不标记为已回答
+            console.log('多字段问题，尚未完全填写: ' + questionElement.id);
         }
     }
 }
 
 // 显示问题元素(同时不隐藏其他问题)
-function showQuestion(questionElement) {
+function showQuestion(questionElement, withAnimation = true) {
     if (!questionElement) return;
     
     // 移除隐藏类
     questionElement.classList.remove('hidden');
     
-    // 先移除可能存在的类，确保动画能够重新触发
-    questionElement.classList.remove('active');
-    questionElement.classList.remove('fade-in');
+    // 标记问题已经显示过，用于跟踪是否需要应用动画
+    if (!questionElement.hasAttribute('data-shown')) {
+        questionElement.setAttribute('data-shown', 'true');
+    }
     
-    // 使用setTimeout确保CSS能感知到类的变化，从而重新触发动画
-    setTimeout(() => {
-        // 添加活跃类和动画类
+    // 先移除可能存在的类
+    questionElement.classList.remove('active');
+    
+    // 如果是第一次显示或强制要求动画，则应用动画效果
+    if (withAnimation) {
+        // 移除旧的动画类
+        questionElement.classList.remove('fade-in');
+        
+        // 准备DOM更新以触发动画
+        // 使用requestAnimationFrame确保更流畅的动画
+        requestAnimationFrame(() => {
+            // 添加活跃类
+            questionElement.classList.add('active');
+            
+            // 第二个requestAnimationFrame确保浏览器有时间处理上一个状态变化
+            requestAnimationFrame(() => {
+                // 添加动画类
+                questionElement.classList.add('fade-in');
+                
+                // 在同一容器内移除其他问题的active类(但不隐藏它们)
+                const container = getParentQuestionContainer(questionElement);
+                if (container) {
+                    const allQuestions = Array.from(container.querySelectorAll('.question-item:not(.hidden)'));
+                    allQuestions.forEach(q => {
+                        if (q !== questionElement) {
+                            q.classList.remove('active');
+                        }
+                    });
+                }
+                
+                console.log('问题已显示(带高级动画): ' + questionElement.id);
+            });
+        });
+    } else {
+        // 直接添加活跃类，不使用动画
         questionElement.classList.add('active');
-        questionElement.classList.add('fade-in');
+        questionElement.classList.remove('fade-in');
         
         // 在同一容器内移除其他问题的active类(但不隐藏它们)
         const container = getParentQuestionContainer(questionElement);
@@ -835,8 +927,8 @@ function showQuestion(questionElement) {
             });
         }
         
-        console.log('问题已显示: ' + questionElement.id);
-    }, 10);
+        console.log('问题已显示(无动画): ' + questionElement.id);
+    }
 }
 
 // 检查问题元素是否包含多个必填字段
@@ -1023,18 +1115,47 @@ function getNextQuestionContainer(container) {
 
 // 显示下一步按钮
 function showNextButton(questionElement) {
-    const nextButton = questionElement.closest('.form-step').querySelector('.next-step');
-    if (nextButton) {
-        // 移除隐藏类
-        nextButton.classList.remove('hidden');
-        // 添加动画类
-        nextButton.classList.add('fade-in');
+    if (!questionElement) return;
+    
+    const formStep = questionElement.closest('.form-step');
+    if (!formStep) return;
+    
+    const nextButton = formStep.querySelector('.next-step');
+    if (!nextButton) return;
+    
+    // 如果按钮已经可见，不再处理
+    if (!nextButton.classList.contains('hidden')) return;
+    
+    // 移除隐藏类
+    nextButton.classList.remove('hidden');
+    
+    // 添加淡入和上浮效果
+    nextButton.style.opacity = '0';
+    nextButton.style.transform = 'translateY(10px)';
+    
+    // 使用requestAnimationFrame确保更流畅的动画
+    requestAnimationFrame(() => {
+        // 触发重绘
+        nextButton.getBoundingClientRect();
         
-        // 平滑滚动到按钮位置
+        // 应用动画
+        nextButton.style.transition = 'opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)';
+        nextButton.style.opacity = '1';
+        nextButton.style.transform = 'translateY(0)';
+        
+        // 添加按钮显示时的微小放大效果
         setTimeout(() => {
-            smoothScrollToElement(nextButton);
-        }, 50);
-    }
+            nextButton.style.transform = 'translateY(0) scale(1.03)';
+            setTimeout(() => {
+                nextButton.style.transform = 'translateY(0) scale(1)';
+            }, 150);
+        }, 300);
+    });
+    
+    // 平滑滚动到按钮
+    setTimeout(() => {
+        smoothScrollToElement(nextButton);
+    }, 150);
 }
 
 // 验证单个问题
@@ -1142,4 +1263,43 @@ function validateTitle() {
 function validateDescription() {
     const descriptionInput = document.getElementById('description');
     return descriptionInput && descriptionInput.value.trim().length >= 20;
+}
+
+// 添加已回答问题的点击事件处理
+function initAnsweredQuestionClickEvents() {
+    console.log('初始化已回答问题点击事件');
+    
+    // 使用事件委托监听整个表单的点击事件
+    const taskForm = document.getElementById('task-form');
+    if (!taskForm) return;
+    
+    taskForm.addEventListener('click', function(event) {
+        // 查找点击的是否是已回答问题或其内部元素
+        let targetQuestion = event.target.closest('.question-item.answered');
+        if (!targetQuestion) return;
+        
+        // 如果已经是活跃状态，不做任何处理
+        if (targetQuestion.classList.contains('active')) return;
+        
+        console.log('点击了已回答问题: ' + targetQuestion.id);
+        
+        // 获取问题所在容器内的所有问题
+        const container = getParentQuestionContainer(targetQuestion);
+        if (!container) return;
+        
+        const questions = Array.from(container.querySelectorAll('.question-item:not(.hidden)'));
+        
+        // 移除其他问题的active状态
+        questions.forEach(q => {
+            if (q !== targetQuestion) {
+                q.classList.remove('active');
+            }
+        });
+        
+        // 激活点击的问题
+        targetQuestion.classList.add('active');
+        
+        // 平滑滚动到该问题
+        smoothScrollToElement(targetQuestion);
+    });
 } 

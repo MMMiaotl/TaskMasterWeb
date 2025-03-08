@@ -397,6 +397,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 question.classList.remove('active');
                 question.classList.remove('fade-in');
                 question.classList.add('hidden');
+                
+                // 重置data-shown属性，确保再次显示时会应用动画
+                if (question.hasAttribute('data-shown')) {
+                    question.removeAttribute('data-shown');
+                }
+                
+                // 重置样式以确保动画效果
+                question.style.opacity = '';
+                question.style.transform = '';
+                question.style.transition = '';
             });
             
             // 显示第一个问题
@@ -404,12 +414,20 @@ document.addEventListener('DOMContentLoaded', function() {
             if (firstQuestion) {
                 firstQuestion.classList.remove('hidden');
                 
-                // 先移除类，再使用setTimeout添加类，确保动画能正确触发
-                setTimeout(() => {
-                    firstQuestion.classList.add('active');
-                    firstQuestion.classList.add('fade-in');
-                    console.log(`已激活第一个问题: ${firstQuestion.id}`);
-                }, 10);
+                // 使用requestAnimationFrame确保更流畅的动画
+                requestAnimationFrame(() => {
+                    // 触发重绘
+                    firstQuestion.getBoundingClientRect();
+                    
+                    // 使用第二个requestAnimationFrame确保浏览器处理上一个状态变化
+                    requestAnimationFrame(() => {
+                        firstQuestion.classList.add('active');
+                        firstQuestion.classList.add('fade-in');
+                        // 标记问题已经显示过
+                        firstQuestion.setAttribute('data-shown', 'true');
+                        console.log(`已激活第一个问题: ${firstQuestion.id}`);
+                    });
+                });
             } else {
                 console.log(`未找到问题项，服务类型: ${serviceType}`);
             }
