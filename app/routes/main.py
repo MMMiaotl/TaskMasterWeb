@@ -146,7 +146,10 @@ def become_provider():
 @main_bp.route('/search/suggestions')
 def search_suggestions():
     query = request.args.get('q', '').strip().lower()
+    print(f"接收到搜索建议请求，查询词: {query}")
+    
     if not query or len(query) < 1:
+        print("查询词为空或太短，返回空列表")
         return jsonify([])
     
     # 从服务类别中搜索匹配的服务
@@ -159,13 +162,13 @@ def search_suggestions():
         # 检查主类别是否匹配
         if query in category_name.lower():
             # 添加整个类别作为建议
-            results.append({
+            result = {
                 'id': category_id,
                 'title': category_name,
-                'description': f"浏览所有{category_name}服务",
-                'url': url_for('service.service_index', category=category_id),
                 'type': 'category'
-            })
+            }
+            print(f"找到匹配的类别: {result}")
+            results.append(result)
         
         # 检查子类别是否匹配
         for subcategory in category['subcategories']:
@@ -173,16 +176,18 @@ def search_suggestions():
             
             # 如果查询是服务名称的前缀或包含在服务名称中
             if service_name.lower().startswith(query) or query in service_name.lower():
-                results.append({
+                result = {
                     'id': service_id,
                     'title': service_name,
-                    'description': f"{category_name} > {service_name}",
-                    'url': url_for('service.service_page', category=category_id, service_id=service_id),
                     'type': 'service'
-                })
+                }
+                print(f"找到匹配的服务: {result}")
+                results.append(result)
     
     # 按相关性排序：优先显示以查询开头的结果
     results.sort(key=lambda x: (0 if x['title'].lower().startswith(query) else 1, x['title']))
     
     # 限制结果数量
-    return jsonify(results[:8]) 
+    final_results = results[:8]
+    print(f"返回 {len(final_results)} 个搜索建议")
+    return jsonify(final_results) 

@@ -479,19 +479,27 @@ nav a {
 
 /* 搜索建议样式 */
 #searchSuggestions {
-    z-index: 1001;
-    top: 100%;
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: #fff;
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 #searchSuggestions .list-group-item {
-    border-radius: 0;
     border-left: none;
     border-right: none;
-    transition: all 0.2s ease;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 1rem;
+    color: #333;
 }
 
 #searchSuggestions .list-group-item:hover {
-    background-color: rgba(var(--bs-primary-rgb), 0.05);
+    background-color: #f8f9fa;
+    color: #0d6efd;
 }
 
 #searchSuggestions .list-group-item:first-child {
@@ -507,5 +515,61 @@ nav a {
 .search-box-large {
     position: relative;
     z-index: 1000;
+}
+
+/* 搜索框样式优化 */
+#searchInput {
+    padding-left: 15px;
+    border-left: none;
+    background-position: left 10px center;
+    transition: all 0.3s ease;
+}
+
+/* 前缀标签样式 */
+.input-group-text {
+    font-weight: 500;
+    color: #495057;
+    border-right: none;
+    background-color: #f8f9fa;
+}
+
+/* 使placeholder颜色更浅，以区分前缀和用户输入 */
+#searchInput::placeholder {
+    color: #adb5bd;
+}
+
+/* 简单搜索建议样式 */
+.simple-suggestions {
+    position: absolute;
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: white;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    margin-top: 5px;
+}
+
+.simple-suggestions ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.simple-suggestions li {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.simple-suggestions li:hover {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+}
+
+.simple-suggestions li:last-child {
+    border-bottom: none;
 }
 

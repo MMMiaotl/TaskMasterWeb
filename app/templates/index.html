@@ -16,17 +16,21 @@
                 </p>
                 <div class="search-box-large position-relative">
                     <form class="d-flex gap-2" id="searchForm" action="{{ url_for('task.create_task') }}" method="get">
-                        <input type="text" 
-                               class="form-control form-control-lg" 
-                               id="searchInput"
-                               name="category"
-                               autocomplete="off"
-                               placeholder="搜索服务类别，如：搬家、法律咨询...">
-                        <button class="btn btn-primary px-4" type="submit">
-                            <i class="fas fa-search me-2"></i>
-                        </button>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-light">我需要</span>
+                            <input type="text" 
+                                   class="form-control form-control-lg" 
+                                   id="searchInput"
+                                   name="category"
+                                   autocomplete="off"
+                                   data-prefix="我需要"
+                                   placeholder="搜索服务类别，如：搬家、法律咨询...">
+                            <button class="btn btn-primary px-4" type="submit">
+                                <i class="fas fa-search me-2"></i>
+                            </button>
+                        </div>
                     </form>
-                    <div id="searchSuggestions" class="position-absolute w-100 mt-1 d-none">
+                    <div id="searchSuggestions" class="position-absolute w-100 mt-1 d-none" style="display:none !important;">
                         <div class="list-group shadow-sm"></div>
                     </div>
                 </div>
