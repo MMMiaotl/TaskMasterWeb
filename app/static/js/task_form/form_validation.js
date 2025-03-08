@@ -345,6 +345,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const allQuestions = serviceContainer.querySelectorAll('.question-item');
             allQuestions.forEach(question => {
                 question.classList.remove('active');
+                question.classList.remove('fade-in');
                 question.classList.add('hidden');
             });
             
@@ -352,8 +353,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const firstQuestion = allQuestions[0];
             if (firstQuestion) {
                 firstQuestion.classList.remove('hidden');
-                firstQuestion.classList.add('active');
-                console.log(`已激活第一个问题: ${firstQuestion.id}`);
+                
+                // 先移除类，再使用setTimeout添加类，确保动画能正确触发
+                setTimeout(() => {
+                    firstQuestion.classList.add('active');
+                    firstQuestion.classList.add('fade-in');
+                    console.log(`已激活第一个问题: ${firstQuestion.id}`);
+                }, 10);
             } else {
                 console.log(`未找到问题项，服务类型: ${serviceType}`);
             }

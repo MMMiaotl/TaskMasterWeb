@@ -130,10 +130,55 @@ document.addEventListener('DOMContentLoaded', function() {
         // 特殊处理第一步的服务类别问题
         if (currentStep === 1) {
             const serviceSelect = document.querySelector('#service_category');
+            // 为第一步服务类型问题重新应用动画效果
+            const categoryQuestion = document.getElementById('category-question');
+            if (categoryQuestion) {
+                // 先移除类
+                categoryQuestion.classList.remove('active');
+                categoryQuestion.classList.remove('fade-in');
+                
+                // 使用setTimeout确保CSS能感知到类的变化，从而重新触发动画
+                setTimeout(() => {
+                    categoryQuestion.classList.add('active');
+                    categoryQuestion.classList.add('fade-in');
+                    console.log('重新应用动画到第一步服务类型问题');
+                }, 10);
+            }
+            
             if (serviceSelect && serviceSelect.value) {
                 document.querySelectorAll('.next-step').forEach(btn => btn.classList.remove('hidden'));
             } else {
                 document.querySelectorAll('.next-step').forEach(btn => btn.classList.add('hidden'));
+            }
+        }
+        // 特殊处理第二步 - 确保服务字段在显示时应用正确的动画
+        else if (currentStep === 2) {
+            // 获取当前选择的服务类别
+            const categorySelect = document.getElementById('service_category');
+            if (categorySelect && categorySelect.value) {
+                const parts = categorySelect.value.split('.');
+                if (parts.length === 2) {
+                    const subCategory = parts[1];
+                    const fieldId = `${subCategory}-fields`;
+                    const serviceContainer = document.getElementById(fieldId);
+                    
+                    if (serviceContainer) {
+                        // 获取第一个问题，重新应用动画效果
+                        const firstQuestion = serviceContainer.querySelector('.question-item:first-child');
+                        if (firstQuestion) {
+                            // 先移除类
+                            firstQuestion.classList.remove('active');
+                            firstQuestion.classList.remove('fade-in');
+                            
+                            // 使用setTimeout确保CSS能感知到类的变化，从而重新触发动画
+                            setTimeout(() => {
+                                firstQuestion.classList.add('active');
+                                firstQuestion.classList.add('fade-in');
+                                console.log(`重新应用动画到第二步问题: ${firstQuestion.id}`);
+                            }, 10);
+                        }
+                    }
+                }
             }
         } 
         // 特殊处理第三步的时间偏好问题

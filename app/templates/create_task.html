@@ -1,6 +1,56 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+/* 预加载进度指示器样式，确保没有闪烁 */
+.progress-container {
+    padding: 1rem 0;
+    margin-bottom: 2rem !important;
+}
+.progress {
+    height: 3px !important;
+    border-radius: 1.5px;
+    background-color: #edf2f7;
+    overflow: hidden;
+}
+.progress-bar {
+    background-color: #0072ef !important;
+}
+.step {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+}
+.step-circle {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50%;
+    background-color: #edf2f7 !important;
+    color: #5e6c84 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.5rem;
+    font-weight: 600;
+    font-size: 16px;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+.step.active .step-circle {
+    background-color: #0072ef !important;
+    color: #fff !important;
+}
+.step-text {
+    font-size: 0.9rem;
+    color: #5e6c84 !important;
+    font-weight: 500;
+}
+.step.active .step-text {
+    color: #0072ef !important;
+    font-weight: 600;
+}
+</style>
+
 <div class="container mt-5 mb-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">

@@ -3,16 +3,32 @@
  * 处理表单进度和元素过渡的动画效果
  */
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('表单动画模块已加载 - 无动画版本，第一步使用从上到下浮现动画');
+    
     // 获取所有步骤元素
     const steps = document.querySelectorAll('.form-step');
     
-    // 初始化：为每个步骤中的问题添加动画类
+    // 初始化：为每个步骤中的问题添加动画类 - 第一步使用从上到下浮现动画
     steps.forEach(step => {
         const questions = step.querySelectorAll('.question-item');
         questions.forEach((question, index) => {
             // 第一个问题默认显示，其他问题隐藏
             if (index === 0) {
-                question.classList.add('active');
+                // 如果是第一步的问题，使用与showQuestion相同的逻辑应用动画
+                if (step.id === 'step-1' && question.id === 'category-question') {
+                    // 先移除类，然后使用setTimeout延迟添加，确保动画能触发
+                    question.classList.remove('active');
+                    question.classList.remove('fade-in');
+                    setTimeout(() => {
+                        question.classList.add('active');
+                        question.classList.add('fade-in');
+                        console.log('应用从上到下浮现动画到第一步服务类型问题');
+                    }, 10);
+                } else {
+                    // 其他步骤的第一个问题只添加active类，不应用动画
+                    question.classList.add('active');
+                    question.classList.remove('fade-in');
+                }
             } else {
                 question.classList.add('hidden');
             }
@@ -22,7 +38,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const nextButton = step.querySelector('.next-step');
         if (nextButton) {
             nextButton.classList.add('hidden');
+            // 移除可能存在的fade-in类
+            nextButton.classList.remove('fade-in');
         }
+    });
+    
+    // 初始化：移除所有可能存在的动画类
+    document.querySelectorAll('.fade-in').forEach(element => {
+        element.classList.remove('fade-in');
     });
     
     // 初始化问题监控 - 添加MutationObserver监控类变化
@@ -43,11 +66,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 const nextButton = document.querySelector('#step-1 .next-step');
                 if (nextButton) {
                     nextButton.classList.remove('hidden');
-                    nextButton.classList.add('fade-in');
+                    // 移除动画类
+                    // nextButton.classList.add('fade-in');
                     
-                    // 平滑滚动到按钮位置
+                    // 平滑滚动到按钮位置 - 无动画版本
                     setTimeout(() => {
-                        smoothScrollToElement(nextButton);
+                        nextButton.scrollIntoView({ 
+                            behavior: 'auto', // 改为无动画滚动
+                            block: 'center'
+                        });
                     }, 50);
                 }
             }
@@ -58,6 +85,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const nextButton = document.querySelector('#step-1 .next-step');
             if (nextButton) {
                 nextButton.classList.remove('hidden');
+                // 移除可能存在的动画类
+                nextButton.classList.remove('fade-in');
             }
         }
     }
@@ -554,27 +583,83 @@ function autoGenerateTaskTitleAndDescription() {
     }
 }
 
-// 更新进度条
+// 更新进度条 - 移除动画效果
 function updateProgressBar(stepNumber) {
     const progressBar = document.getElementById('form-progress-bar');
     if (progressBar) {
+        // 计算进度百分比
         const progressPercentage = (stepNumber - 1) * 20;
+        // 立即更新样式，不使用动画
         progressBar.style.width = `${progressPercentage}%`;
         progressBar.setAttribute('aria-valuenow', progressPercentage);
     }
     
-    // 更新步骤指示器的活跃状态
+    // 更新步骤指示器的活跃状态 - 无动画版本
     document.querySelectorAll('.step').forEach(step => {
         const stepNum = parseInt(step.getAttribute('data-step'));
         
         // 移除所有状态类
         step.classList.remove('active', 'completed');
         
-        // 添加适当的状态类
+        // 添加适当的状态类，不需要过渡动画
         if (stepNum === stepNumber) {
             step.classList.add('active');
+            
+            // 确保应用正确的样式
+            const stepCircle = step.querySelector('.step-circle');
+            const stepText = step.querySelector('.step-text');
+            
+            if (stepCircle) {
+                stepCircle.style.width = '32px';
+                stepCircle.style.height = '32px';
+                stepCircle.style.fontSize = '16px';
+                stepCircle.style.backgroundColor = '#0072ef';
+                stepCircle.style.color = '#fff';
+            }
+            
+            if (stepText) {
+                stepText.style.fontSize = '0.9rem';
+                stepText.style.color = '#0072ef';
+                stepText.style.fontWeight = '600';
+            }
         } else if (stepNum < stepNumber) {
             step.classList.add('completed');
+            
+            // 确保已完成步骤也应用正确的样式
+            const stepCircle = step.querySelector('.step-circle');
+            const stepText = step.querySelector('.step-text');
+            
+            if (stepCircle) {
+                stepCircle.style.width = '32px';
+                stepCircle.style.height = '32px';
+                stepCircle.style.fontSize = '16px';
+                stepCircle.style.backgroundColor = '#0072ef';
+                stepCircle.style.color = '#fff';
+            }
+            
+            if (stepText) {
+                stepText.style.fontSize = '0.9rem';
+                stepText.style.color = '#0072ef';
+                stepText.style.fontWeight = '600';
+            }
+        } else {
+            // 更新未激活步骤的样式
+            const stepCircle = step.querySelector('.step-circle');
+            const stepText = step.querySelector('.step-text');
+            
+            if (stepCircle) {
+                stepCircle.style.width = '32px';
+                stepCircle.style.height = '32px';
+                stepCircle.style.fontSize = '16px';
+                stepCircle.style.backgroundColor = '#edf2f7';
+                stepCircle.style.color = '#5e6c84';
+            }
+            
+            if (stepText) {
+                stepText.style.fontSize = '0.9rem';
+                stepText.style.color = '#5e6c84';
+                stepText.style.fontWeight = '500';
+            }
         }
     });
 }
@@ -588,12 +673,13 @@ steps.forEach(step => {
     }
 });
 
-// 平滑滚动到元素
+// 滚动到元素函数 - 无动画版本
 function smoothScrollToElement(element) {
     if (!element) return;
     
+    // 使用即时滚动，不使用平滑效果
     element.scrollIntoView({ 
-        behavior: 'smooth', 
+        behavior: 'auto', // 改为无动画滚动
         block: 'center'
     });
 }
@@ -728,22 +814,29 @@ function showQuestion(questionElement) {
     // 移除隐藏类
     questionElement.classList.remove('hidden');
     
-    // 添加活跃类和动画类
-    questionElement.classList.add('active');
-    questionElement.classList.add('fade-in');
+    // 先移除可能存在的类，确保动画能够重新触发
+    questionElement.classList.remove('active');
+    questionElement.classList.remove('fade-in');
     
-    // 在同一容器内移除其他问题的active类(但不隐藏它们)
-    const container = getParentQuestionContainer(questionElement);
-    if (container) {
-        const allQuestions = Array.from(container.querySelectorAll('.question-item:not(.hidden)'));
-        allQuestions.forEach(q => {
-            if (q !== questionElement) {
-                q.classList.remove('active');
-            }
-        });
-    }
-    
-    console.log('问题已显示: ' + questionElement.id);
+    // 使用setTimeout确保CSS能感知到类的变化，从而重新触发动画
+    setTimeout(() => {
+        // 添加活跃类和动画类
+        questionElement.classList.add('active');
+        questionElement.classList.add('fade-in');
+        
+        // 在同一容器内移除其他问题的active类(但不隐藏它们)
+        const container = getParentQuestionContainer(questionElement);
+        if (container) {
+            const allQuestions = Array.from(container.querySelectorAll('.question-item:not(.hidden)'));
+            allQuestions.forEach(q => {
+                if (q !== questionElement) {
+                    q.classList.remove('active');
+                }
+            });
+        }
+        
+        console.log('问题已显示: ' + questionElement.id);
+    }, 10);
 }
 
 // 检查问题元素是否包含多个必填字段
