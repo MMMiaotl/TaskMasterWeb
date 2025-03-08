@@ -219,6 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
         else if (currentStep === 3) {
             const timePreference = document.querySelector('input[name="time_preference"]:checked');
             if (timePreference) {
+                // 无论哪种时间偏好，确保下一步按钮都可见
                 document.querySelectorAll('.next-step').forEach(btn => btn.classList.remove('hidden'));
                 
                 // 根据时间偏好显示相应的日期问题
@@ -233,23 +234,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (timePreference.value === 'specific_date' && specificDateQuestion) {
                     specificDateQuestion.classList.remove('hidden');
                     specificDateQuestion.classList.add('fade-in');
+                    
+                    // 验证特定日期是否已填写
+                    const dateInput = specificDateQuestion.querySelector('input[type="date"]');
+                    if (!dateInput || !dateInput.value) {
+                        // 如果日期未填写，隐藏下一步按钮
+                        document.querySelectorAll('.next-step').forEach(btn => btn.classList.add('hidden'));
+                    }
                 } 
                 else if (timePreference.value === 'date_range' && dateRangeQuestion) {
                     dateRangeQuestion.classList.remove('hidden');
                     dateRangeQuestion.classList.add('fade-in');
                     
-                    // 确保日期范围选项的下一步按钮可点击
-                    const startDate = document.querySelector('#start_date');
-                    const endDate = document.querySelector('#end_date');
-                    if (startDate && endDate && startDate.value && endDate.value) {
-                        if (new Date(endDate.value) >= new Date(startDate.value)) {
-                            document.querySelectorAll('.next-step').forEach(btn => {
-                                btn.classList.remove('hidden');
-                                btn.disabled = false;
-                            });
-                        }
+                    // 验证日期范围是否已填写
+                    const startDate = dateRangeQuestion.querySelector('input[name="start_date"]');
+                    const endDate = dateRangeQuestion.querySelector('input[name="end_date"]');
+                    
+                    if (!startDate || !startDate.value || !endDate || !endDate.value) {
+                        // 如果日期范围未完整填写，隐藏下一步按钮
+                        document.querySelectorAll('.next-step').forEach(btn => btn.classList.add('hidden'));
+                    } else if (new Date(endDate.value) < new Date(startDate.value)) {
+                        // 如果结束日期早于开始日期，隐藏下一步按钮
+                        document.querySelectorAll('.next-step').forEach(btn => btn.classList.add('hidden'));
                     }
                 }
+                // 对于"任何时间都可以"和"不确定"选项，保持下一步按钮可见
+                // 无需额外处理，因为我们已经在最开始设置了显示下一步按钮
             } else {
                 document.querySelectorAll('.next-step').forEach(btn => btn.classList.add('hidden'));
             }

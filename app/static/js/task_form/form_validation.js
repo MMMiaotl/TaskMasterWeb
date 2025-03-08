@@ -239,13 +239,63 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         } else if (stepNumber === 3) {
-            const deadline = document.getElementById('deadline');
+            // 获取选中的时间偏好
+            const timePreference = document.querySelector('input[name="time_preference"]:checked');
             
-            if (!deadline.value) {
-                deadline.classList.add('is-invalid');
+            if (!timePreference) {
+                // 如果没有选择时间偏好，显示错误提示
+                const timePreferenceOptions = document.querySelector('.time-preference-options');
+                if (timePreferenceOptions) {
+                    timePreferenceOptions.classList.add('is-invalid');
+                }
                 isValid = false;
             } else {
-                deadline.classList.remove('is-invalid');
+                const timePreferenceOptions = document.querySelector('.time-preference-options');
+                if (timePreferenceOptions) {
+                    timePreferenceOptions.classList.remove('is-invalid');
+                }
+                
+                // 根据不同的时间偏好进行验证
+                if (timePreference.value === 'specific_date') {
+                    // 验证具体日期
+                    const deadline = document.getElementById('deadline');
+                    
+                    if (!deadline || !deadline.value) {
+                        if (deadline) deadline.classList.add('is-invalid');
+                        isValid = false;
+                    } else {
+                        deadline.classList.remove('is-invalid');
+                    }
+                } else if (timePreference.value === 'date_range') {
+                    // 验证日期范围
+                    const startDate = document.querySelector('input[name="start_date"]');
+                    const endDate = document.querySelector('input[name="end_date"]');
+                    
+                    if (!startDate || !startDate.value) {
+                        if (startDate) startDate.classList.add('is-invalid');
+                        isValid = false;
+                    } else {
+                        if (startDate) startDate.classList.remove('is-invalid');
+                    }
+                    
+                    if (!endDate || !endDate.value) {
+                        if (endDate) endDate.classList.add('is-invalid');
+                        isValid = false;
+                    } else {
+                        if (endDate) endDate.classList.remove('is-invalid');
+                        
+                        // 验证结束日期不早于开始日期
+                        if (startDate && startDate.value && new Date(endDate.value) < new Date(startDate.value)) {
+                            endDate.classList.add('is-invalid');
+                            const feedbackElement = endDate.nextElementSibling;
+                            if (feedbackElement && feedbackElement.classList.contains('invalid-feedback')) {
+                                feedbackElement.textContent = '结束日期不能早于开始日期';
+                            }
+                            isValid = false;
+                        }
+                    }
+                }
+                // 对于'anytime'和'not_sure'选项，不需要额外验证
             }
             
             // 预算和地点已移除，不需要验证
