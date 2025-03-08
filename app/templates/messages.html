@@ -100,6 +100,9 @@
                         <div class="message-input p-3 border-top">
                             <form id="message-form" action="{{ url_for('message.send_message', recipient_id=selected_user_id) }}" method="post">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                {% if selected_conversation.task %}
+                                <input type="hidden" name="task_id" value="{{ selected_conversation.task.id }}">
+                                {% endif %}
                                 <div class="input-group">
                                     <input type="text" class="form-control" name="content" id="message-content" placeholder="输入消息..." required>
                                     <button class="btn btn-primary" type="submit">
@@ -135,13 +138,16 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             
             const formData = new FormData(this);
+            const csrfToken = formData.get('csrf_token');
             
             fetch(this.action, {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrfToken
+                },
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {

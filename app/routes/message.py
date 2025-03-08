@@ -93,6 +93,9 @@ def send_message(recipient_id):
     
     # 获取任务参数(如果存在)
     task_id = request.args.get('task_id', type=int)
+    if not task_id and request.form.get('task_id'):
+        task_id = int(request.form.get('task_id'))
+        
     task = None
     if task_id:
         task = Task.query.get_or_404(task_id)
@@ -101,34 +104,71 @@ def send_message(recipient_id):
     form = MessageForm()
     
     # 处理POST请求
-    if request.method == 'POST' and form.validate_on_submit():
-        # 获取消息内容
-        content = form.content.data
-        if not content:
-            flash('消息内容不能为空', 'danger')
-            return render_template('send_message.html', form=form, recipient=recipient, task=task)
+    if request.method == 'POST':
+        # 如果是AJAX请求，直接从request.form获取内容
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            content = request.form.get('content')
+            if not content:
+                return jsonify({'success': False, 'error': '消息内容不能为空'})
+                
+            # 创建新消息
+            message = Message(
+                content=content,
+                sender_id=current_user.id,
+                recipient_id=recipient_id,
+                task_id=task_id,
+                created_at=datetime.utcnow(),
+                is_read=False
+            )
+            
+            try:
+                db.session.add(message)
+                db.session.commit()
+                
+                # 返回成功的JSON响应
+                return jsonify({
+                    'success': True,
+                    'message': {
+                        'id': message.id,
+                        'content': message.content,
+                        'created_at': message.created_at.isoformat()
+                    },
+                    'current_user_name': current_user.username,
+                    'current_user_avatar': current_user.avatar_url or url_for('static', filename='images/default-avatar.jpg', _external=True)
+                })
+            except Exception as e:
+                db.session.rollback()
+                current_app.logger.error(f"发送消息时出错: {str(e)}")
+                return jsonify({'success': False, 'error': str(e)})
         
-        # 创建新消息
-        message = Message(
-            content=content,
-            sender_id=current_user.id,
-            recipient_id=recipient_id,
-            task_id=task_id,
-            created_at=datetime.utcnow(),
-            is_read=False
-        )
-        
-        db.session.add(message)
-        db.session.commit()
-        
-        # 返回成功消息
-        flash('消息已发送', 'success')
-        
-        # 如果是任务相关消息，重定向到任务对话页面
-        if task_id:
-            return redirect(url_for('task.task_conversation', task_id=task_id))
-        # 否则重定向到消息列表
-        return redirect(url_for('message.messages', user_id=recipient_id))
+        # 非AJAX请求的处理
+        elif form.validate_on_submit():
+            content = form.content.data
+            if not content:
+                flash('消息内容不能为空', 'danger')
+                return render_template('send_message.html', form=form, recipient=recipient, task=task)
+            
+            # 创建新消息
+            message = Message(
+                content=content,
+                sender_id=current_user.id,
+                recipient_id=recipient_id,
+                task_id=task_id,
+                created_at=datetime.utcnow(),
+                is_read=False
+            )
+            
+            db.session.add(message)
+            db.session.commit()
+            
+            # 返回成功消息
+            flash('消息已发送', 'success')
+            
+            # 如果是任务相关消息，重定向到任务对话页面
+            if task_id:
+                return redirect(url_for('task.task_conversation', task_id=task_id))
+            # 否则重定向到消息列表
+            return redirect(url_for('message.messages', user_id=recipient_id))
     
     # 处理GET请求 - 渲染表单
     return render_template('send_message.html', form=form, recipient=recipient, task=task)
