@@ -3,6 +3,8 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from sqlalchemy import func
+import secrets
+import time
 
 # 用户与专业类别的多对多关系表
 user_categories = db.Table('user_categories',
@@ -27,6 +29,11 @@ class User(UserMixin, db.Model):
     location = db.Column(db.String(64))
     website = db.Column(db.String(128))
     avatar_url = db.Column(db.String(200))  # 用户头像URL
+    
+    # 邮箱验证相关字段
+    email_confirmed = db.Column(db.Boolean, default=False)
+    email_confirm_token = db.Column(db.String(100))
+    email_confirm_sent_at = db.Column(db.DateTime)
     
     # 专业人士额外字段
     is_professional = db.Column(db.Boolean, default=False)
@@ -109,6 +116,28 @@ class User(UserMixin, db.Model):
         else:
             # 作为发布者完成的任务
             return Task.query.filter_by(user_id=self.id, status=2).count()
+    
+    def generate_email_token(self):
+        """生成邮箱验证令牌"""
+        self.email_confirm_token = secrets.token_hex(32)
+        self.email_confirm_sent_at = datetime.utcnow()
+        return self.email_confirm_token
+    
+    def confirm_email(self, token):
+        """确认邮箱验证令牌"""
+        if token == self.email_confirm_token:
+            self.email_confirmed = True
+            self.email_confirm_token = None
+            return True
+        return False
+    
+    def token_expired(self, expiration=3600):
+        """检查令牌是否过期，默认1小时过期"""
+        if self.email_confirm_sent_at is None:
+            return True
+        now = datetime.utcnow()
+        diff = now - self.email_confirm_sent_at
+        return diff.total_seconds() > expiration
     
     def __repr__(self):
         return f'<User {self.username}>'

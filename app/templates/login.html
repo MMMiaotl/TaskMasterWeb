@@ -1,10 +1,28 @@
 {% extends "base.html" %}
 
-{% block title %}Login{% endblock %}
+{% block title %}登录{% endblock %}
 
 {% block content %}
     <div class="auth-container">
-        <h1>Login</h1>
+        <h1>登录</h1>
+        
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-info">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+        
+        {% if resend_user_id %}
+            <div class="alert alert-warning">
+                <p>您的邮箱尚未验证，请先验证邮箱。</p>
+                <a href="{{ url_for('auth.resend_confirmation') }}" class="btn btn-outline-primary btn-sm">重新发送验证邮件</a>
+            </div>
+        {% endif %}
+        
         <form action="{{ url_for('auth.login') }}" method="post" class="auth-form">
             {{ form.hidden_tag() }}
             <div class="form-group">
@@ -26,7 +44,7 @@
             </div>
             <div class="form-actions">
                 {{ form.submit(class="btn btn-primary") }}
-                <a href="{{ url_for('auth.register') }}" class="btn btn-link">New User?</a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-link">新用户注册</a>
             </div>
         </form>
     </div>

@@ -4,6 +4,7 @@ from flask_login import LoginManager
 from flask_babel import Babel
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
+from flask_mail import Mail
 from app.filters import status_translate
 from config import Config
 
@@ -13,6 +14,7 @@ login_manager = LoginManager()
 migrate = Migrate()
 babel = Babel()
 csrf = CSRFProtect()
+mail = Mail()
 
 def get_locale():
     # 添加调试日志
@@ -38,6 +40,8 @@ def create_app():
     babel.init_app(app, locale_selector=get_locale)
     migrate.init_app(app, db)
     csrf.init_app(app)
+    mail.init_app(app)
+    print("Flask-Mail 已初始化，配置:", app.config['MAIL_SERVER'], app.config['MAIL_PORT'])
     
     # 添加模板上下文
     @app.context_processor
