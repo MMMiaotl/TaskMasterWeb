@@ -1,6 +1,6 @@
 /* 任务表单样式 - 简洁高级版 */
 
-/* 问题项样式 */
+/* 问题项基础样式 */
 .question-item {
     margin-bottom: 2rem;
     padding: 1.5rem;
@@ -10,38 +10,112 @@
     transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
     position: relative;
     border-left: 3px solid transparent;
+    display: block; /* 确保问题默认显示 */
+    opacity: 1;
+    height: auto;
+    overflow: visible;
+    transform: translateY(0);
 }
 
-/* 隐藏的问题 */
+/* 隐藏的问题 - 完全隐藏，不占用空间 */
 .question-item.hidden {
+    display: none !important; /* 使用!important确保优先级 */
     opacity: 0;
     height: 0;
     margin: 0;
     padding: 0;
     overflow: hidden;
     pointer-events: none;
+    position: absolute; /* 从文档流中移除 */
+    z-index: -1; /* 确保不可见 */
 }
 
-/* 活跃的问题 */
+/* 活跃的问题 - 当前正在回答的问题 */
 .question-item.active {
     opacity: 1;
     transform: translateY(0);
     border-left: 3px solid #0072ef;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    background-color: #fff;
+    z-index: 5; /* 确保在最上层 */
 }
 
-/* 已回答的问题 */
+/* 已回答的问题 - 保持可见但样式不同且更紧凑 */
 .question-item.answered {
+    display: block !important; /* 使用!important确保优先级 */
+    opacity: 1 !important;
+    height: auto !important;
+    padding: 1rem 1.25rem !important;
+    margin-bottom: 1rem !important;
+    overflow: visible !important;
     background-color: #f9fafb;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-    transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
     border-left: 3px solid #36b37e;
-    transform: scale(0.99);
+    transform: scale(0.98);
+    transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    z-index: 1; /* 较低的层级 */
 }
 
-/* 淡入动画 - 简化版 */
+/* 额外样式：已回答问题的内部段落和标签 */
+.question-item.answered .question-description {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+
+/* 已回答问题的标题 */
+.question-item.answered .question-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* 已回答问题的输入字段 - 轻微禁用效果但保持可编辑 */
+.question-item.answered:not(.active) input,
+.question-item.answered:not(.active) select,
+.question-item.answered:not(.active) textarea {
+    opacity: 0.8;
+    background-color: #fafbfc;
+}
+
+/* 已回答但当前活跃的问题 - 同时有两个类时的样式 */
+.question-item.active.answered {
+    border-left: 3px solid #0072ef !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06) !important;
+    background-color: #f8faff !important;
+    transform: scale(1) !important;
+}
+
+/* 已回答问题的标题和描述文字减淡 */
+.question-item.answered:not(.active) .question-title,
+.question-item.answered:not(.active) .question-description {
+    opacity: 0.75;
+}
+
+/* 已回答问题的编辑提示 */
+.question-item.answered:not(.active):after {
+    content: "点击编辑";
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 0.75rem;
+    color: #0072ef;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.question-item.answered:not(.active):hover:after {
+    opacity: 1;
+}
+
+/* 已回答问题悬停时的效果 */
+.question-item.answered:not(.active):hover {
+    box-shadow: 0 2px 8px rgba(0, 114, 239, 0.08);
+    cursor: pointer;
+    border-left-color: #0072ef;
+}
+
+/* 淡入动画 */
 .fade-in {
-    animation: fadeIn 0.25s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    animation: fadeIn 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
 }
 
 @keyframes fadeIn {
@@ -94,7 +168,29 @@
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* 步骤按钮容器 */
+/* 描述文本区域样式 */
+#description-question .form-control {
+    min-height: 200px; /* 更大的最小高度 */
+    height: auto;      /* 允许自动增长 */
+    resize: vertical;  /* 允许垂直调整大小 */
+    overflow-y: auto;  /* 当内容过多时显示滚动条 */
+    line-height: 1.5;  /* 更好的行高 */
+    padding: 12px 15px; /* 更舒适的内边距 */
+    font-size: 1rem;   /* 更清晰的字体大小 */
+    transition: min-height 0.3s ease;
+}
+
+/* 描述文本区域焦点状态 */
+#description-question .form-control:focus {
+    min-height: 250px; /* 焦点状态下更大的高度 */
+}
+
+/* 自动生成的描述内容样式 */
+#description-question .form-control.auto-generated {
+    min-height: 250px;
+}
+
+/* 步骤按钮区域 */
 .step-buttons {
     margin-top: 2rem;
     display: flex;
