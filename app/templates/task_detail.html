@@ -2,6 +2,14 @@
 
 {% block title %}{{ _(task.title) }} - 任务推荐{% endblock %}
 
+{% block extra_css %}
+{{ super() }}
+<meta name="task-id" content="{{ task.id }}">
+<meta name="current-user-id" content="{{ current_user.id }}">
+<meta name="csrf-token" content="{{ csrf_token }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/task_responses.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
     <div class="task-detail card shadow-sm border-0 rounded-lg mb-4">
@@ -84,6 +92,65 @@
                 </div>
             </div>
 
+            <!-- 任务发布者信息 -->
+            {% if current_user.is_authenticated and task.author != current_user %}
+            <div class="task-author-info card border-0 shadow-sm rounded-lg mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user me-2"></i>任务发布者信息
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="position-relative">
+                            <img src="{{ task.author.avatar_url or url_for('static', filename='images/default-avatar.jpg') }}" 
+                                 class="rounded-circle border" 
+                                 alt="{{ task.author.username }}"
+                                 style="width: 60px; height: 60px; object-fit: cover;">
+                        </div>
+                        <div class="ms-3 flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0 fw-bold">
+                                    <a href="{{ url_for('user.other_user_profile', username=task.author.username) }}" 
+                                       class="text-decoration-none text-dark">
+                                        {{ task.author.username }}
+                                    </a>
+                                </h5>
+                                <div class="rating-stars">
+                                    {% set rating = task.author.average_rating|default(0)|round(1) %}
+                                    {% for i in range(5) %}
+                                        {% if i < rating|int %}
+                                            <i class="fas fa-star text-warning"></i>
+                                        {% elif i == rating|int and rating % 1 >= 0.5 %}
+                                            <i class="fas fa-star-half-alt text-warning"></i>
+                                        {% else %}
+                                            <i class="far fa-star text-warning"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span class="ms-1 text-muted">{{ rating }}</span>
+                                </div>
+                            </div>
+                            <div class="user-tags mt-2">
+                                <span class="badge bg-info me-1">发布任务: {{ task.author.tasks_count|default(0) }}</span>
+                                <span class="badge bg-secondary">注册时间: {{ task.author.created_at.strftime('%Y-%m-%d') }}</span>
+                            </div>
+                            {% if task.author.bio %}
+                            <p class="text-muted mt-2 mb-0">{{ task.author.bio }}</p>
+                            {% endif %}
+                            
+                            <!-- 联系发布者按钮 -->
+                            <div class="d-flex justify-content-end mt-2">
+                                <a href="javascript:void(0);" onclick="openMessageBox()" 
+                                   class="btn btn-sm btn-primary">
+                                    <i class="fas fa-comment me-1"></i>联系发布者
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- 操作按钮 -->
             <div class="task-actions mt-4 mb-4 d-flex justify-content-end">
                 {% if current_user.is_authenticated and task.author == current_user %}
@@ -100,14 +167,6 @@
                         </button>
                     </form>
                     {% endif %}
-                {% endif %}
-                
-                <!-- 如果有消息系统，可以添加发送消息按钮 -->
-                {% if current_user.is_authenticated and task.author != current_user %}
-                    <a href="{{ url_for('message.send_message', recipient_id=task.author.id, task_id=task.id) }}" 
-                       class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-comment me-1"></i>联系发布者
-                    </a>
                 {% endif %}
 
                 <!-- 任务操作按钮 -->
@@ -131,6 +190,7 @@
     </div>
 
     <!-- 平台推荐部分 -->
+    {% if current_user.is_authenticated and task.author == current_user and task.status == 0 %}
     <div class="card shadow-sm border-0 rounded-lg position-relative recommended-section">
         <!-- 移除推荐标签 -->
         <div class="card-header bg-light">
@@ -206,7 +266,41 @@
             {% endif %}
         </div>
     </div>
+    {% endif %}
 </div>
+
+<!-- 悬浮消息发送框 -->
+{% if current_user.is_authenticated and task.author != current_user %}
+<div id="floating-message-box" class="message-box-container">
+    <div class="message-box-header">
+        <div class="message-box-title">
+            <i class="fas fa-comment me-2"></i>
+            发送消息给 {{ task.author.username }}
+        </div>
+        <div class="message-box-actions">
+            <button type="button" class="btn-close" onclick="closeMessageBox()"></button>
+        </div>
+    </div>
+    <div class="message-box-body">
+        <form id="message-form" onsubmit="sendMessage(event)">
+            <input type="hidden" name="recipient_id" value="{{ task.author.id }}">
+            <input type="hidden" name="task_id" value="{{ task.id }}">
+            <div class="mb-3">
+                <textarea name="content" id="message-content" class="form-control" 
+                          rows="5" placeholder="请输入消息内容..." required></textarea>
+            </div>
+            <div class="message-box-footer">
+                <div id="form-feedback"></div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane me-1"></i>发送
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- 添加遮罩层 -->
+<div id="message-overlay" class="message-overlay"></div>
+{% endif %}
 
 <style>
 /* 平台推荐用户样式 */
@@ -528,5 +622,297 @@
         padding: 6px 12px;
     }
 }
+
+/* 悬浮消息框样式 */
+.message-box-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+    display: none;
+    z-index: 1050;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.message-box-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background-color: #0ea5e9;
+    color: white;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.message-box-title {
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.message-box-actions button {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0;
+}
+
+.message-box-body {
+    padding: 15px;
+}
+
+.message-box-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px 0 0 0;
+}
+
+@media (max-width: 576px) {
+    .message-box-container {
+        width: 90%;
+        max-width: 400px;
+    }
+}
+
+/* 添加遮罩层样式 */
+.message-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.2);
+    z-index: 1040;
+    display: none;
+}
+</style>
+
+<script>
+    // 悬浮消息框相关JavaScript
+    function openMessageBox() {
+        // 显示消息框和遮罩层
+        document.getElementById('floating-message-box').style.display = 'block';
+        document.getElementById('message-overlay').style.display = 'block';
+        document.getElementById('message-content').focus();
+    }
+    
+    function closeMessageBox() {
+        // 隐藏消息框和遮罩层
+        document.getElementById('floating-message-box').style.display = 'none';
+        document.getElementById('message-overlay').style.display = 'none';
+        document.getElementById('message-content').value = '';
+    }
+    
+    // 页面加载完成后添加监听器
+    document.addEventListener('DOMContentLoaded', function() {
+        // 点击遮罩层关闭消息框
+        const overlay = document.getElementById('message-overlay');
+        if (overlay) {
+            overlay.addEventListener('click', function(event) {
+                closeMessageBox();
+            });
+        }
+        
+        // 防止点击消息框内部时触发遮罩层的点击事件
+        const messageBox = document.getElementById('floating-message-box');
+        if (messageBox) {
+            messageBox.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+        }
+    });
+    
+    function sendMessage(event) {
+        event.preventDefault();
+        
+        const form = document.getElementById('message-form');
+        const formData = new FormData(form);
+        const feedbackEl = document.getElementById('form-feedback');
+        
+        // 清除之前的反馈
+        if (feedbackEl) {
+            feedbackEl.innerHTML = '';
+            feedbackEl.className = '';
+        }
+        
+        // 获取表单数据并转换为正确的格式
+        let recipient_id = formData.get('recipient_id');
+        let task_id = formData.get('task_id');
+        const content = formData.get('content');
+        
+        // 表单验证
+        if (!content || content.trim() === '') {
+            if (feedbackEl) {
+                feedbackEl.innerHTML = '请输入消息内容';
+                feedbackEl.className = 'text-danger mb-2';
+            }
+            return;
+        }
+        
+        // 转换为数字
+        recipient_id = parseInt(recipient_id, 10);
+        task_id = parseInt(task_id, 10);
+        
+        // 验证参数
+        if (isNaN(recipient_id) || isNaN(task_id)) {
+            if (feedbackEl) {
+                feedbackEl.innerHTML = '参数错误: recipient_id或task_id无效';
+                feedbackEl.className = 'text-danger mb-2';
+            }
+            console.error('参数错误:', { recipient_id, task_id });
+            return;
+        }
+        
+        // 获取CSRF令牌
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        if (!csrfMeta) {
+            if (feedbackEl) {
+                feedbackEl.innerHTML = '安全令牌缺失，无法发送消息';
+                feedbackEl.className = 'text-danger mb-2';
+            }
+            console.error('CSRF令牌缺失');
+            return;
+        }
+        const csrfToken = csrfMeta.getAttribute('content');
+        
+        // 添加调试日志
+        console.log('准备发送消息:', {
+            recipient_id: recipient_id,
+            task_id: task_id,
+            content: content.substring(0, 20) + '...',
+            csrfToken: csrfToken ? '已设置' : '未设置'
+        });
+        
+        // 禁用发送按钮，防止重复提交
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>发送中...';
+        }
+        
+        // 构建请求数据
+        const requestData = {
+            recipient_id: recipient_id,
+            task_id: task_id,
+            content: content
+        };
+        
+        console.log('发送请求到:', '{{ url_for("message.api_send_message") }}', requestData);
+        
+        // 创建请求对象
+        fetch('{{ url_for("message.api_send_message") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(requestData),
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            console.log('收到响应状态:', response.status);
+            if (!response.ok) {
+                throw new Error('请求失败: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('收到响应数据:', data);
+            if (data.success) {
+                // 显示成功消息
+                showMessageToast('消息发送成功');
+                // 关闭消息框
+                closeMessageBox();
+            } else {
+                // 显示错误消息
+                const errorMsg = data.error || '未知错误';
+                showMessageToast('发送失败: ' + errorMsg, 'danger');
+                if (feedbackEl) {
+                    feedbackEl.innerHTML = '发送失败: ' + errorMsg;
+                    feedbackEl.className = 'text-danger mb-2';
+                }
+                // 重新启用发送按钮
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fas fa-paper-plane me-1"></i>发送';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('发送消息时出错:', error);
+            showMessageToast('发送失败: ' + error.message, 'danger');
+            if (feedbackEl) {
+                feedbackEl.innerHTML = '发送失败: ' + error.message;
+                feedbackEl.className = 'text-danger mb-2';
+            }
+            // 重新启用发送按钮
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-paper-plane me-1"></i>发送';
+            }
+        });
+    }
+    
+    // 显示消息提示
+    function showMessageToast(message, type = 'success') {
+        // 创建toast元素
+        const toastId = 'toast-' + new Date().getTime();
+        const toast = document.createElement('div');
+        toast.id = toastId;
+        toast.className = `message-toast message-toast-${type}`;
+        toast.innerHTML = message;
+        
+        // 添加到页面
+        document.body.appendChild(toast);
+        
+        // 显示toast
+        setTimeout(() => toast.classList.add('show'), 10);
+        
+        // 自动隐藏
+        setTimeout(() => {
+            toast.classList.remove('show');
+            // 移除元素
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+</script>
+
+<!-- 添加在文档底部以确保样式被应用 -->
+<style>
+    /* 消息提示样式 */
+    .message-toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        background-color: #fff;
+        color: #333;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: all 0.3s ease;
+        z-index: 1060;
+    }
+    
+    .message-toast.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .message-toast-success {
+        border-left: 4px solid #10b981;
+    }
+    
+    .message-toast-danger {
+        border-left: 4px solid #ef4444;
+    }
 </style>
 {% endblock %}
