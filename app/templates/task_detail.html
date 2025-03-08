@@ -243,7 +243,8 @@
                                    class="btn btn-sm btn-outline-secondary">
                                     <i class="fas fa-user me-1"></i>查看资料
                                 </a>
-                                <a href="{{ url_for('message.send_message', recipient_id=user.id) }}" 
+                                <a href="javascript:void(0);" 
+                                   onclick="openExpertMessageBox('{{ user.id }}', '{{ user.username }}')" 
                                    class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-comment me-1"></i>联系
                                 </a>
@@ -300,6 +301,37 @@
 </div>
 <!-- 添加遮罩层 -->
 <div id="message-overlay" class="message-overlay"></div>
+{% endif %}
+
+<!-- 添加推荐专业人士消息浮动窗口 -->
+{% if current_user.is_authenticated and task.author == current_user %}
+<div id="expert-floating-message-box" class="message-box-container">
+    <div class="message-box-header">
+        <div class="message-box-title">
+            <i class="fas fa-comment me-2"></i>
+            发送消息给 <span id="expert-recipient-name"></span>
+        </div>
+        <div class="message-box-actions">
+            <button type="button" class="btn-close" onclick="closeExpertMessageBox()"></button>
+        </div>
+    </div>
+    <div class="message-box-body">
+        <form id="expert-message-form" onsubmit="sendExpertMessage(event)">
+            <input type="hidden" id="expert-recipient-id" name="recipient_id" value="">
+            <input type="hidden" name="task_id" value="{{ task.id }}">
+            <div class="mb-3">
+                <textarea name="content" id="expert-message-content" class="form-control" 
+                          rows="5" placeholder="请输入消息内容..." required></textarea>
+            </div>
+            <div class="message-box-footer">
+                <div id="expert-form-feedback"></div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane me-1"></i>发送
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endif %}
 
 <style>
@@ -697,16 +729,216 @@
     // 悬浮消息框相关JavaScript
     function openMessageBox() {
         // 显示消息框和遮罩层
-        document.getElementById('floating-message-box').style.display = 'block';
-        document.getElementById('message-overlay').style.display = 'block';
-        document.getElementById('message-content').focus();
+        const messageBox = document.getElementById('floating-message-box');
+        const overlay = document.getElementById('message-overlay');
+        const messageContent = document.getElementById('message-content');
+        
+        if (messageBox) {
+            messageBox.style.display = 'block';
+        }
+        
+        if (overlay) {
+            overlay.style.display = 'block';
+        }
+        
+        if (messageContent) {
+            messageContent.focus();
+        }
     }
     
     function closeMessageBox() {
         // 隐藏消息框和遮罩层
-        document.getElementById('floating-message-box').style.display = 'none';
-        document.getElementById('message-overlay').style.display = 'none';
-        document.getElementById('message-content').value = '';
+        const messageBox = document.getElementById('floating-message-box');
+        const overlay = document.getElementById('message-overlay');
+        const messageContent = document.getElementById('message-content');
+        
+        if (messageBox) {
+            messageBox.style.display = 'none';
+        }
+        
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+        
+        if (messageContent) {
+            messageContent.value = '';
+        }
+    }
+    
+    // 专业人士消息框函数
+    function openExpertMessageBox(userId, username) {
+        // 设置接收者ID和名称
+        const recipientIdInput = document.getElementById('expert-recipient-id');
+        const recipientName = document.getElementById('expert-recipient-name');
+        const expertMessageBox = document.getElementById('expert-floating-message-box');
+        const overlay = document.getElementById('message-overlay');
+        const expertMessageContent = document.getElementById('expert-message-content');
+        
+        if (recipientIdInput) {
+            recipientIdInput.value = userId;
+        }
+        
+        if (recipientName) {
+            recipientName.textContent = username;
+        }
+        
+        // 显示消息框和遮罩层
+        if (expertMessageBox) {
+            expertMessageBox.style.display = 'block';
+        }
+        
+        if (overlay) {
+            overlay.style.display = 'block';
+        }
+        
+        if (expertMessageContent) {
+            expertMessageContent.focus();
+        }
+    }
+    
+    function closeExpertMessageBox() {
+        // 隐藏消息框和遮罩层
+        const expertMessageBox = document.getElementById('expert-floating-message-box');
+        const overlay = document.getElementById('message-overlay');
+        const expertMessageContent = document.getElementById('expert-message-content');
+        
+        if (expertMessageBox) {
+            expertMessageBox.style.display = 'none';
+        }
+        
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+        
+        if (expertMessageContent) {
+            expertMessageContent.value = '';
+        }
+    }
+    
+    function sendExpertMessage(event) {
+        event.preventDefault();
+        
+        const form = document.getElementById('expert-message-form');
+        if (!form) {
+            console.error('消息表单未找到');
+            showMessageToast('发送失败: 表单未找到', 'danger');
+            return;
+        }
+        
+        const formData = new FormData(form);
+        const feedbackEl = document.getElementById('expert-form-feedback');
+        
+        // 清除之前的反馈
+        if (feedbackEl) {
+            feedbackEl.innerHTML = '';
+            feedbackEl.className = '';
+        }
+        
+        // 获取表单数据并转换为正确的格式
+        let recipient_id = formData.get('recipient_id');
+        let task_id = formData.get('task_id');
+        const content = formData.get('content');
+        
+        // 表单验证
+        if (!content || content.trim() === '') {
+            if (feedbackEl) {
+                feedbackEl.innerHTML = '请输入消息内容';
+                feedbackEl.className = 'text-danger mb-2';
+            }
+            return;
+        }
+        
+        // 转换为数字
+        recipient_id = parseInt(recipient_id, 10);
+        task_id = parseInt(task_id, 10);
+        
+        // 验证参数
+        if (isNaN(recipient_id) || isNaN(task_id)) {
+            if (feedbackEl) {
+                feedbackEl.innerHTML = '参数错误: recipient_id或task_id无效';
+                feedbackEl.className = 'text-danger mb-2';
+            }
+            console.error('参数错误:', { recipient_id, task_id });
+            return;
+        }
+        
+        // 获取CSRF令牌
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        if (!csrfMeta) {
+            if (feedbackEl) {
+                feedbackEl.innerHTML = '安全令牌缺失，无法发送消息';
+                feedbackEl.className = 'text-danger mb-2';
+            }
+            console.error('CSRF令牌缺失');
+            return;
+        }
+        const csrfToken = csrfMeta.getAttribute('content');
+        
+        // 禁用发送按钮，防止重复提交
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>发送中...';
+        }
+        
+        // 构建请求数据
+        const requestData = {
+            recipient_id: recipient_id,
+            task_id: task_id,
+            content: content
+        };
+        
+        // 创建请求对象
+        fetch('{{ url_for("message.api_send_message") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(requestData),
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('请求失败: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // 显示成功消息
+                showMessageToast('消息发送成功');
+                // 关闭消息框
+                closeExpertMessageBox();
+            } else {
+                // 显示错误消息
+                const errorMsg = data.error || '未知错误';
+                showMessageToast('发送失败: ' + errorMsg, 'danger');
+                if (feedbackEl) {
+                    feedbackEl.innerHTML = '发送失败: ' + errorMsg;
+                    feedbackEl.className = 'text-danger mb-2';
+                }
+                // 重新启用发送按钮
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fas fa-paper-plane me-1"></i>发送';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('发送消息时出错:', error);
+            showMessageToast('发送失败: ' + error.message, 'danger');
+            if (feedbackEl) {
+                feedbackEl.innerHTML = '发送失败: ' + error.message;
+                feedbackEl.className = 'text-danger mb-2';
+            }
+            // 重新启用发送按钮
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-paper-plane me-1"></i>发送';
+            }
+        });
     }
     
     // 页面加载完成后添加监听器
@@ -715,7 +947,30 @@
         const overlay = document.getElementById('message-overlay');
         if (overlay) {
             overlay.addEventListener('click', function(event) {
-                closeMessageBox();
+                // 关闭所有可能打开的消息框
+                const messageBox = document.getElementById('floating-message-box');
+                if (messageBox) {
+                    messageBox.style.display = 'none';
+                }
+                
+                const expertMessageBox = document.getElementById('expert-floating-message-box');
+                if (expertMessageBox) {
+                    expertMessageBox.style.display = 'none';
+                }
+                
+                // 隐藏遮罩层
+                document.getElementById('message-overlay').style.display = 'none';
+                
+                // 清空输入框
+                const messageContent = document.getElementById('message-content');
+                if (messageContent) {
+                    messageContent.value = '';
+                }
+                
+                const expertMessageContent = document.getElementById('expert-message-content');
+                if (expertMessageContent) {
+                    expertMessageContent.value = '';
+                }
             });
         }
         
@@ -726,12 +981,26 @@
                 event.stopPropagation();
             });
         }
+        
+        // 为专家消息框也添加点击事件阻止冒泡
+        const expertMessageBox = document.getElementById('expert-floating-message-box');
+        if (expertMessageBox) {
+            expertMessageBox.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+        }
     });
     
     function sendMessage(event) {
         event.preventDefault();
         
         const form = document.getElementById('message-form');
+        if (!form) {
+            console.error('消息表单未找到');
+            showMessageToast('发送失败: 表单未找到', 'danger');
+            return;
+        }
+        
         const formData = new FormData(form);
         const feedbackEl = document.getElementById('form-feedback');
         
