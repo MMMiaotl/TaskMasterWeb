@@ -1,0 +1,43 @@
+<!-- 任务标题和基本信息 -->
+<div class="col-12 mb-4">
+    <div class="card shadow-sm border-0 rounded-lg">
+        <div class="card-header bg-gradient-primary text-dark py-3">
+            <h1 class="card-title h3 mb-0">{{ task.title }}</h1>
+        </div>
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="badge bg-primary me-2">
+                        <i class="fas fa-map-marker-alt me-1"></i>{{ task.location }}
+                    </span>
+                    <span class="badge bg-info me-2">
+                        <i class="fas fa-calendar-alt me-1"></i>{{ task.created_at|datetimeformat }}
+                    </span>
+                </div>
+                <div>
+                    {% if task.status == 0 %}
+                    <span class="badge bg-warning text-dark">
+                        <i class="fas fa-hourglass-start me-1"></i>等待接单
+                    </span>
+                    {% elif task.status == 1 %}
+                    <span class="badge bg-info">
+                        <i class="fas fa-hourglass-half me-1"></i>等待执行
+                    </span>
+                    {% elif task.status == 2 %}
+                    <span class="badge bg-primary">
+                        <i class="fas fa-check-circle me-1"></i>任务完成
+                    </span>
+                    {% elif task.status == 3 %}
+                    <span class="badge bg-success">
+                        <i class="fas fa-money-bill-wave me-1"></i>付款完成
+                    </span>
+                    {% elif task.status == 4 %}
+                    <span class="badge bg-danger">
+                        <i class="fas fa-times-circle me-1"></i>已取消
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

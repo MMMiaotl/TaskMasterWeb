@@ -1,0 +1,96 @@
+<!-- 任务详情模态框 -->
+<div class="modal fade" id="taskDetailsModal" tabindex="-1" aria-labelledby="taskDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taskDetailsModalLabel">{{ task.title }} - 工作详情</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="task-info mb-4">
+                    <h6 class="fw-bold">描述</h6>
+                    <p>{{ task.description }}</p>
+                </div>
+                
+                <div class="task-info mb-4">
+                    <h6 class="fw-bold">基本信息</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-map-marker-alt text-primary"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <small class="text-muted">位置</small>
+                                    <p class="mb-0">{{ task.location }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-calendar-alt text-primary"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <small class="text-muted">期望日期</small>
+                                    <p class="mb-0">{{ task.deadline|datetimeformat }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-clock text-primary"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <small class="text-muted">发布时间</small>
+                                    <p class="mb-0">{{ task.created_at|datetimeformat }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-tag text-primary"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <small class="text-muted">预算</small>
+                                    <p class="mb-0">¥{{ task.budget }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if task.attachments %}
+                <div class="task-info mb-4">
+                    <h6 class="fw-bold">附件</h6>
+                    <div class="row">
+                        {% for attachment in task.attachments %}
+                        <div class="col-md-3 mb-3">
+                            <div class="card">
+                                <img src="{{ attachment.url }}" class="card-img-top" alt="附件图片">
+                                <div class="card-body p-2">
+                                    <a href="{{ attachment.url }}" class="btn btn-sm btn-outline-primary w-100" download>
+                                        <i class="fas fa-download me-1"></i>下载
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                <a href="{{ url_for('task.edit_task', task_id=task.id) }}" class="btn btn-outline-primary">
+                    <i class="fas fa-edit me-1"></i>编辑任务
+                </a>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelTaskModal" data-bs-dismiss="modal">
+                    <i class="fas fa-times-circle me-1"></i>取消任务
+                </button>
+            </div>
+        </div>
+    </div>
+</div> 

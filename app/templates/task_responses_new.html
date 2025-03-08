@@ -11,10 +11,10 @@
 <div class="container-fluid py-4">
     <div class="row">
         <!-- 任务标题和基本信息 -->
-        {% include "task_responses/_task_header.html" %}
+        {% include "components/task_responses/_task_header.html" %}
 
         <!-- 左侧导航栏 -->
-        {% include "task_responses/_sidebar.html" %}
+        {% include "components/task_responses/_sidebar.html" %}
 
         <!-- 右侧内容区域 -->
         <div class="col-md-9">
@@ -55,4 +55,4 @@
 {{ super() }}
 <script src="{{ url_for('static', filename='js/task_responses.js') }}"></script>
 {% endblock %}
-{% endblock %}
+{% endblock %} 

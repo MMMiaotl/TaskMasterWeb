@@ -1,0 +1,25 @@
+<!-- 聊天窗口 -->
+<div class="col-12">
+    <div class="chat-window" id="chat-window">
+        <!-- 当没有选中对话时显示 -->
+        <div class="chat-placeholder text-center p-5">
+            <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+            <p class="lead text-muted">请选择一个对话开始聊天</p>
+        </div>
+        
+        <!-- 对话消息容器 -->
+        <div class="chat-messages overflow-auto p-3" style="height: calc(100vh - 400px);">
+            <!-- 消息将在这里动态加载 -->
+        </div>
+        
+        <!-- 消息输入框 -->
+        <div class="chat-input-area mt-3 p-3 bg-light rounded">
+            <div class="input-group">
+                <input type="text" id="message-input" class="form-control" placeholder="输入消息...">
+                <button class="btn btn-primary" id="send-message-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div> 
