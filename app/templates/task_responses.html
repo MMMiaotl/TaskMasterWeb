@@ -56,6 +56,264 @@
 
 {% block extra_js %}
 {{ super() }}
-<script src="{{ url_for('static', filename='js/task_responses.js') }}"></script>
+<script>
+    // 创建一个命名空间来避免全局变量冲突
+    var TaskResponses = (function() {
+        'use strict';
+        
+        // 私有变量
+        var taskId = "{{ task.id }}";
+        var currentUserId = "{{ current_user.id }}";
+        var csrfToken = "{{ csrf_token }}";
+        var currentConversationId = null;
+        
+        // 调试工具
+        function logDebug(message, data) {
+            console.log(`[DEBUG] ${message}`, data || '');
+        }
+        
+        function logError(message, error) {
+            console.error(`[ERROR] ${message}`, error || '');
+            if (error && error.stack) {
+                console.error(`[ERROR STACK] ${error.stack}`);
+            }
+        }
+        
+        // 在文档加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                logDebug('页面初始化', {taskId, currentUserId});
+                
+                // 绑定所有事件监听器
+                initEventListeners();
+                
+                // 初始化UI状态
+                updateUIState();
+                
+                logDebug('页面初始化完成');
+            } catch (error) {
+                logError('页面初始化失败', error);
+                showErrorMessage('初始化页面时发生错误，请刷新页面后重试');
+            }
+        });
+        
+        // 显示错误消息
+        function showErrorMessage(message) {
+            // 可以在页面上添加一个专门显示错误消息的元素
+            // 或者使用alert、toast提示
+            alert('错误: ' + message);
+        }
+        
+        // 初始化所有事件监听器
+        function initEventListeners() {
+            try {
+                // 绑定聊天列表点击事件
+                document.querySelectorAll('.chat-item').forEach(function(item) {
+                    item.addEventListener('click', handleChatItemClick);
+                });
+                
+                // 绑定专业人士列表点击事件
+                document.querySelectorAll('.pro-item').forEach(function(item) {
+                    item.addEventListener('click', handleProItemClick);
+                });
+                
+                // 返回聊天按钮
+                var backToChat = document.getElementById('back-to-chat');
+                if (backToChat) {
+                    backToChat.addEventListener('click', showChatArea);
+                } else {
+                    logError('找不到返回聊天按钮元素');
+                }
+                
+                // 任务详情按钮
+                var viewTaskDetails = document.getElementById('view-task-details');
+                if (viewTaskDetails) {
+                    viewTaskDetails.addEventListener('click', function() {
+                        openTaskDetailsModal();
+                    });
+                } else {
+                    logError('找不到任务详情按钮元素');
+                }
+                
+                // 发送消息按钮
+                var sendMessageBtn = document.getElementById('send-message-btn');
+                if (sendMessageBtn) {
+                    sendMessageBtn.addEventListener('click', sendMessage);
+                } else {
+                    logError('找不到发送消息按钮元素');
+                }
+                
+                // 消息输入框回车键
+                var messageInput = document.getElementById('message-input');
+                if (messageInput) {
+                    messageInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            sendMessage();
+                        }
+                    });
+                } else {
+                    logError('找不到消息输入框元素');
+                }
+                
+                logDebug('所有事件监听器初始化完成');
+            } catch (error) {
+                logError('初始化事件监听器失败', error);
+            }
+        }
+        
+        // 更新UI状态
+        function updateUIState() {
+            // 在这里可以添加其他UI状态更新逻辑
+        }
+        
+        // 处理聊天项点击
+        function handleChatItemClick() {
+            try {
+                var conversationId = this.dataset.conversationId;
+                logDebug('选择对话', {conversationId});
+                
+                // 移除所有聊天项的活动状态
+                document.querySelectorAll('.chat-item').forEach(function(item) {
+                    item.classList.remove('active');
+                });
+                
+                // 添加活动状态到当前项
+                this.classList.add('active');
+                
+                // 显示聊天区域，隐藏专业人士详情区域
+                showChatArea();
+                
+                // 设置当前对话ID
+                currentConversationId = conversationId;
+                
+                // 这里可以添加加载对话消息的逻辑
+            } catch (error) {
+                logError('处理聊天项点击失败', error);
+            }
+        }
+        
+        // 处理专业人士项点击
+        function handleProItemClick() {
+            try {
+                var proId = this.dataset.proId;
+                var tabId = this.dataset.tabId;
+                logDebug('选择专业人士', {proId, tabId});
+                
+                // 显示专业人士详情区域，隐藏聊天区域
+                showProDetailsArea();
+                
+                // 高亮选中的专业人士
+                document.querySelectorAll('.pro-item').forEach(function(item) {
+                    item.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // 这里可以添加加载专业人士详情的逻辑
+            } catch (error) {
+                logError('处理专业人士项点击失败', error);
+            }
+        }
+        
+        // 显示聊天区域，隐藏专业人士详情
+        function showChatArea() {
+            try {
+                var chatAreaContainer = document.getElementById('chat-area-container');
+                var proDetailsArea = document.getElementById('pro-details-area');
+                var contentAreaTitle = document.getElementById('content-area-title');
+                var backToChat = document.getElementById('back-to-chat');
+                
+                if (chatAreaContainer && proDetailsArea && contentAreaTitle && backToChat) {
+                    chatAreaContainer.classList.remove('d-none');
+                    proDetailsArea.classList.add('d-none');
+                    contentAreaTitle.textContent = '聊天详情';
+                    backToChat.style.display = 'none';
+                    logDebug('显示聊天区域');
+                } else {
+                    logError('显示聊天区域时找不到必要的DOM元素');
+                }
+            } catch (error) {
+                logError('显示聊天区域失败', error);
+            }
+        }
+        
+        // 显示专业人士详情区域，隐藏聊天区域
+        function showProDetailsArea() {
+            try {
+                var chatAreaContainer = document.getElementById('chat-area-container');
+                var proDetailsArea = document.getElementById('pro-details-area');
+                var contentAreaTitle = document.getElementById('content-area-title');
+                var backToChat = document.getElementById('back-to-chat');
+                
+                if (chatAreaContainer && proDetailsArea && contentAreaTitle && backToChat) {
+                    chatAreaContainer.classList.add('d-none');
+                    proDetailsArea.classList.remove('d-none');
+                    contentAreaTitle.textContent = '专业人士详情';
+                    backToChat.style.display = 'block';
+                    logDebug('显示专业人士详情区域');
+                } else {
+                    logError('显示专业人士详情区域时找不到必要的DOM元素');
+                }
+            } catch (error) {
+                logError('显示专业人士详情区域失败', error);
+            }
+        }
+        
+        // 打开任务详情模态框
+        function openTaskDetailsModal() {
+            try {
+                var taskDetailsModal = document.getElementById('taskDetailsModal');
+                if (taskDetailsModal && typeof bootstrap !== 'undefined') {
+                    var modal = new bootstrap.Modal(taskDetailsModal);
+                    modal.show();
+                    logDebug('打开任务详情模态框');
+                } else {
+                    logError('找不到任务详情模态框元素或bootstrap未定义');
+                }
+            } catch (error) {
+                logError('打开任务详情模态框失败', error);
+            }
+        }
+        
+        // 发送消息
+        function sendMessage() {
+            try {
+                var messageInput = document.getElementById('message-input');
+                if (!messageInput) {
+                    logError('找不到消息输入框元素');
+                    return;
+                }
+                
+                var message = messageInput.value.trim();
+                if (!message) {
+                    logDebug('消息为空，不发送');
+                    return;
+                }
+                
+                if (!currentConversationId) {
+                    logDebug('未选择对话，不发送消息');
+                    showErrorMessage('请先选择一个对话');
+                    return;
+                }
+                
+                logDebug('发送消息', {message, currentConversationId});
+                
+                // 在这里添加发送消息的逻辑
+                // ...
+                
+                // 清空输入框
+                messageInput.value = '';
+            } catch (error) {
+                logError('发送消息失败', error);
+            }
+        }
+        
+        // 返回公共接口
+        return {
+            showChatArea: showChatArea,
+            showProDetailsArea: showProDetailsArea,
+            openTaskDetailsModal: openTaskDetailsModal
+        };
+    })();
+</script>
 {% endblock %}
 {% endblock %}
