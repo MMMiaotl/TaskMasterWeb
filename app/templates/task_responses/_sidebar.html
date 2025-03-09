@@ -135,6 +135,11 @@
                 <button class="btn btn-outline-primary" id="view-task-details">
                     <i class="fas fa-eye me-2"></i>查看完整工作详情
                 </button>
+                {% if task.status == 4 %}
+                <div class="alert alert-warning mt-3 mb-0 small">
+                    <i class="fas fa-info-circle me-1"></i>此任务已取消，部分功能可能不可用
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

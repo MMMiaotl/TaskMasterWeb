@@ -152,13 +152,13 @@ def search_suggestions():
     if not query or len(query) < 1:
         return jsonify([])
     
-    # 从数据库中查询相关任务
+    # 从数据库中查询相关任务，排除已取消的任务
     suggestions = Task.query.filter(
         or_(
             Task.title.ilike(f'%{query}%'),
             Task.description.ilike(f'%{query}%')
         )
-    ).limit(5).all()
+    ).filter(Task.status != 4).limit(5).all()
     
     # 格式化建议结果
     results = [{

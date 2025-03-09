@@ -179,7 +179,8 @@ def market():
     # 构建基本查询：未分配执行者且状态为等待接单的任务
     query = Task.query.filter(
         Task.status == 0,  # 等待接单
-        Task.executor_id == None
+        Task.executor_id == None,
+        Task.status != 4  # 明确排除已取消的任务
     )
     
     # 应用类别过滤

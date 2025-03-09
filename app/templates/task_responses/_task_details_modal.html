@@ -7,6 +7,15 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <!-- 添加调试信息 -->
+                <div class="alert alert-info mb-3" id="debug-info" style="display: none;">
+                    <h6 class="fw-bold">调试信息</h6>
+                    <p>任务ID: {{ task.id }}</p>
+                    <p>任务状态: {{ task.status }}</p>
+                    <p>任务发布者: {{ task.user_id }}</p>
+                    <p>当前用户: {{ current_user.id }}</p>
+                </div>
+                
                 <div class="task-info mb-4">
                     <h6 class="fw-bold">描述</h6>
                     <p>{{ task.description }}</p>
@@ -62,6 +71,26 @@
                     </div>
                 </div>
                 
+                <!-- 任务状态信息 -->
+                <div class="task-info mb-4">
+                    <h6 class="fw-bold">任务状态</h6>
+                    <div class="alert {% if task.status == 4 %}alert-danger{% else %}alert-info{% endif %}">
+                        {% if task.status == 0 %}
+                            <i class="fas fa-hourglass-start me-1"></i>等待接单
+                        {% elif task.status == 1 %}
+                            <i class="fas fa-hourglass-half me-1"></i>等待执行
+                        {% elif task.status == 2 %}
+                            <i class="fas fa-check-circle me-1"></i>任务完成
+                        {% elif task.status == 3 %}
+                            <i class="fas fa-money-bill-wave me-1"></i>付款完成
+                        {% elif task.status == 4 %}
+                            <i class="fas fa-times-circle me-1"></i>已取消
+                        {% else %}
+                            <i class="fas fa-question-circle me-1"></i>未知状态
+                        {% endif %}
+                    </div>
+                </div>
+                
                 {% if task.attachments %}
                 <div class="task-info mb-4">
                     <h6 class="fw-bold">附件</h6>
@@ -84,13 +113,35 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                {% if task.status != 4 %}  <!-- 如果任务未取消 -->
                 <a href="{{ url_for('task.edit_task', task_id=task.id) }}" class="btn btn-outline-primary">
                     <i class="fas fa-edit me-1"></i>编辑任务
                 </a>
                 <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelTaskModal" data-bs-dismiss="modal">
                     <i class="fas fa-times-circle me-1"></i>取消任务
                 </button>
+                {% else %}
+                <!-- 任务已取消，显示提示 -->
+                <span class="text-danger">
+                    <i class="fas fa-info-circle me-1"></i>此任务已取消，无法编辑或再次取消
+                </span>
+                {% endif %}
             </div>
         </div>
     </div>
 </div> 
+
+<script>
+// 添加调试功能
+document.addEventListener('DOMContentLoaded', function() {
+    // 按下Ctrl+Shift+D显示调试信息
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+            var debugInfo = document.getElementById('debug-info');
+            if (debugInfo) {
+                debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+    });
+});
+</script> 

@@ -8,9 +8,85 @@
 <meta name="current-user-id" content="{{ current_user.id }}">
 <meta name="csrf-token" content="{{ csrf_token }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/task_responses.css') }}">
+<style>
+    /* 错误提示样式 */
+    .error-container {
+        display: none;
+        margin-bottom: 20px;
+        padding: 15px;
+        border-radius: 5px;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+    
+    .error-container pre {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        overflow: auto;
+        max-height: 200px;
+    }
+    
+    /* 调试工具栏样式 */
+    .debug-toolbar {
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 10px;
+        border-top-left-radius: 5px;
+        z-index: 9999;
+        font-size: 12px;
+        display: none;
+    }
+    
+    .debug-toolbar button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        margin-right: 5px;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+    
+    .debug-toolbar button:hover {
+        background-color: #0069d9;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
+<!-- 错误提示容器 -->
+<div class="error-container" id="error-container">
+    <h5><i class="fas fa-exclamation-triangle me-2"></i>发生错误</h5>
+    <p id="error-message">加载页面时发生错误</p>
+    <div>
+        <button class="btn btn-sm btn-outline-danger" onclick="toggleErrorDetails()">
+            <i class="fas fa-code me-1"></i>显示详细信息
+        </button>
+        <button class="btn btn-sm btn-outline-secondary ms-2" onclick="window.location.reload()">
+            <i class="fas fa-sync me-1"></i>刷新页面
+        </button>
+        <button class="btn btn-sm btn-outline-primary ms-2" onclick="window.location.href='{{ url_for('task.tasks') }}'">
+            <i class="fas fa-arrow-left me-1"></i>返回任务列表
+        </button>
+    </div>
+    <pre id="error-details" style="display: none;"></pre>
+</div>
+
+<!-- 调试工具栏 -->
+<div class="debug-toolbar" id="debug-toolbar">
+    <div class="mb-2">调试工具</div>
+    <button onclick="checkDOMElements()">检查DOM元素</button>
+    <button onclick="checkTaskStatus()">检查任务状态</button>
+    <button onclick="checkModalContent()">检查模态框内容</button>
+    <button onclick="toggleDebugInfo()">显示/隐藏调试信息</button>
+</div>
+
 <div class="container-fluid py-4">
     <div class="row">
         <!-- 任务标题和基本信息 -->
@@ -57,6 +133,111 @@
 {% block extra_js %}
 {{ super() }}
 <script>
+    // 错误处理函数
+    function showError(message, details) {
+        var errorContainer = document.getElementById('error-container');
+        var errorMessage = document.getElementById('error-message');
+        var errorDetails = document.getElementById('error-details');
+        
+        if (errorContainer && errorMessage) {
+            errorMessage.textContent = message || '发生未知错误';
+            errorContainer.style.display = 'block';
+            
+            if (errorDetails && details) {
+                errorDetails.textContent = details;
+            }
+        }
+    }
+    
+    function toggleErrorDetails() {
+        var errorDetails = document.getElementById('error-details');
+        if (errorDetails) {
+            errorDetails.style.display = errorDetails.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+    
+    // 调试工具函数
+    function toggleDebugToolbar() {
+        var toolbar = document.getElementById('debug-toolbar');
+        if (toolbar) {
+            toolbar.style.display = toolbar.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+    
+    function toggleDebugInfo() {
+        var debugInfo = document.getElementById('debug-info');
+        if (debugInfo) {
+            debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+    
+    function checkDOMElements() {
+        try {
+            var elements = {
+                taskDetailsModal: document.getElementById('taskDetailsModal'),
+                cancelTaskModal: document.getElementById('cancelTaskModal'),
+                viewTaskDetailsBtn: document.getElementById('view-task-details'),
+                chatAreaContainer: document.getElementById('chat-area-container'),
+                proDetailsArea: document.getElementById('pro-details-area')
+            };
+            
+            console.log('DOM元素检查结果:', elements);
+            alert('DOM元素检查完成，请查看控制台');
+        } catch (error) {
+            console.error('检查DOM元素时出错:', error);
+            alert('检查DOM元素时出错: ' + error.message);
+        }
+    }
+    
+    function checkTaskStatus() {
+        try {
+            var taskStatus = parseInt("{{ task.status }}");
+            var taskId = "{{ task.id }}";
+            var taskTitle = "{{ task.title }}";
+            var taskUserId = "{{ task.user_id }}";
+            var currentUserId = "{{ current_user.id }}";
+            
+            console.log('任务状态检查结果:', {
+                taskId: taskId,
+                taskTitle: taskTitle,
+                taskStatus: taskStatus,
+                taskUserId: taskUserId,
+                currentUserId: currentUserId,
+                isOwner: taskUserId === currentUserId
+            });
+            
+            alert('任务状态检查完成，请查看控制台');
+        } catch (error) {
+            console.error('检查任务状态时出错:', error);
+            alert('检查任务状态时出错: ' + error.message);
+        }
+    }
+    
+    function checkModalContent() {
+        try {
+            var taskDetailsModal = document.getElementById('taskDetailsModal');
+            if (!taskDetailsModal) {
+                alert('找不到任务详情模态框元素');
+                return;
+            }
+            
+            var modalTitle = taskDetailsModal.querySelector('.modal-title');
+            var modalBody = taskDetailsModal.querySelector('.modal-body');
+            var modalFooter = taskDetailsModal.querySelector('.modal-footer');
+            
+            console.log('模态框内容检查结果:', {
+                modalTitle: modalTitle ? modalTitle.textContent : null,
+                modalBodyHTML: modalBody ? modalBody.innerHTML.substring(0, 100) + '...' : null,
+                modalFooterHTML: modalFooter ? modalFooter.innerHTML.substring(0, 100) + '...' : null
+            });
+            
+            alert('模态框内容检查完成，请查看控制台');
+        } catch (error) {
+            console.error('检查模态框内容时出错:', error);
+            alert('检查模态框内容时出错: ' + error.message);
+        }
+    }
+    
     // 创建一个命名空间来避免全局变量冲突
     var TaskResponses = (function() {
         'use strict';
@@ -77,6 +258,9 @@
             if (error && error.stack) {
                 console.error(`[ERROR STACK] ${error.stack}`);
             }
+            
+            // 显示错误信息
+            showError(message, error ? (error.stack || error.message) : null);
         }
         
         // 在文档加载完成后初始化
@@ -90,12 +274,25 @@
                 // 初始化UI状态
                 updateUIState();
                 
+                // 初始化调试工具
+                initDebugTools();
+                
                 logDebug('页面初始化完成');
             } catch (error) {
                 logError('页面初始化失败', error);
-                showErrorMessage('初始化页面时发生错误，请刷新页面后重试');
+                showError('初始化页面时发生错误，请刷新页面后重试', error.stack);
             }
         });
+        
+        // 初始化调试工具
+        function initDebugTools() {
+            // 按下Ctrl+Shift+D显示调试工具栏
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+                    toggleDebugToolbar();
+                }
+            });
+        }
         
         // 显示错误消息
         function showErrorMessage(message) {
@@ -261,16 +458,153 @@
         // 打开任务详情模态框
         function openTaskDetailsModal() {
             try {
+                logDebug('开始打开任务详情模态框');
+                
                 var taskDetailsModal = document.getElementById('taskDetailsModal');
+                logDebug('任务详情模态框元素:', taskDetailsModal);
+                
                 if (taskDetailsModal && typeof bootstrap !== 'undefined') {
-                    var modal = new bootstrap.Modal(taskDetailsModal);
-                    modal.show();
-                    logDebug('打开任务详情模态框');
+                    // 检查任务状态，如果已取消，可以在这里添加特殊处理
+                    var taskStatus = parseInt("{{ task.status }}");
+                    logDebug('当前任务状态:', taskStatus);
+                    
+                    // 检查模态框内容
+                    var modalContent = taskDetailsModal.innerHTML;
+                    logDebug('模态框HTML内容长度:', modalContent.length);
+                    
+                    // 检查模态框中的关键元素
+                    var modalTitle = taskDetailsModal.querySelector('.modal-title');
+                    var modalBody = taskDetailsModal.querySelector('.modal-body');
+                    var modalFooter = taskDetailsModal.querySelector('.modal-footer');
+                    
+                    logDebug('模态框标题元素:', modalTitle);
+                    logDebug('模态框内容元素:', modalBody);
+                    logDebug('模态框底部元素:', modalFooter);
+                    
+                    if (taskStatus === 4) {
+                        logDebug('任务已取消，显示特殊处理');
+                        
+                        // 检查是否有编辑和取消按钮
+                        var editButton = modalFooter ? modalFooter.querySelector('a.btn-outline-primary') : null;
+                        var cancelButton = modalFooter ? modalFooter.querySelector('button.btn-danger') : null;
+                        
+                        logDebug('编辑按钮元素:', editButton);
+                        logDebug('取消按钮元素:', cancelButton);
+                        
+                        // 添加取消状态提示
+                        if (modalBody) {
+                            var statusAlert = modalBody.querySelector('.alert-danger');
+                            if (!statusAlert) {
+                                logDebug('添加取消状态提示');
+                                var alertDiv = document.createElement('div');
+                                alertDiv.className = 'alert alert-danger mb-3';
+                                alertDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>此任务已被取消，某些操作可能不可用';
+                                if (modalBody.firstChild) {
+                                    modalBody.insertBefore(alertDiv, modalBody.firstChild);
+                                } else {
+                                    modalBody.appendChild(alertDiv);
+                                }
+                            }
+                        }
+                        
+                        // 这部分逻辑已在模板中处理
+                    }
+                    
+                    try {
+                        var modal = new bootstrap.Modal(taskDetailsModal);
+                        logDebug('Bootstrap模态框对象创建成功:', modal);
+                        modal.show();
+                        logDebug('模态框显示方法调用成功');
+                    } catch (modalError) {
+                        logError('创建或显示Bootstrap模态框时出错', modalError);
+                        
+                        // 尝试使用jQuery方式显示模态框
+                        if (typeof $ !== 'undefined') {
+                            try {
+                                $(taskDetailsModal).modal('show');
+                                logDebug('使用jQuery显示模态框成功');
+                            } catch (jqueryError) {
+                                logError('使用jQuery显示模态框失败', jqueryError);
+                                
+                                // 如果所有方法都失败，尝试直接显示模态框
+                                try {
+                                    taskDetailsModal.style.display = 'block';
+                                    taskDetailsModal.classList.add('show');
+                                    document.body.classList.add('modal-open');
+                                    
+                                    // 创建背景遮罩
+                                    var backdrop = document.createElement('div');
+                                    backdrop.className = 'modal-backdrop fade show';
+                                    document.body.appendChild(backdrop);
+                                    
+                                    logDebug('使用原生DOM方法显示模态框');
+                                } catch (domError) {
+                                    logError('使用原生DOM方法显示模态框失败', domError);
+                                    
+                                    // 最后的备选方案：直接跳转到任务详情页
+                                    var taskId = "{{ task.id }}";
+                                    logDebug('尝试跳转到任务详情页', {taskId});
+                                    window.location.href = "/task/" + taskId;
+                                }
+                            }
+                        } else {
+                            logError('jQuery未定义，无法使用jQuery方式显示模态框');
+                            
+                            // 尝试直接显示模态框内容
+                            try {
+                                // 创建一个临时容器来显示模态框内容
+                                var container = document.createElement('div');
+                                container.className = 'container py-4';
+                                container.innerHTML = modalBody.innerHTML;
+                                
+                                // 清空页面内容并显示模态框内容
+                                var mainContent = document.querySelector('.container-fluid');
+                                if (mainContent) {
+                                    mainContent.parentNode.replaceChild(container, mainContent);
+                                    logDebug('直接在页面中显示模态框内容');
+                                } else {
+                                    logError('找不到主内容容器');
+                                }
+                            } catch (contentError) {
+                                logError('直接显示模态框内容失败', contentError);
+                                showError('无法显示任务详情', '请尝试刷新页面或返回任务列表');
+                            }
+                        }
+                    }
                 } else {
-                    logError('找不到任务详情模态框元素或bootstrap未定义');
+                    if (!taskDetailsModal) {
+                        logError('找不到任务详情模态框元素');
+                        showError('无法显示任务详情', '找不到任务详情模态框元素');
+                    }
+                    if (typeof bootstrap === 'undefined') {
+                        logError('Bootstrap未定义');
+                        
+                        // 检查是否加载了Bootstrap脚本
+                        var bootstrapScript = document.querySelector('script[src*="bootstrap"]');
+                        logDebug('Bootstrap脚本元素:', bootstrapScript);
+                        
+                        if (!bootstrapScript) {
+                            // 尝试动态加载Bootstrap
+                            logDebug('尝试动态加载Bootstrap');
+                            var script = document.createElement('script');
+                            script.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js';
+                            script.onload = function() {
+                                logDebug('Bootstrap加载成功，重新尝试打开模态框');
+                                setTimeout(openTaskDetailsModal, 500);
+                            };
+                            script.onerror = function() {
+                                logError('动态加载Bootstrap失败');
+                                showError('无法加载必要的脚本', '请检查您的网络连接并刷新页面');
+                            };
+                            document.head.appendChild(script);
+                        } else {
+                            showError('Bootstrap脚本加载失败', '请刷新页面重试');
+                        }
+                    }
                 }
             } catch (error) {
                 logError('打开任务详情模态框失败', error);
+                showError('打开任务详情时发生错误', error.message || '未知错误');
             }
         }
         

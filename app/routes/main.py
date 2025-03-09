@@ -45,11 +45,14 @@ def index():
                         break
         
         # 获取热门任务
-        featured_tasks = Task.query.order_by(Task.view_count.desc()).limit(3).all()
+        featured_tasks = Task.query.filter(Task.status != 4).order_by(Task.view_count.desc()).limit(3).all()
         
         # 如果没有足够的热门任务，获取最新任务
         if len(featured_tasks) < 3:
-            additional_tasks = Task.query.filter(~Task.id.in_([t.id for t in featured_tasks])).order_by(Task.created_at.desc()).limit(3 - len(featured_tasks)).all()
+            additional_tasks = Task.query.filter(
+                Task.status != 4,
+                ~Task.id.in_([t.id for t in featured_tasks])
+            ).order_by(Task.created_at.desc()).limit(3 - len(featured_tasks)).all()
             featured_tasks.extend(additional_tasks)
         
         return render_template('index.html', 
@@ -95,10 +98,10 @@ def professionals():
     service_categories = SERVICE_CATEGORIES
     
     # 获取热门任务（按浏览量排序）
-    popular_tasks = Task.query.order_by(Task.view_count.desc()).limit(4).all()
+    popular_tasks = Task.query.filter(Task.status != 4).order_by(Task.view_count.desc()).limit(4).all()
     
     # 获取高报酬任务（按预算排序）
-    high_paying_tasks = Task.query.order_by(Task.budget.desc()).limit(4).all()
+    high_paying_tasks = Task.query.filter(Task.status != 4).order_by(Task.budget.desc()).limit(4).all()
     
     return render_template(
         'professionals.html',

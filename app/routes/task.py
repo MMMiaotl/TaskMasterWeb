@@ -4,7 +4,7 @@ from app import db, csrf
 from app.models import Task, Message, User, Review, UserCategory
 from app.forms import TaskForm, ReviewForm
 from sqlalchemy import or_
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.utils.constants import SERVICE_CATEGORIES, SERVICE_CHOICES
 
 task_bp = Blueprint('task', __name__, url_prefix='/task')
@@ -44,6 +44,13 @@ def tasks():
                         or_(
                             Task.user_id == current_user.id,
                             *category_filters
+                        )
+                    )
+                    # 对于专业人士，不显示已取消的任务（除非是自己发布的）
+                    base_query = base_query.filter(
+                        or_(
+                            Task.user_id == current_user.id,
+                            Task.status != 4
                         )
                     )
                 else:
@@ -573,13 +580,13 @@ def search_suggestions():
     if not query or len(query) < 1:
         return jsonify([])
     
-    # 从数据库中查询相关任务
+    # 从数据库中查询相关任务，排除已取消的任务
     suggestions = Task.query.filter(
         or_(
             Task.title.ilike(f'%{query}%'),
             Task.description.ilike(f'%{query}%')
         )
-    ).limit(5).all()
+    ).filter(Task.status != 4).limit(5).all()
     
     # 格式化建议结果
     results = [{
@@ -603,22 +610,42 @@ def task_responses(task_id):
         task = Task.query.get_or_404(task_id)
         current_app.logger.info(f"成功获取任务信息: {task.title}")
         
+        # 添加更多任务属性的调试信息
+        current_app.logger.info(f"任务状态: {task.status}, 任务发布者ID: {task.user_id}, 执行者ID: {task.executor_id}")
+        current_app.logger.info(f"任务创建时间: {task.created_at}, 更新时间: {task.updated_at}")
+        current_app.logger.info(f"任务预算: {task.budget}, 任务位置: {task.location}")
+        
+        # 检查任务对象的所有属性
+        task_attrs = {attr: getattr(task, attr) for attr in dir(task) if not attr.startswith('_') and not callable(getattr(task, attr))}
+        current_app.logger.info(f"任务所有属性: {task_attrs}")
+        
         # 检查当前用户是否为任务创建者
         if task.user_id != current_user.id:
             current_app.logger.warning(f"权限错误: 用户 {current_user.id} 尝试访问任务 {task_id} 的回应页面，但不是任务创建者")
             flash('您无权访问此页面', 'danger')
             return redirect(url_for('task.tasks'))
         
+        # 检查任务是否已取消
+        if task.status == 4:  # 假设状态4表示已取消
+            current_app.logger.info(f"任务 {task_id} 已取消，显示特殊处理")
+            # 对于已取消的任务，我们仍然显示页面，但不显示某些操作按钮
+            # 这部分逻辑已在模板中处理
+        
         # 查询与任务相关的所有对话
         current_app.logger.info(f"开始查询任务相关的对话消息")
-        conversations = Message.query.filter(
-            Message.task_id == task_id,
-            (
-                (Message.sender_id == current_user.id) | 
-                (Message.recipient_id == current_user.id)
-            )
-        ).order_by(Message.created_at.desc()).all()
-        current_app.logger.info(f"获取到 {len(conversations)} 条对话消息")
+        try:
+            conversations = Message.query.filter(
+                Message.task_id == task_id,
+                (
+                    (Message.sender_id == current_user.id) | 
+                    (Message.recipient_id == current_user.id)
+                )
+            ).order_by(Message.created_at.desc()).all()
+            current_app.logger.info(f"获取到 {len(conversations)} 条对话消息")
+        except Exception as query_e:
+            current_app.logger.error(f"查询对话消息时出错: {str(query_e)}")
+            conversations = []
+            current_app.logger.info("使用空列表作为对话消息的默认值")
         
         # 整理对话数据，按照对话对象分组
         current_app.logger.info(f"开始整理对话数据")
@@ -666,11 +693,17 @@ def task_responses(task_id):
         current_app.logger.info(f"对话数据整理完成，共有 {len(conversations_by_user)} 个对话")
         
         # 将对话按照最新消息时间排序
-        conversations_list = sorted(
-            conversations_by_user.values(),
-            key=lambda x: x['last_message_time'] or datetime.min.isoformat(),
-            reverse=True
-        )
+        try:
+            conversations_list = sorted(
+                conversations_by_user.values(),
+                key=lambda x: x['last_message_time'] or datetime.min.replace(tzinfo=None),
+                reverse=True
+            )
+        except Exception as sort_e:
+            current_app.logger.error(f"对话排序时出错: {str(sort_e)}")
+            # 尝试不使用时间排序
+            conversations_list = list(conversations_by_user.values())
+            current_app.logger.info("使用未排序的对话列表")
         
         # 查询对此任务感兴趣的专业人士
         current_app.logger.info(f"开始查询感兴趣的专业人士")
@@ -740,26 +773,157 @@ def task_responses(task_id):
             current_app.logger.info(f"未读消息数: {unread_count}, 感兴趣专业人士数: {interested_count}, 匹配专业人士数: {matching_count}")
             
             # 从会话中获取CSRF令牌
-            from flask import session
-            csrf_token = session.get('csrf_token', '')
-            current_app.logger.info(f"CSRF令牌: {csrf_token[:10]}...")
+            from flask_wtf.csrf import generate_csrf
+            csrf_token = generate_csrf()
+            current_app.logger.info(f"CSRF令牌: {csrf_token[:10] if csrf_token else '无'}...")
 
             # 获取当前时间用于日期格式化
             now = datetime.now()
             
-            return render_template('task_responses.html', 
-                               task=task,
-                               conversations=conversations_list,
-                               interested_pros=interested_pros,
-                               matching_pros=matching_pros,
-                               unread_messages_count=unread_count,
-                               interested_pros_count=interested_count,
-                               matching_pros_count=matching_count,
-                               csrf_token=csrf_token,
-                               now=now)
+            # 检查任务对象的deadline属性是否存在
+            if not hasattr(task, 'deadline') or task.deadline is None:
+                current_app.logger.warning(f"任务 {task_id} 没有deadline属性或deadline为None")
+                # 为了避免模板渲染错误，设置一个默认值
+                task.deadline = datetime.now() + timedelta(days=7)
+                current_app.logger.info(f"为任务 {task_id} 设置了默认deadline: {task.deadline}")
+            
+            # 检查任务对象的attachments属性是否存在
+            if not hasattr(task, 'attachments'):
+                current_app.logger.warning(f"任务 {task_id} 没有attachments属性")
+                # 为了避免模板渲染错误，设置一个空列表
+                task.attachments = []
+                current_app.logger.info(f"为任务 {task_id} 设置了空的attachments列表")
+            
+            # 记录将要传递给模板的所有变量
+            template_vars = {
+                'task': task,
+                'conversations': conversations_list,
+                'interested_pros': interested_pros,
+                'matching_pros': matching_pros,
+                'unread_messages_count': unread_count,
+                'interested_pros_count': interested_count,
+                'matching_pros_count': matching_count,
+                'csrf_token': csrf_token,
+                'now': now
+            }
+            current_app.logger.info(f"模板变量: {template_vars.keys()}")
+            
+            try:
+                # 尝试渲染模板
+                rendered_template = render_template('task_responses.html', 
+                                   task=task,
+                                   conversations=conversations_list,
+                                   interested_pros=interested_pros,
+                                   matching_pros=matching_pros,
+                                   unread_messages_count=unread_count,
+                                   interested_pros_count=interested_count,
+                                   matching_pros_count=matching_count,
+                                   csrf_token=csrf_token,
+                                   now=now)
+                current_app.logger.info("模板渲染成功")
+                return rendered_template
+            except Exception as template_e:
+                current_app.logger.error(f"模板渲染错误: {str(template_e)}")
+                # 尝试确定具体是哪个模板文件出错
+                try:
+                    # 尝试渲染主模板
+                    render_template('task_responses.html')
+                    current_app.logger.info("主模板渲染成功")
+                except Exception as main_e:
+                    current_app.logger.error(f"主模板渲染错误: {str(main_e)}")
+                
+                try:
+                    # 尝试渲染任务详情模态框模板
+                    render_template('task_responses/_task_details_modal.html', task=task)
+                    current_app.logger.info("任务详情模态框模板渲染成功")
+                except Exception as modal_e:
+                    current_app.logger.error(f"任务详情模态框模板渲染错误: {str(modal_e)}")
+                
+                # 尝试渲染其他包含的模板
+                try:
+                    render_template('task_responses/_task_header.html', task=task)
+                    current_app.logger.info("任务头部模板渲染成功")
+                except Exception as header_e:
+                    current_app.logger.error(f"任务头部模板渲染错误: {str(header_e)}")
+                
+                try:
+                    render_template('task_responses/_sidebar.html', 
+                                   task=task, 
+                                   unread_messages_count=unread_count,
+                                   interested_pros_count=interested_count,
+                                   matching_pros_count=matching_count)
+                    current_app.logger.info("侧边栏模板渲染成功")
+                except Exception as sidebar_e:
+                    current_app.logger.error(f"侧边栏模板渲染错误: {str(sidebar_e)}")
+                
+                # 如果是已取消的任务，可能是因为模板中的某些逻辑依赖于任务状态
+                if task.status == 4:
+                    current_app.logger.warning("任务已取消，尝试使用简化版模板")
+                    try:
+                        # 尝试使用一个简化版的模板
+                        return render_template('task_canceled.html', task=task)
+                    except Exception as simple_e:
+                        current_app.logger.error(f"简化版模板渲染错误: {str(simple_e)}")
+                        # 如果简化版模板也不存在，则创建一个简单的响应
+                        from flask import make_response
+                        html = f"""
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>任务已取消</title>
+                            <meta charset="utf-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1">
+                            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+                        </head>
+                        <body>
+                            <div class="container py-5">
+                                <div class="alert alert-warning">
+                                    <h4><i class="fas fa-exclamation-triangle me-2"></i>任务已取消</h4>
+                                    <p>任务 "{task.title}" 已被取消，无法查看详细回应。</p>
+                                </div>
+                                <a href="{url_for('task.tasks')}" class="btn btn-primary">返回任务列表</a>
+                            </div>
+                        </body>
+                        </html>
+                        """
+                        response = make_response(html)
+                        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+                        return response
+                
+                # 重新抛出原始异常
+                raise template_e
         except Exception as render_e:
             current_app.logger.error(f"渲染模板时出错: {str(render_e)}, 错误类型: {type(render_e).__name__}")
-            raise
+            import traceback
+            current_app.logger.error(f"错误堆栈: {traceback.format_exc()}")
+            
+            # 创建一个简单的错误页面
+            from flask import make_response
+            html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>加载错误</title>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+            </head>
+            <body>
+                <div class="container py-5">
+                    <div class="alert alert-danger">
+                        <h4><i class="fas fa-exclamation-circle me-2"></i>加载任务回应页面时发生错误</h4>
+                        <p>错误信息: {str(render_e)}</p>
+                        <pre class="mt-3 p-3 bg-light">{traceback.format_exc()}</pre>
+                    </div>
+                    <a href="{url_for('task.tasks')}" class="btn btn-primary">返回任务列表</a>
+                    <a href="{url_for('task.task_detail', task_id=task_id)}" class="btn btn-outline-secondary ms-2">返回任务详情</a>
+                </div>
+            </body>
+            </html>
+            """
+            response = make_response(html)
+            response.headers['Content-Type'] = 'text/html; charset=utf-8'
+            return response
     
     except Exception as e:
         current_app.logger.error(f"处理任务回应页面时发生错误: {str(e)}, 错误类型: {type(e).__name__}")

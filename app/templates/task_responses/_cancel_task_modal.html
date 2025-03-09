@@ -12,7 +12,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
                 <form action="{{ url_for('task.cancel_task', task_id=task.id) }}" method="post">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     <button type="submit" class="btn btn-danger">确认取消</button>
                 </form>
             </div>
