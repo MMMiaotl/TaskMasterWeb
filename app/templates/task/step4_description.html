@@ -36,7 +36,7 @@
         
         <div class="mb-3">
             <div class="input-group mb-2">
-                {{ form.description(class="form-control", rows=5, placeholder="详细描述您的需求，包括具体要求、面积大小、材料偏好等信息") }}
+                {{ form.description(class="form-control", rows=8, style="min-height: 200px; height: auto;", placeholder="详细描述您的需求，包括具体要求、面积大小、材料偏好等信息") }}
                 <button class="btn btn-outline-primary" type="button" id="generate-description-btn" style="align-self: flex-start;">
                     <i class="fas fa-magic"></i> 自动生成
                 </button>
@@ -58,7 +58,7 @@
         <p class="question-description">您可以在这里添加任何其他重要信息，这是可选的。</p>
         
         <div class="mb-3">
-            {{ form.additional_info(class="form-control", rows=3, placeholder="添加任何其他您认为重要的信息") }}
+            {{ form.additional_info(class="form-control", rows=5, style="min-height: 150px; height: auto;", placeholder="添加任何其他您认为重要的信息") }}
             <div class="form-text">您可以在这里添加任何其他重要信息</div>
         </div>
     </div>
