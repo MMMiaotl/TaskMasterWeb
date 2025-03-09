@@ -71,7 +71,7 @@
         <button class="btn btn-sm btn-outline-secondary ms-2" onclick="window.location.reload()">
             <i class="fas fa-sync me-1"></i>刷新页面
         </button>
-        <button class="btn btn-sm btn-outline-primary ms-2" onclick="window.location.href='{{ url_for('task.tasks') }}'">
+        <button class="btn btn-sm btn-outline-primary ms-2" onclick="window.location.href='{{ url_for('task.tasks') }}';">
             <i class="fas fa-arrow-left me-1"></i>返回任务列表
         </button>
     </div>
@@ -367,7 +367,8 @@
         function handleChatItemClick() {
             try {
                 var conversationId = this.dataset.conversationId;
-                logDebug('选择对话', {conversationId});
+                var otherUserId = this.dataset.userId;
+                logDebug('选择对话', {conversationId, otherUserId});
                 
                 // 移除所有聊天项的活动状态
                 document.querySelectorAll('.chat-item').forEach(function(item) {
@@ -383,9 +384,182 @@
                 // 设置当前对话ID
                 currentConversationId = conversationId;
                 
-                // 这里可以添加加载对话消息的逻辑
+                // 加载对话消息
+                if (otherUserId) {
+                    loadConversationMessages(otherUserId);
+                } else {
+                    logError('无法加载对话消息，用户ID为空');
+                    showErrorMessage('无法加载对话消息，请刷新页面后重试');
+                }
             } catch (error) {
                 logError('处理聊天项点击失败', error);
+            }
+        }
+        
+        // 加载对话消息
+        function loadConversationMessages(otherUserId) {
+            try {
+                logDebug('开始加载对话消息', {otherUserId});
+                
+                // 显示加载中状态
+                var chatMessages = document.querySelector('.chat-messages');
+                if (chatMessages) {
+                    chatMessages.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted">加载消息中...</p></div>';
+                } else {
+                    logError('找不到聊天消息容器元素');
+                    return;
+                }
+                
+                // 构建API URL
+                var url = `/task/api/conversations/${otherUserId}/messages?task_id=${taskId}`;
+                logDebug('API URL', url);
+                
+                // 发送API请求
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应不正常');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    logDebug('获取到消息数据', data);
+                    
+                    // 渲染消息
+                    renderMessages(data.messages, otherUserId);
+                    
+                    // 标记消息为已读
+                    if (data.unread_count > 0) {
+                        markMessagesAsRead(otherUserId);
+                    }
+                })
+                .catch(error => {
+                    logError('获取消息失败', error);
+                    chatMessages.innerHTML = `<div class="alert alert-danger m-3"><i class="fas fa-exclamation-triangle me-2"></i>加载消息失败: ${error.message}</div>`;
+                });
+            } catch (error) {
+                logError('加载对话消息失败', error);
+            }
+        }
+        
+        // 渲染消息
+        function renderMessages(messages, otherUserId) {
+            try {
+                var chatMessages = document.querySelector('.chat-messages');
+                if (!chatMessages) {
+                    logError('找不到聊天消息容器元素');
+                    return;
+                }
+                
+                if (!messages || messages.length === 0) {
+                    chatMessages.innerHTML = '<div class="text-center p-5"><p class="text-muted">暂无消息</p></div>';
+                    return;
+                }
+                
+                // 清空消息容器
+                chatMessages.innerHTML = '';
+                
+                // 渲染每条消息
+                messages.forEach(function(message) {
+                    var isCurrentUser = message.sender_id == currentUserId;
+                    var messageHtml = `
+                        <div class="message ${isCurrentUser ? 'message-outgoing' : 'message-incoming'} mb-3" style="display: flex; flex-direction: column; ${isCurrentUser ? 'align-items: flex-end;' : 'align-items: flex-start;'}">
+                            <div class="message-content p-3 rounded ${isCurrentUser ? 'bg-primary text-white' : 'bg-light'}" style="max-width: 70%;">
+                                ${message.content}
+                            </div>
+                            <div class="message-time small text-muted mt-1" style="max-width: 70%; ${isCurrentUser ? 'text-align: right;' : 'text-align: left;'}">
+                                ${formatDateTime(message.created_at)}
+                            </div>
+                        </div>
+                    `;
+                    chatMessages.innerHTML += messageHtml;
+                });
+                
+                // 滚动到最新消息
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } catch (error) {
+                logError('渲染消息失败', error);
+            }
+        }
+        
+        // 标记消息为已读
+        function markMessagesAsRead(otherUserId) {
+            try {
+                var url = `/task/api/conversations/${otherUserId}/read?task_id=${taskId}`;
+                
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    logDebug('标记消息为已读', data);
+                    
+                    // 更新未读消息计数
+                    updateUnreadCount();
+                })
+                .catch(error => {
+                    logError('标记消息为已读失败', error);
+                });
+            } catch (error) {
+                logError('标记消息为已读失败', error);
+            }
+        }
+        
+        // 更新未读消息计数
+        function updateUnreadCount() {
+            try {
+                fetch('/task/api/users/me/unread_messages', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    logDebug('获取未读消息数', data);
+                    
+                    // 更新页面上的未读消息计数
+                    var unreadBadge = document.querySelector('.card-title .badge');
+                    if (unreadBadge) {
+                        unreadBadge.textContent = data.unread_count;
+                        unreadBadge.style.display = data.unread_count > 0 ? 'inline' : 'none';
+                    }
+                })
+                .catch(error => {
+                    logError('获取未读消息数失败', error);
+                });
+            } catch (error) {
+                logError('更新未读消息计数失败', error);
+            }
+        }
+        
+        // 格式化日期时间
+        function formatDateTime(dateTimeStr) {
+            try {
+                var date = new Date(dateTimeStr);
+                var now = new Date();
+                var isToday = date.toDateString() === now.toDateString();
+                
+                if (isToday) {
+                    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                } else {
+                    return date.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }) + ' ' + 
+                           date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                }
+            } catch (error) {
+                logError('格式化日期时间失败', error);
+                return dateTimeStr;
             }
         }
         
@@ -629,13 +803,58 @@
                     return;
                 }
                 
-                logDebug('发送消息', {message, currentConversationId});
+                // 从对话ID中提取用户ID
+                var parts = currentConversationId.split('_');
+                var otherUserId = parts[0] == currentUserId ? parts[1] : parts[0];
                 
-                // 在这里添加发送消息的逻辑
-                // ...
+                logDebug('发送消息', {message, currentConversationId, otherUserId});
                 
-                // 清空输入框
-                messageInput.value = '';
+                // 禁用发送按钮
+                var sendButton = document.getElementById('send-message-btn');
+                if (sendButton) {
+                    sendButton.disabled = true;
+                }
+                
+                // 构建API URL
+                var url = `/task/api/conversations/${otherUserId}/messages`;
+                
+                // 发送API请求
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({
+                        content: message,
+                        task_id: taskId
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应不正常');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    logDebug('消息发送成功', data);
+                    
+                    // 清空输入框
+                    messageInput.value = '';
+                    
+                    // 重新加载对话消息
+                    loadConversationMessages(otherUserId);
+                })
+                .catch(error => {
+                    logError('发送消息失败', error);
+                    showErrorMessage('发送消息失败: ' + error.message);
+                })
+                .finally(() => {
+                    // 重新启用发送按钮
+                    if (sendButton) {
+                        sendButton.disabled = false;
+                    }
+                });
             } catch (error) {
                 logError('发送消息失败', error);
             }

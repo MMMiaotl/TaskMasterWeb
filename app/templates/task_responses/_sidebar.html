@@ -12,7 +12,9 @@
             <div class="chats-list" style="max-height: 300px; overflow-y: auto;">
                 {% if conversations %}
                     {% for conv in conversations %}
-                        <div class="chat-item p-3 border-bottom {% if conv.has_unread %}bg-light{% endif %}" data-conversation-id="{{ conv.id }}">
+                        <div class="chat-item p-3 border-bottom {% if conv.has_unread %}bg-light{% endif %}" 
+                             data-conversation-id="{{ conv.id }}"
+                             data-user-id="{{ conv.id.split('_')[0] if conv.id.split('_')[0] != current_user.id|string else conv.id.split('_')[1] }}">
                             <div class="d-flex align-items-center position-relative">
                                 <img src="{{ conv.pro_avatar }}" alt="{{ conv.pro_name }}" class="rounded-circle" width="40">
                                 <div class="ms-3 flex-grow-1">
