@@ -202,6 +202,11 @@ def create_task():
 def task_detail(task_id):
     task = Task.query.get_or_404(task_id)
     
+    # 检查是否是编辑后重定向回来的
+    is_submitted = request.args.get('submitted') == 'true'
+    if is_submitted:
+        flash('任务已成功更新', 'success')
+    
     # 权限检查
     access_granted = True
     error_message = ""
@@ -251,27 +256,87 @@ def task_detail(task_id):
 def edit_task(task_id):
     task = Task.query.get_or_404(task_id)
     if task.user_id != current_user.id:
-        flash('你没有权限编辑这个任务')
+        flash('你没有权限编辑这个任务', 'danger')
         return redirect(url_for('task.tasks'))
     
     form = TaskForm(obj=task)
     if form.validate_on_submit():
+        # 记录原始值，用于日志
+        original_values = {
+            'title': task.title,
+            'description': task.description,
+            'service_category': task.service_category,
+            'location': task.location,
+            'time_preference': task.time_preference if hasattr(task, 'time_preference') else None,
+            'deadline': task.deadline,
+            'start_date': task.start_date if hasattr(task, 'start_date') else None,
+            'end_date': task.end_date if hasattr(task, 'end_date') else None
+        }
+        
+        # 更新任务信息
         task.title = form.title.data
         task.description = form.description.data
         task.service_category = form.service_category.data
         task.location = form.location.data
-        task.deadline = form.deadline.data
-        task.budget = form.budget.data
-        db.session.commit()
-        flash('任务已更新')
-        return redirect(url_for('task.task_detail', task_id=task.id))
+        task.time_preference = form.time_preference.data
+        
+        # 根据时间偏好设置相应的日期字段
+        if form.time_preference.data == 'specific_date':
+            task.deadline = form.deadline.data
+            # 清空日期范围字段
+            if hasattr(task, 'start_date'):
+                task.start_date = None
+            if hasattr(task, 'end_date'):
+                task.end_date = None
+        elif form.time_preference.data == 'date_range':
+            # 使用日期范围，清空具体日期
+            task.deadline = None
+            # 设置日期范围
+            if hasattr(task, 'start_date'):
+                task.start_date = form.start_date.data
+            if hasattr(task, 'end_date'):
+                task.end_date = form.end_date.data
+        else:
+            # 其他时间偏好，清空所有日期字段
+            task.deadline = None
+            if hasattr(task, 'start_date'):
+                task.start_date = None
+            if hasattr(task, 'end_date'):
+                task.end_date = None
+        
+        try:
+            db.session.commit()
+            current_app.logger.info(f"任务 {task_id} 已更新。用户ID: {current_user.id}")
+            flash('任务已成功更新', 'success')
+            # 重定向到任务详情页面，并添加submitted参数
+            return redirect(url_for('task.task_detail', task_id=task.id, submitted=True))
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"更新任务 {task_id} 时出错: {str(e)}")
+            flash('更新任务时发生错误，请稍后重试', 'danger')
+            return redirect(url_for('task.edit_task', task_id=task.id))
     elif request.method == 'GET':
+        # 初始化表单数据
         form.title.data = task.title
         form.description.data = task.description
         form.service_category.data = task.service_category
         form.location.data = task.location
+        
+        # 设置time_preference字段的值
+        if hasattr(task, 'time_preference') and task.time_preference:
+            form.time_preference.data = task.time_preference
+        else:
+            # 如果任务没有time_preference字段，设置一个默认值
+            form.time_preference.data = 'specific_date'
+        
+        # 设置日期字段
         form.deadline.data = task.deadline
-        form.budget.data = task.budget
+        
+        # 设置日期范围字段
+        if hasattr(task, 'start_date'):
+            form.start_date.data = task.start_date
+        if hasattr(task, 'end_date'):
+            form.end_date.data = task.end_date
 
     return render_template('edit_task.html', title='编辑任务', form=form, task=task)
 

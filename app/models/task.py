@@ -29,6 +29,13 @@ class Task(db.Model):
     executor = db.relationship('User', foreign_keys=[executor_id])
     view_count = db.Column(db.Integer, default=0)
     featured = db.Column(db.Boolean, default=False)
+    
+    # 时间偏好字段
+    time_preference = db.Column(db.String(20), default='specific_date')  # 时间偏好：specific_date, date_range, anytime, not_sure
+    
+    # 日期范围字段
+    start_date = db.Column(db.DateTime, nullable=True)  # 开始日期
+    end_date = db.Column(db.DateTime, nullable=True)  # 结束日期
 
     # 服务类别特定字段
     # 搬家服务特定字段

@@ -1,38 +1,432 @@
 {% extends "base.html" %}
 
-{% block title %}Edit Task - {{ task.title }}{% endblock %}
+{% block title %}编辑任务 - {{ task.title }}{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<style>
+    .task-form-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 0.375rem;
+        border: 1px solid #ced4da;
+        padding: 0.75rem 1rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+        padding: 1rem 1.5rem;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .btn-primary {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+    }
+    
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+    }
+    
+    .btn-outline-secondary {
+        color: #6c757d;
+        border-color: #6c757d;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: #212529;
+        border-left: 4px solid #0d6efd;
+        padding-left: 0.75rem;
+    }
+    
+    .form-hint {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+    
+    .bg-gradient-primary {
+        background: linear-gradient(to right, #f8f9fa, #e9ecef);
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h1>编辑任务</h1>
-    <form method="POST" action="{{ url_for('task.edit_task', task_id=task.id) }}" class="task-form">
-        {{ form.hidden_tag() }}
-        <div class="mb-3">
-            {{ form.title.label(class="form-label") }}
-            {{ form.title(class="form-control") }}
+<div class="container py-5 task-form-container">
+    <!-- 任务标题和基本信息 -->
+    <div class="card shadow-sm border-0 rounded-lg mb-4">
+        <div class="card-header bg-gradient-primary text-dark py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="card-title h3 mb-0">编辑任务</h1>
+                <span class="badge bg-primary">
+                    {% if task.status == 0 %}
+                        <i class="fas fa-hourglass-start me-1"></i>等待接单
+                    {% elif task.status == 1 %}
+                        <i class="fas fa-hourglass-half me-1"></i>等待执行
+                    {% elif task.status == 2 %}
+                        <i class="fas fa-check-circle me-1"></i>任务完成
+                    {% elif task.status == 3 %}
+                        <i class="fas fa-money-bill-wave me-1"></i>付款完成
+                    {% elif task.status == 4 %}
+                        <i class="fas fa-times-circle me-1"></i>已取消
+                    {% endif %}
+                </span>
+            </div>
         </div>
-        <div class="mb-3">
-            {{ form.description.label(class="form-label") }}
-            {{ form.description(class="form-control", style="min-height: 200px; height: auto;", rows="8") }}
+    </div>
+    
+    <!-- 编辑表单 -->
+    <div class="card shadow-sm border-0 rounded-lg">
+        <div class="card-body">
+            <!-- 添加数据属性用于JavaScript -->
+            <div id="form-data" 
+                data-has-errors="{{ 'true' if form.errors else 'false' }}"
+                data-is-submitted="{{ 'true' if request.args.get('submitted') == 'true' else 'false' }}">
+                {% if form.errors %}
+                    {% for field_name, field_errors in form.errors.items() %}
+                        {% for error in field_errors %}
+                            <div class="d-none" data-error-field="{{ field_name }}" data-error-message="{{ error }}"></div>
+                        {% endfor %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <form method="POST" action="{{ url_for('task.edit_task', task_id=task.id) }}" class="task-form">
+                {{ form.hidden_tag() }}
+                
+                <!-- 基本信息部分 -->
+                <div class="section-title">
+                    <i class="fas fa-info-circle me-2"></i>基本信息
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-12 mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control form-control-lg", placeholder="简短描述您需要的服务", id="title") }}
+                        <div class="form-hint">清晰的标题可以帮助服务提供者更好地理解您的需求</div>
+                        {% if form.title.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.title.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-12 mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control", style="min-height: 200px; height: auto;", rows="8", placeholder="详细描述您的需求，包括具体要求、面积大小、材料偏好等信息", id="description") }}
+                        <div class="form-hint">详细的描述可以帮助您获得更准确的报价和更好的服务</div>
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.description.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- 服务详情部分 -->
+                <div class="section-title">
+                    <i class="fas fa-cogs me-2"></i>服务详情
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        {{ form.service_category.label(class="form-label") }}
+                        {{ form.service_category(class="form-select") }}
+                        <div class="form-hint">选择最符合您需求的服务类别</div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        {{ form.location.label(class="form-label", text="服务地点") }}
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                            {{ form.location(class="form-control", placeholder="例如：阿姆斯特丹") }}
+                        </div>
+                        <div class="form-hint">填写服务地点可以帮助匹配附近的服务提供者</div>
+                    </div>
+                </div>
+                
+                <!-- 时间和预算部分 -->
+                <div class="section-title">
+                    <i class="fas fa-calendar-alt me-2"></i>时间偏好
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-12 mb-3">
+                        {{ form.time_preference.label(class="form-label") }}
+                        <div class="time-preference-options">
+                            {% for subfield in form.time_preference %}
+                                <div class="form-check mb-2">
+                                    {{ subfield(class="form-check-input time-preference-radio") }}
+                                    {{ subfield.label(class="form-check-label") }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="form-hint">选择您的时间偏好</div>
+                        {% if form.time_preference.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.time_preference.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- 明确日期选择 - 初始隐藏 -->
+                    <div class="col-md-12 mb-3 date-field" id="specific-date-field" style="display: none;">
+                        {{ form.deadline.label(class="form-label") }}
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                            {{ form.deadline(class="form-control", type="date") }}
+                        </div>
+                        <div class="form-hint">选择您期望服务完成的日期</div>
+                    </div>
+                    
+                    <!-- 日期范围选择 - 初始隐藏 -->
+                    <div class="col-md-12 mb-3 date-field" id="date-range-field" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="start_date" class="form-label">开始日期</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                                    {{ form.start_date(class="form-control", type="date") }}
+                                </div>
+                                <div class="form-hint">选择范围的开始日期</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="end_date" class="form-label">结束日期</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                                    {{ form.end_date(class="form-control", type="date") }}
+                                </div>
+                                <div class="form-hint">选择范围的结束日期</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 按钮区域 -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{{ url_for('task.task_detail', task_id=task.id) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>返回任务详情
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>保存修改
+                    </button>
+                </div>
+            </form>
         </div>
-        <div class="mb-3">
-            {{ form.service_category.label(class="form-label") }}
-            {{ form.service_category(class="form-select") }}
-        </div>
-        <div class="mb-3">
-            {{ form.location.label(class="form-label", text="服务地点 (可选)") }}
-            {{ form.location(class="form-control") }}
-        </div>
-        <div class="mb-3">
-            {{ form.deadline.label(class="form-label") }}
-            {{ form.deadline(class="form-control") }}
-        </div>
-        <div class="mb-3">
-            {{ form.budget.label(class="form-label", text="预算 (可选)") }}
-            {{ form.budget(class="form-control") }}
-        </div>
-        <button type="submit" class="btn btn-primary">更新任务</button>
-        <a href="{{ url_for('task.tasks') }}" class="btn btn-secondary">取消</a>
-    </form>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 初始化日期选择器
+    document.addEventListener('DOMContentLoaded', function() {
+        // 如果使用了日期选择器插件，可以在这里初始化
+        // 例如使用flatpickr或bootstrap-datepicker
+        
+        // 处理时间偏好选择
+        const timePreferenceRadios = document.querySelectorAll('.time-preference-radio');
+        const specificDateField = document.getElementById('specific-date-field');
+        const dateRangeField = document.getElementById('date-range-field');
+        
+        // 初始化时间偏好字段显示
+        function initTimePreferenceFields() {
+            // 获取当前选中的时间偏好
+            const selectedPreference = document.querySelector('.time-preference-radio:checked');
+            if (selectedPreference) {
+                updateDateFields(selectedPreference.value);
+            }
+        }
+        
+        // 根据时间偏好更新日期字段显示
+        function updateDateFields(preference) {
+            // 隐藏所有日期字段
+            document.querySelectorAll('.date-field').forEach(field => {
+                field.style.display = 'none';
+            });
+            
+            // 根据选择显示相应的日期字段
+            if (preference === 'specific_date') {
+                specificDateField.style.display = 'block';
+            } else if (preference === 'date_range') {
+                dateRangeField.style.display = 'block';
+            }
+            // anytime 和 not_sure 不需要显示日期字段
+        }
+        
+        // 为时间偏好单选按钮添加事件监听器
+        timePreferenceRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                updateDateFields(this.value);
+            });
+        });
+        
+        // 初始化时间偏好字段
+        initTimePreferenceFields();
+        
+        // 表单验证
+        const form = document.querySelector('.task-form');
+        
+        // 修复表单验证，确保不阻止有效的表单提交
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                // 移除之前的验证，让表单正常提交
+                // 仅在客户端进行简单验证，主要依赖服务器端验证
+                let isValid = true;
+                
+                // 标题验证
+                const title = document.getElementById('title');
+                if (title && !title.value.trim()) {
+                    isValid = false;
+                    title.classList.add('is-invalid');
+                } else if (title) {
+                    title.classList.remove('is-invalid');
+                }
+                
+                // 描述验证
+                const description = document.getElementById('description');
+                if (description && !description.value.trim()) {
+                    isValid = false;
+                    description.classList.add('is-invalid');
+                } else if (description) {
+                    description.classList.remove('is-invalid');
+                }
+                
+                // 时间偏好验证
+                const timePreference = document.querySelector('.time-preference-radio:checked');
+                if (!timePreference) {
+                    isValid = false;
+                    document.querySelector('.time-preference-options').classList.add('is-invalid');
+                    alert('请选择时间偏好');
+                } else {
+                    document.querySelector('.time-preference-options').classList.remove('is-invalid');
+                    
+                    // 如果选择了具体日期，验证日期字段
+                    if (timePreference.value === 'specific_date') {
+                        const deadline = document.getElementById('deadline');
+                        if (deadline && !deadline.value) {
+                            isValid = false;
+                            deadline.classList.add('is-invalid');
+                            alert('请选择具体日期');
+                        } else if (deadline) {
+                            deadline.classList.remove('is-invalid');
+                        }
+                    }
+                    
+                    // 如果选择了日期范围，验证开始和结束日期
+                    if (timePreference.value === 'date_range') {
+                        const startDate = document.getElementById('start_date');
+                        const endDate = document.getElementById('end_date');
+                        
+                        if (startDate && !startDate.value) {
+                            isValid = false;
+                            startDate.classList.add('is-invalid');
+                            alert('请选择开始日期');
+                        } else if (startDate) {
+                            startDate.classList.remove('is-invalid');
+                        }
+                        
+                        if (endDate && !endDate.value) {
+                            isValid = false;
+                            endDate.classList.add('is-invalid');
+                            alert('请选择结束日期');
+                        } else if (endDate) {
+                            endDate.classList.remove('is-invalid');
+                        }
+                        
+                        // 验证结束日期是否晚于开始日期
+                        if (startDate && endDate && startDate.value && endDate.value) {
+                            const start = new Date(startDate.value);
+                            const end = new Date(endDate.value);
+                            
+                            if (end < start) {
+                                isValid = false;
+                                endDate.classList.add('is-invalid');
+                                alert('结束日期必须晚于开始日期');
+                            }
+                        }
+                    }
+                }
+                
+                // 只有在验证失败时阻止表单提交
+                if (!isValid) {
+                    event.preventDefault();
+                    // 滚动到页面顶部以显示错误信息
+                    window.scrollTo(0, 0);
+                }
+                // 如果验证通过，让表单正常提交
+            });
+        }
+        
+        // 从数据属性获取表单状态
+        const formData = document.getElementById('form-data');
+        if (formData) {
+            // 检查是否有表单错误
+            const hasErrors = formData.getAttribute('data-has-errors') === 'true';
+            if (hasErrors) {
+                // 收集所有错误信息
+                const errorElements = document.querySelectorAll('[data-error-field]');
+                const errorMessages = [];
+                
+                errorElements.forEach(function(element) {
+                    const field = element.getAttribute('data-error-field');
+                    const message = element.getAttribute('data-error-message');
+                    errorMessages.push(field + ': ' + message);
+                });
+                
+                if (errorMessages.length > 0) {
+                    alert('表单提交出错:\n' + errorMessages.join('\n'));
+                }
+            }
+            
+            // 检查是否是提交后重定向回来的
+            const isSubmitted = formData.getAttribute('data-is-submitted') === 'true';
+            if (isSubmitted) {
+                alert('任务已成功更新！');
+            }
+        }
+    });
+</script>
 {% endblock %}
