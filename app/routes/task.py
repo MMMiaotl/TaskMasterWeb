@@ -282,6 +282,7 @@ def delete_task(task_id):
     return redirect(url_for('task.tasks'))
 
 @task_bp.route('/<int:task_id>/cancel', methods=['POST'])
+@csrf.exempt
 @login_required
 def cancel_task(task_id):
     task = Task.query.get_or_404(task_id)

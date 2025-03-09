@@ -5,6 +5,9 @@
 {% block page_title %}任务管理{% endblock %}
 
 {% block content %}
+<!-- 添加隐藏的CSRF令牌 -->
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
 <div class="card mb-4">
     <div class="card-header">
         <div class="row align-items-center">

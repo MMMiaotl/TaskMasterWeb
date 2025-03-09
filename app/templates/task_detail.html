@@ -211,12 +211,9 @@
                     
                     {% if task.status <= 1 %}
                     <!-- 取消任务按钮 -->
-                    <form action="{{ url_for('task.cancel_task', task_id=task.id) }}" method="POST" class="d-inline" 
-                          onsubmit="return confirm('确定要取消这个任务吗？此操作不可撤销。');">
-                        <button type="submit" class="btn btn-outline-danger btn-sm">
-                            <i class="fas fa-times me-1"></i>取消任务
-                        </button>
-                    </form>
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmCancelTask({{ task.id }})">
+                        <i class="fas fa-times me-1"></i>取消任务
+                    </button>
                     {% endif %}
                 {% endif %}
 
@@ -1201,6 +1198,38 @@
             // 移除元素
             setTimeout(() => toast.remove(), 300);
         }, 3000);
+    }
+
+    // 取消任务函数
+    function confirmCancelTask(taskId) {
+        if (confirm('确定要取消这个任务吗？此操作不可撤销。')) {
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            if (!csrfMeta) {
+                alert('CSRF令牌缺失，无法执行操作');
+                console.error('CSRF令牌缺失');
+                return;
+            }
+            const csrfToken = csrfMeta.getAttribute('content');
+            
+            fetch(`/task/${taskId}/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/task/tasks';
+                } else {
+                    alert('取消任务失败，请稍后再试');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('发生错误，请稍后再试');
+            });
+        }
     }
 </script>
 
