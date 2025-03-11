@@ -161,11 +161,19 @@
 
                         <!-- 已发布的任务 -->
                         <div class="user-tasks mb-4">
-                            <h5 class="border-bottom pb-2 mb-3">已发布的任务</h5>
+                            <h5 class="border-bottom pb-2 mb-3 d-flex justify-content-between align-items-center flex-wrap">
+                                <span>已发布的任务</span>
+                                <div class="d-flex align-items-center">
+                                    <div class="form-check form-switch d-flex align-items-center">
+                                        <input class="form-check-input me-2" type="checkbox" id="hideCompletedTasksSwitch">
+                                        <label class="form-check-label small text-muted" for="hideCompletedTasksSwitch">已取消任务</label>
+                                    </div>
+                                </div>
+                            </h5>
                             {% if user_info.tasks.all() %}
-                                <div class="row">
+                                <div class="row" id="tasksContainer">
                                     {% for task in user_info.tasks %}
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-6 mb-3 task-card {% if task.status == 4 %}cancelled-task{% endif %}">
                                         <div class="card h-100 shadow-sm">
                                             <div class="card-body">
                                                 <h6 class="card-title">
@@ -428,6 +436,12 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // 初始化工具提示
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
         // 获取按钮和内容区域元素
         const regularUserBtn = document.getElementById('regular-user-btn');
         const professionalUserBtn = document.getElementById('professional-user-btn');
@@ -456,6 +470,37 @@
                 contentAreaTitle.textContent = '专业人士信息';
             });
         }
+
+        // 隐藏已取消任务的切换
+        const hideCompletedTasksSwitch = document.getElementById('hideCompletedTasksSwitch');
+        const tasksContainer = document.getElementById('tasksContainer');
+
+        // 从本地存储中获取设置
+        const savedSetting = localStorage.getItem('showCancelledTasks');
+        if (savedSetting !== null) {
+            hideCompletedTasksSwitch.checked = savedSetting === 'true';
+        }
+
+        function toggleCancelledTasks() {
+            const isChecked = hideCompletedTasksSwitch.checked;
+            const tasks = tasksContainer.querySelectorAll('.task-card');
+            
+            tasks.forEach(task => {
+                if (!isChecked && task.classList.contains('cancelled-task')) {
+                    task.style.display = 'none';
+                } else {
+                    task.style.display = '';
+                }
+            });
+            
+            // 保存设置到本地存储
+            localStorage.setItem('showCancelledTasks', isChecked);
+        }
+
+        // 页面加载时立即应用设置
+        toggleCancelledTasks();
+
+        hideCompletedTasksSwitch.addEventListener('change', toggleCancelledTasks);
     });
 </script>
 {% endblock %}
@@ -492,6 +537,38 @@
 
 .border-bottom {
     border-color: #e9ecef !important;
+}
+
+/* 开关按钮样式 */
+.form-switch .form-check-input {
+    width: 2.5em;
+    cursor: pointer;
+}
+
+.form-check-label {
+    cursor: pointer;
+}
+
+/* 已取消任务的样式 */
+.cancelled-task .card {
+    opacity: 0.7;
+}
+
+.cancelled-task .badge.bg-danger {
+    font-weight: bold;
+}
+
+/* 移动设备上的样式优化 */
+@media (max-width: 576px) {
+    .user-tasks h5 {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .user-tasks h5 .d-flex {
+        margin-bottom: 10px;
+        width: 100%;
+    }
 }
 </style>
 {% endblock %}
