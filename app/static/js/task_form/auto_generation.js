@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         title += ` - ${location}`;
                     }
                 } else if (subCategory === 'pickup') {
-                    // 接送机服务
+                    // 接机送机服务
                     const isArrival = document.querySelector('input[name="pickup_is_arrival"]:checked');
                     const serviceType = isArrival && isArrival.value === '1' ? '接机' : '送机';
                     const passengers = document.getElementById('pickup_passengers');
@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     
                 } else if (subCategory === 'pickup') {
-                    // 接送机服务特定信息
+                    // 接机送机服务特定信息
                     const isArrival = document.querySelector('input[name="pickup_is_arrival"]:checked');
                     const serviceType = isArrival && isArrival.value === '1' ? '接机' : '送机';
                     

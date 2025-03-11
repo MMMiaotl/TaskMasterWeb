@@ -6,7 +6,7 @@ SERVICE_CATEGORIES = [
         'icon': 'fas fa-home',
         'subcategories': [
             ('moving', '搬家服务'),
-            ('pickup', '接送机'),
+            ('pickup', '接机送机'),
             ('driving', '代驾服务'),
             ('repair', '装修翻新'),
             ('car_inspection', '检车服务')

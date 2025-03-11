@@ -317,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return isValid;
     }
     
-    // 验证接送机服务字段
+    // 验证接机送机服务字段
     function validatePickupServiceFields() {
         const isArrival = document.querySelector('input[name="pickup_is_arrival"]:checked');
         const flightNumber = document.getElementById('pickup_flight_number');
@@ -530,7 +530,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // 接送机服务字段事件监听
+    // 接机送机服务字段事件监听
     function setupPickupFieldEvents() {
         // 监听服务类型选择
         const arrivalRadios = document.querySelectorAll('input[name="pickup_is_arrival"]');
