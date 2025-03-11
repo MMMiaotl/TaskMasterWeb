@@ -17,6 +17,7 @@ def get_icon_for_service(service_id):
         'pickup': 'fa-plane-arrival',
         'driving': 'fa-car',
         'repair': 'fa-tools',
+        'car_inspection': 'fa-car-alt',  # 检车服务图标
         'housing': 'fa-home',
         'company': 'fa-building',
         'translation': 'fa-file-alt',

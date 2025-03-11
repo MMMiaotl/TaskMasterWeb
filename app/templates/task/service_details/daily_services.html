@@ -312,4 +312,108 @@
             <div class="invalid-feedback">请输入正确的邮编格式：4位数字+2位字母</div>
         </div>
     </div>
+</div>
+
+<!-- 检车服务特定字段 -->
+<div class="service-fields d-none" id="car-inspection-fields">
+    <h4 class="h5 mb-3">检车服务详情</h4>
+    
+    <!-- 汽车品牌和型号问题 -->
+    <div class="question-item active" id="car-brand-model-question">
+        <h4 class="question-title">您的汽车品牌和型号是什么？</h4>
+        <p class="question-description">请选择您的汽车品牌并填写具体型号，这将帮助我们找到合适的检车服务提供商。</p>
+        
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="car_brand" class="form-label">汽车品牌</label>
+                {{ form.car_brand(class="form-control form-control-lg") }}
+                <div class="invalid-feedback">请选择汽车品牌</div>
+            </div>
+            <div class="col-md-6">
+                <label for="car_model" class="form-label">车型</label>
+                {{ form.car_model(class="form-control form-control-lg", placeholder="例如：A4, 3系, C级") }}
+                <div class="invalid-feedback">请输入车型</div>
+            </div>
+        </div>
+        
+        <div class="text-end mt-3">
+            <button type="button" class="btn btn-primary" onclick="goToNextQuestion('car-brand-model-question', 'car-year-fuel-question')">继续</button>
+        </div>
+    </div>
+    
+    <!-- 车辆年份和燃料类型问题 -->
+    <div class="question-item hidden" id="car-year-fuel-question">
+        <h4 class="question-title">车辆年份和燃料类型</h4>
+        <p class="question-description">请提供您的车辆年份和燃料类型，这些信息对于检车服务很重要。</p>
+        
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="car_year" class="form-label">车辆年份</label>
+                {{ form.car_year(class="form-control form-control-lg", placeholder="例如：2018") }}
+                <div class="invalid-feedback">请输入有效的车辆年份</div>
+            </div>
+            <div class="col-md-6">
+                <label for="car_fuel_type" class="form-label">燃料类型</label>
+                {{ form.car_fuel_type(class="form-control form-control-lg") }}
+                <div class="invalid-feedback">请选择燃料类型</div>
+            </div>
+        </div>
+        
+        <div class="text-end mt-3">
+            <button type="button" class="btn btn-outline-secondary me-2" onclick="goToPreviousQuestion('car-year-fuel-question', 'car-brand-model-question')">返回</button>
+            <button type="button" class="btn btn-primary" onclick="goToNextQuestion('car-year-fuel-question', 'car-license-plate-question')">继续</button>
+        </div>
+    </div>
+    
+    <!-- 车牌号码问题 -->
+    <div class="question-item hidden" id="car-license-plate-question">
+        <h4 class="question-title">车牌号码</h4>
+        <p class="question-description">请提供您的车牌号码，这将帮助服务提供商识别您的车辆。</p>
+        
+        <div class="mb-3">
+            <label for="car_license_plate" class="form-label">车牌号码</label>
+            {{ form.car_license_plate(class="form-control form-control-lg", placeholder="例如：AB-123-CD") }}
+            <div class="form-text">输入您的车牌号码（可选）</div>
+        </div>
+        
+        <div class="text-end mt-3">
+            <button type="button" class="btn btn-outline-secondary me-2" onclick="goToPreviousQuestion('car-license-plate-question', 'car-year-fuel-question')">返回</button>
+            <button type="button" class="btn btn-primary" onclick="goToNextQuestion('car-license-plate-question', 'car-inspection-type-question')">继续</button>
+        </div>
+    </div>
+    
+    <!-- 检车类型问题 -->
+    <div class="question-item hidden" id="car-inspection-type-question">
+        <h4 class="question-title">您需要什么类型的检车服务？</h4>
+        <p class="question-description">请选择您需要的检车类型，这将帮助我们安排合适的服务。</p>
+        
+        <div class="mb-3">
+            <label for="car_inspection_type" class="form-label">检车类型</label>
+            {{ form.car_inspection_type(class="form-control form-control-lg") }}
+            <div class="invalid-feedback">请选择检车类型</div>
+        </div>
+        
+        <div class="text-end mt-3">
+            <button type="button" class="btn btn-outline-secondary me-2" onclick="goToPreviousQuestion('car-inspection-type-question', 'car-license-plate-question')">返回</button>
+            <button type="button" class="btn btn-primary" onclick="goToNextQuestion('car-inspection-type-question', 'car-previous-issues-question')">继续</button>
+        </div>
+    </div>
+    
+    <!-- 之前问题问题 -->
+    <div class="question-item hidden" id="car-previous-issues-question">
+        <h4 class="question-title">车辆是否有已知问题？</h4>
+        <p class="question-description">如果您的车辆有任何已知问题，请在下方说明，这将帮助检车服务提供商更好地了解您的需求。</p>
+        
+        <div class="mb-3">
+            <div class="form-check form-switch mb-3">
+                {{ form.car_has_previous_issues(class="form-check-input") }}
+                <label class="form-check-label" for="car_has_previous_issues">车辆之前有问题</label>
+            </div>
+            
+            <div id="previous-issues-details" class="mt-3">
+                <label for="car_previous_issues" class="form-label">请描述之前的问题</label>
+                {{ form.car_previous_issues(class="form-control", rows="4", placeholder="请描述您车辆之前遇到的任何问题，例如：发动机异响、刹车问题等") }}
+            </div>
+        </div>
+    </div>
 </div> 

@@ -438,15 +438,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 设置字段事件监听
     function setupFieldEvents(serviceType) {
+        console.log(`设置字段事件: ${serviceType}`);
+        
         if (serviceType === 'moving') {
-            // 搬家服务字段事件监听
             setupMovingFieldEvents();
         } else if (serviceType === 'pickup') {
-            // 接送机服务字段事件监听
             setupPickupFieldEvents();
         } else if (serviceType === 'repair') {
-            // 装修翻新服务字段事件监听
             setupRepairFieldEvents();
+        } else if (serviceType === 'car_inspection') {
+            setupCarInspectionFieldEvents();
         }
     }
     
@@ -640,6 +641,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     // 这是最后一个问题，不需要继续
                 }
             });
+        }
+    }
+    
+    // 检车服务字段事件监听
+    function setupCarInspectionFieldEvents() {
+        console.log('设置检车服务字段事件');
+        
+        // 处理车辆之前问题的显示/隐藏
+        const hasPreviousIssues = document.getElementById('car_has_previous_issues');
+        const previousIssuesDetails = document.getElementById('previous-issues-details');
+        
+        if (hasPreviousIssues && previousIssuesDetails) {
+            // 初始状态
+            previousIssuesDetails.style.display = hasPreviousIssues.checked ? 'block' : 'none';
+            
+            // 监听变化
+            hasPreviousIssues.addEventListener('change', function() {
+                previousIssuesDetails.style.display = this.checked ? 'block' : 'none';
+            });
+        }
+        
+        // 初始化第一个问题
+        const firstQuestion = document.getElementById('car-brand-model-question');
+        if (firstQuestion) {
+            firstQuestion.classList.remove('hidden');
+            firstQuestion.classList.add('active');
+            firstQuestion.classList.add('fade-in');
         }
     }
     

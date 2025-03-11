@@ -369,4 +369,77 @@ class TaskForm(FlaskForm):
         validators=[Optional()]
     )
     
+    # 检车服务特定字段
+    car_brand = SelectField('汽车品牌', 
+        choices=[
+            ('', '请选择汽车品牌'),
+            ('audi', '奥迪 (Audi)'),
+            ('bmw', '宝马 (BMW)'),
+            ('mercedes', '奔驰 (Mercedes-Benz)'),
+            ('volkswagen', '大众 (Volkswagen)'),
+            ('toyota', '丰田 (Toyota)'),
+            ('honda', '本田 (Honda)'),
+            ('ford', '福特 (Ford)'),
+            ('nissan', '日产 (Nissan)'),
+            ('hyundai', '现代 (Hyundai)'),
+            ('kia', '起亚 (Kia)'),
+            ('peugeot', '标致 (Peugeot)'),
+            ('renault', '雷诺 (Renault)'),
+            ('citroen', '雪铁龙 (Citroën)'),
+            ('opel', '欧宝 (Opel)'),
+            ('volvo', '沃尔沃 (Volvo)'),
+            ('other', '其他')
+        ],
+        validators=[Optional()]
+    )
+    
+    car_model = StringField('车型', validators=[
+        Optional(),
+        Length(max=50, message='车型名称不能超过50个字符')
+    ])
+    
+    car_year = IntegerField('车辆年份', validators=[
+        Optional(),
+        NumberRange(min=1900, max=2100, message='请输入有效的车辆年份')
+    ])
+    
+    car_fuel_type = SelectField('燃料类型',
+        choices=[
+            ('', '请选择燃料类型'),
+            ('gasoline', '汽油'),
+            ('diesel', '柴油'),
+            ('hybrid', '混合动力'),
+            ('electric', '纯电动'),
+            ('lpg', 'LPG液化石油气'),
+            ('cng', 'CNG压缩天然气'),
+            ('other', '其他')
+        ],
+        validators=[Optional()]
+    )
+    
+    car_license_plate = StringField('车牌号码', validators=[
+        Optional(),
+        Length(max=20, message='车牌号码不能超过20个字符')
+    ])
+    
+    car_inspection_type = SelectField('检车类型',
+        choices=[
+            ('', '请选择检车类型'),
+            ('regular', '常规年检'),
+            ('pre_purchase', '二手车购买前检查'),
+            ('emission', '尾气排放检测'),
+            ('safety', '安全检查'),
+            ('damage', '事故后检查'),
+            ('other', '其他')
+        ],
+        validators=[Optional()]
+    )
+    
+    car_has_previous_issues = BooleanField('车辆之前是否有问题')
+    
+    car_previous_issues = TextAreaField('之前的问题描述', validators=[
+        Optional(),
+        Length(max=500, message='问题描述不能超过500个字符')
+    ])
+    
     submit = SubmitField('发布任务') 
