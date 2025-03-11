@@ -1,39 +1,41 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 from app import create_app, db
 from app.models import User
-from werkzeug.security import generate_password_hash
+from datetime import datetime
 
-def create_admin_user(username, password):
-    """创建一个管理员用户"""
-    app = create_app()
-    with app.app_context():
-        # 检查用户是否已存在
-        existing_user = User.query.filter_by(username=username).first()
-        if existing_user:
-            print(f"用户 {username} 已存在。")
-            # 如果已存在但不是管理员，则设为管理员
-            if not existing_user.is_admin():
-                existing_user.role = 'admin'
-                db.session.commit()
-                print(f"已将用户 {username} 设置为管理员。")
-            return
-
-        # 创建新管理员用户
-        admin_user = User(
-            username=username,
-            email=f"{username}@example.com",
-            role='admin',
-            is_active=True
-        )
-        admin_user.password_hash = generate_password_hash(password)
+app = create_app()
+with app.app_context():
+    # 检查是否已存在管理员账户
+    admin = User.query.filter_by(role='admin').first()
+    
+    if admin:
+        print(f'已存在管理员账户: {admin.username}, 邮箱: {admin.email}')
+    else:
+        # 检查是否存在用户名为 admin 的用户
+        admin_user = User.query.filter_by(username='admin').first()
         
-        # 添加到数据库
-        db.session.add(admin_user)
-        db.session.commit()
-        print(f"管理员用户 {username} 创建成功！")
-
-if __name__ == "__main__":
-    # 创建具有管理员权限的用户，用户名为admin，密码为admin123
-    create_admin_user("admin", "admin123") 
+        if admin_user:
+            # 将现有用户更新为管理员
+            admin_user.role = 'admin'
+            admin_user.email_confirmed = True
+            db.session.commit()
+            print(f'已将用户 {admin_user.username} 更新为管理员角色')
+            print(f'邮箱: {admin_user.email}')
+        else:
+            # 创建新的管理员账户
+            admin = User(
+                username='admin',
+                email='admin@example.com',
+                role='admin',
+                email_confirmed=True,
+                created_at=datetime.utcnow()
+            )
+            admin.set_password('admin123')  # 设置密码
+            
+            # 保存到数据库
+            db.session.add(admin)
+            db.session.commit()
+            
+            print(f'成功创建管理员账户: {admin.username}, 邮箱: {admin.email}')
+            print('请使用以下凭据登录:')
+            print('用户名: admin')
+            print('密码: admin123') 

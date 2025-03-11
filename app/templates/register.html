@@ -22,10 +22,7 @@
                     {% endif %}
                     {% endwith %}
                     
-                    <div class="alert alert-info alert-dismissible fade show">
-                        <p class="mb-0">注册后，我们将向您的邮箱发送一封验证邮件。请点击邮件中的链接完成注册。</p>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
+                   
                     
                     <!-- 邮箱注册表单 -->
                     <form action="{{ url_for('auth.register') }}" method="post">
