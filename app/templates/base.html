@@ -54,6 +54,50 @@
             font-size: 0.65rem;
             padding: 0.25rem 0.4rem;
         }
+        
+        /* 登录和注册按钮样式增强 */
+        .navbar .btn-outline-primary {
+            border-width: 2px;
+            font-weight: 500;
+        }
+        
+        .navbar .btn-primary {
+            font-weight: 500;
+            box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
+        }
+        
+        .navbar .btn {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .navbar .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .navbar .btn-outline-primary:hover {
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.15);
+        }
+        
+        .navbar .btn-primary:hover {
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+        }
+        
+        /* 确保登录和注册按钮高度一致 */
+        .navbar .btn.rounded-pill {
+            height: 38px;
+            line-height: 1;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        
+        .navbar .btn.rounded-pill i {
+            font-size: 0.9rem;
+        }
+        
+        .navbar .btn.rounded-pill span {
+            position: relative;
+            top: 1px;
+        }
     </style>
     <!-- 在<head>部分添加缓存控制 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -122,9 +166,13 @@
                             </ul>
                         </div>
                         {% else %}
-                        <div class="d-flex gap-2">
-                            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary">登录</a>
-                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary">注册</a>
+                        <div class="d-flex gap-2 align-items-center">
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary rounded-pill px-3 d-flex align-items-center justify-content-center">
+                                <i class="fas fa-sign-in-alt me-1"></i><span>登录</span>
+                            </a>
+                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary rounded-pill px-3 d-flex align-items-center justify-content-center">
+                                <i class="fas fa-user-plus me-1"></i><span>注册</span>
+                            </a>
                         </div>
                         {% endif %}
                     </div>
