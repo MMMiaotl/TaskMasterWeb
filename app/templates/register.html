@@ -3,57 +3,149 @@
 {% block title %}注册{% endblock %}
 
 {% block content %}
-    <div class="auth-container">
-        <h1>注册</h1>
-        
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <div class="alert alert-info">
-                {% for message in messages %}
-                    <p>{{ message }}</p>
-                {% endfor %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h3 class="mb-0 fw-bold">创建新账号</h3>
+                </div>
+                <div class="card-body p-4">
+                    {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <div class="alert alert-info alert-dismissible fade show">
+                            {% for message in messages %}
+                                <p class="mb-0">{{ message }}</p>
+                            {% endfor %}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+                    {% endwith %}
+                    
+                    <div class="alert alert-info alert-dismissible fade show">
+                        <p class="mb-0">注册后，我们将向您的邮箱发送一封验证邮件。请点击邮件中的链接完成注册。</p>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    
+                    <!-- 社交媒体注册 -->
+                    <div class="text-center mb-4">
+                        <p class="text-muted mb-3">使用社交账号注册</p>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('oauth.login_google') }}" class="btn btn-outline-danger d-flex align-items-center justify-content-center">
+                                <i class="fab fa-google me-2"></i>使用谷歌账号注册
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mb-4">
+                        <div class="divider-with-text">
+                            <span>或使用邮箱注册</span>
+                        </div>
+                    </div>
+                    
+                    <form action="{{ url_for('auth.register') }}" method="post">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-user text-primary"></i>
+                                </span>
+                                {{ form.username(class="form-control", placeholder="用户名") }}
+                            </div>
+                            {% for error in form.username.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-envelope text-primary"></i>
+                                </span>
+                                {{ form.email(class="form-control", placeholder="电子邮箱") }}
+                            </div>
+                            {% for error in form.email.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-lock text-primary"></i>
+                                </span>
+                                {{ form.password(class="form-control", placeholder="密码") }}
+                            </div>
+                            {% for error in form.password.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-4">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-lock text-primary"></i>
+                                </span>
+                                {{ form.password2(class="form-control", placeholder="确认密码") }}
+                            </div>
+                            {% for error in form.password2.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-light py-3 text-center">
+                    <div class="small">
+                        <a href="{{ url_for('auth.login') }}" class="text-decoration-none">
+                            <i class="fas fa-sign-in-alt me-1"></i>已有账号？立即登录
+                        </a>
+                    </div>
+                </div>
             </div>
-        {% endif %}
-        {% endwith %}
-        
-        <div class="alert alert-info">
-            <p>注册后，我们将向您的邮箱发送一封验证邮件。请点击邮件中的链接完成注册。</p>
         </div>
-        
-        <form action="{{ url_for('auth.register') }}" method="post" class="auth-form">
-            {{ form.hidden_tag() }}
-            <div class="form-group">
-                {{ form.username.label }}
-                {{ form.username(size=32, class="form-control") }}
-                {% for error in form.username.errors %}
-                    <span class="error-message">{{ error }}</span>
-                {% endfor %}
-            </div>
-            <div class="form-group">
-                {{ form.email.label }}
-                {{ form.email(size=32, class="form-control") }}
-                {% for error in form.email.errors %}
-                    <span class="error-message">{{ error }}</span>
-                {% endfor %}
-            </div>
-            <div class="form-group">
-                {{ form.password.label }}
-                {{ form.password(size=32, class="form-control") }}
-                {% for error in form.password.errors %}
-                    <span class="error-message">{{ error }}</span>
-                {% endfor %}
-            </div>
-            <div class="form-group">
-                {{ form.password2.label }}
-                {{ form.password2(size=32, class="form-control") }}
-                {% for error in form.password2.errors %}
-                    <span class="error-message">{{ error }}</span>
-                {% endfor %}
-            </div>
-            <div class="form-actions">
-                {{ form.submit(class="btn btn-primary") }}
-                <a href="{{ url_for('auth.login') }}" class="btn btn-link">已有账号？登录</a>
-            </div>
-        </form>
     </div>
+</div>
+
+<style>
+    .divider-with-text {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 15px 0;
+    }
+    
+    .divider-with-text::before,
+    .divider-with-text::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .divider-with-text span {
+        padding: 0 10px;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .input-group-text {
+        border-right: none;
+    }
+    
+    .form-control {
+        border-left: none;
+    }
+    
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #ced4da;
+    }
+    
+    .input-group:focus-within .input-group-text {
+        border-color: #86b7fe;
+    }
+    
+    .input-group:focus-within .form-control {
+        border-color: #86b7fe;
+    }
+</style>
 {% endblock %}

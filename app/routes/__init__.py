@@ -7,6 +7,7 @@ from .service import service_bp
 from .professional import professional_bp
 from .admin import admin_bp
 from ..errors import errors_bp
+from app.routes.oauth import oauth_bp, setup_oauth
 
 def init_app(app):
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -17,4 +18,8 @@ def init_app(app):
     app.register_blueprint(service_bp, url_prefix='/service')
     app.register_blueprint(professional_bp)
     app.register_blueprint(admin_bp)
-    app.register_blueprint(errors_bp) 
+    app.register_blueprint(errors_bp)
+    app.register_blueprint(oauth_bp, url_prefix='/oauth')
+    
+    # 设置OAuth
+    setup_oauth(app) 

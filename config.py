@@ -77,6 +77,11 @@ class Config:
     
     # 邮箱验证配置
     EMAIL_VERIFICATION_REQUIRED = False  # 开发环境默认禁用邮箱验证
+    
+    # OAuth配置
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID') or 'your-google-client-id'
+    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET') or 'your-google-client-secret'
+    OAUTH_REDIRECT_URI = os.environ.get('OAUTH_REDIRECT_URI') or 'http://localhost:5000/login/google/callback'
 
 class DevelopmentConfig(Config):
     # 开发环境特定配置

@@ -35,6 +35,10 @@ class User(UserMixin, db.Model):
     email_confirm_token = db.Column(db.String(100))
     email_confirm_sent_at = db.Column(db.DateTime)
     
+    # OAuth相关字段
+    oauth_provider = db.Column(db.String(20))  # 'google', 'facebook', 等
+    oauth_id = db.Column(db.String(100))  # OAuth提供商的用户ID
+    
     # 专业人士额外字段
     is_professional = db.Column(db.Boolean, default=False)
     professional_title = db.Column(db.String(64))  # 专业人士头衔
