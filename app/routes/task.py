@@ -374,7 +374,7 @@ def cancel_task(task_id):
     db.session.commit()
     
     flash('任务已成功取消', 'success')
-    return redirect(url_for('task.tasks'))
+    return redirect(url_for('task.task_detail', task_id=task.id))
 
 @task_bp.route('/<int:task_id>/conversation', methods=['GET', 'POST'])
 @login_required

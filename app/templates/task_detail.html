@@ -94,6 +94,8 @@
         </div>
         
         <div class="card-body">
+            
+            
             <!-- 任务进度条 -->
             <div id="task-progress" class="progress-module my-4">
                 {% if task.status == 4 %}
@@ -103,6 +105,8 @@
                         <i class="fas fa-times"></i>
                     </div>
                     <div class="cancelled-label">任务已取消</div>
+                    
+                    
                 </div>
                 {% else %}
                 <div class="progress-timeline">
@@ -796,30 +800,36 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px 0;
+    padding: 30px 0;
+    background-color: #fef2f2;
+    border-radius: 8px;
+    border: 1px dashed #ef4444;
 }
 
 .cancelled-marker {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     background-color: #fee2e2;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 15px;
-    border: 2px solid #fca5a5;
+    margin-bottom: 20px;
+    border: 3px solid #fca5a5;
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2);
 }
 
 .cancelled-marker i {
-    font-size: 32px;
+    font-size: 40px;
     color: #ef4444;
 }
 
 .cancelled-label {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 24px;
+    font-weight: 700;
     color: #ef4444;
+    margin-bottom: 10px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 </style>
 
@@ -1270,7 +1280,7 @@
             })
             .then(response => {
                 if (response.ok) {
-                    window.location.href = '/task/tasks';
+                    window.location.reload(); // 刷新当前页面而不是跳转到任务列表
                 } else {
                     alert('取消任务失败，请稍后再试');
                 }
